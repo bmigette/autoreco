@@ -5,6 +5,8 @@ from queue import Queue, Empty
 from .logger import logger
 from .config import NUM_THREADS, QUEUE_SIZE, QUEUE_WAIT_TIME
 from .modules.ModuleLoader import ModuleLoader
+from datetime import datetime
+
 """
 Job Syntax:
 """
@@ -48,7 +50,7 @@ class _WorkThread():
             None: 
         """
         try:
-            #def __init__(self, testid, host, args = {}):
+            #def __init__(self, testid, target, args = {}):
             module_object = self.modules[job["module_name"]](job["job_id"], job["target"], job["args"])
             module_object.start()
         finally:
@@ -56,7 +58,7 @@ class _WorkThread():
                 try:
                     self.complete_callback()
                 except Exception as e:
-                    logger.error("Error in thread %s: %s", self.id, e, exc_info=True)
+                    logger.error("Error in thread callback %s: %s", self.thread_id, e, exc_info=True)
 
 
 
@@ -93,16 +95,24 @@ class WorkThreader():
     _instances = {}
     queue = Queue(QUEUE_SIZE)
 
-    # TODO Implement Watchdog or something
     def add_job(job: dict):
+        logger.debug("Adding job with data %s", job)
         WorkThreader.queue.put(job)
 
     def start_threads(complete_callback):
         for i in range (0, NUM_THREADS):
-            logger.info("Creating Terraform Worker thread for instance %s", i)
+            logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(i, WorkThreader.queue, complete_callback)
     
     def stop_threads():
+        logger.info("Stopping threads...")
         for i in range (0, NUM_THREADS):
             WorkThreader._instances[str(i)].stop()
+            
+        for i in range (0, NUM_THREADS):  
+            WorkThreader._instances[str(i)].thread.join()
             del WorkThreader._instances[str(i)]
+            
+        logger.info("="*50)
+        logger.info("Tests Complete at %s", datetime.now().isoformat())
+        logger.info("="*50)

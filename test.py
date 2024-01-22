@@ -1,21 +1,17 @@
 import os
 import autoreco.state
-autoreco.state.WORKING_DIR  = os.getcwd()
+import autoreco.config
+import logging
+autoreco.config.LOGLEVEL = logging.DEBUG
+
+autoreco.state.WORKING_DIR  = "/tmp/autoreco"
 from autoreco.logger import logger
+
 
 from autoreco.WorkThreader import WorkThreader
 
 
-
-WorkThreader.start_threads(None)
-for i in range(0,20):
-    WorkThreader.add_job({
-    "module_name": "testModule",
-    "job_id":f"test{i}",
-    "target":f"target{i}",
-    "args": {}
-})
-    
-WorkThreader.queue.join()
-logger.info('All work completed')
-WorkThreader.stop_threads()
+# Importing here to make sure we have set config / state properly
+from autoreco.TestRunner import TestRunner
+runner = TestRunner("192.168.1.0/24", None)
+runner.run()
