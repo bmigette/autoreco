@@ -1,7 +1,8 @@
 from .WorkThreader import WorkThreader
 from .logger import logger
 import json
-from .state import statelock, TEST_STATE
+import os
+from .state import statelock, TEST_STATE, WORKING_DIR
 from datetime import datetime
 
 class TestRunner(object):
@@ -39,6 +40,12 @@ class TestRunner(object):
         finally:            
             WorkThreader.stop_threads()
             
+            logger.info("="*50)
+            logger.info("Tests Complete at %s", datetime.now().isoformat())
+            logger.info("="*50)
+
             with statelock:
-                    logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
-                    logger.info("="*50)
+                logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
+                logger.info("="*50)
+                with open(os.path.join(WORKING_DIR, "state.json"), "w") as f:
+                    f.write(json.dumps(TEST_STATE, indent=4))

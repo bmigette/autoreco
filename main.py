@@ -2,8 +2,9 @@
 
 # Autoreco
 # Tool to automate discovery / enumeration during a pentest assessment
-# Author: Bastien Migette
 # Usage: See python3 main.py -h
+
+__author__ = "Bastien Migette"
 
 import argparse
 import logging
