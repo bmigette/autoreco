@@ -1,7 +1,11 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 import re
+
+
 class NetExecDiscovery(ModuleInterface):
+    """Class to run netexec tool for discovery"""
+
     def run(self):
         protocol = "smb"
         if "protocol" in self.args:
@@ -10,14 +14,13 @@ class NetExecDiscovery(ModuleInterface):
         self.command = f"netexec {protocol} {self.target} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command)
         self.parse_output()
-            
-        
+
     def parse_output(self):
-        #RPC 192.168.1.16 135 DESKTOP-78RP52H [*] Windows NT 10.0 Build 22621 (name:DESKTOP-78RP52H) (domain:DESKTOP-78RP52H)
+        # RPC 192.168.1.16 135 DESKTOP-78RP52H [*] Windows NT 10.0 Build 22621 (name:DESKTOP-78RP52H) (domain:DESKTOP-78RP52H)
         for line in self.output.split("\n"):
             if "[*]" in line:
                 logger.debug("Processing netexec line %s", line)
-                line = re.sub('\s\s*', ' ', line)
+                line = re.sub("\s\s*", " ", line)
                 parts = line.split("[*]")
                 protocol, hostip, port, hostname = parts[0].strip().split(" ")
                 hostobj = self.get_host_obj(hostip)
@@ -38,4 +41,3 @@ class NetExecDiscovery(ModuleInterface):
                 if domain != name:
                     hostobj.domain = domain
                 logger.info("netexec processed host %s", str(hostobj))
-                

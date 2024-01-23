@@ -39,7 +39,12 @@ Format is {
 }
 """
 
+
 class TestHost:
+    """This class represent a test host object (can also be a generic 'discovery' host)
+    It is responsible of accessing and updating the global state for that host with test result etc...
+    """
+
     def __init__(self, ip: str):
         self.ip = ip
         self.check_host(ip)
@@ -76,7 +81,7 @@ class TestHost:
             if self.ip not in TEST_STATE or fieldname not in TEST_STATE[self.ip]:
                 return None
             return TEST_STATE[self.ip][fieldname]
-        
+
     def _state_field_set(self, fieldname, value):
         with statelock:
             TEST_STATE[self.ip][fieldname] = value
@@ -100,17 +105,17 @@ class TestHost:
     @os_family.setter
     def os_family(self, value):
         return self._state_field_set("os_family", value)
-    
-    
+
     @property
     def os_version(self):
         return self._state_field_get("os_version")
 
     @os_version.setter
     def os_version(self, value):
-        if not self._state_field_exists("os_version") or  len(self._state_field_get("os_version")) < len(value):
+        if not self._state_field_exists("os_version") or len(
+            self._state_field_get("os_version")
+        ) < len(value):
             return self._state_field_set("os_version", value)
-
 
     @property
     def services(self):
@@ -119,7 +124,7 @@ class TestHost:
     @services.setter
     def services(self, value):
         return self._state_field_set("services", set(value))
-    
+
     @property
     def tcp_ports(self):
         return self._state_field_get("tcp_ports")
@@ -127,7 +132,7 @@ class TestHost:
     @tcp_ports.setter
     def tcp_ports(self, value):
         return self._state_field_set("tcp_ports", set(value))
-    
+
     @property
     def tcp_ports(self):
         return self._state_field_get("udp_ports")
@@ -135,7 +140,6 @@ class TestHost:
     @tcp_ports.setter
     def tcp_ports(self, value):
         return self._state_field_set("udp_ports", set(value))
-    
 
     @property
     def tcp_service_ports(self):
@@ -144,7 +148,6 @@ class TestHost:
     @tcp_service_ports.setter
     def tcp_service_ports(self, value):
         return self._state_field_set("tcp_service_ports", value)
-      
 
     @property
     def udp_service_ports(self):
@@ -153,7 +156,6 @@ class TestHost:
     @udp_service_ports.setter
     def udp_service_ports(self, value):
         return self._state_field_set("udp_service_ports", value)
-    
 
     @property
     def tests_state(self):
@@ -163,12 +165,11 @@ class TestHost:
     def tests_state(self, value):
         return self._state_field_set("tests_state", value)
 
-
     def has_test(self, testid):
         if not self._state_field_exists("tests_state"):
             return False
-        return testid in self.tests_state     
-    
+        return testid in self.tests_state
+
     def add_tcp_service_port(self, service: str, port: int):
         """Add a TCP Service port entry
 
@@ -186,8 +187,7 @@ class TestHost:
                     TEST_STATE[self.ip]["tcp_service_ports"][service] = []
                 if int(port) not in TEST_STATE[self.ip]["tcp_service_ports"][service]:
                     TEST_STATE[self.ip]["tcp_service_ports"][service].append(int(port))
-                    
-    
+
     def _has_product_version(self, slist, product, version):
         """Checks if a product / version already exists in state
 
@@ -200,7 +200,7 @@ class TestHost:
             if item["product"] == product and item["version"] == version:
                 return True
         return False
-    
+
     def add_service_versions(self, service: str, port: int, product: str, version: str):
         """Add a TCP Service port entry
 
@@ -215,26 +215,21 @@ class TestHost:
         with statelock:
             if "service_versions" not in TEST_STATE[self.ip]:
                 TEST_STATE[self.ip]["service_versions"] = {
-                    service: {
-                            int(port): [{
-                                "product" : product,
-                                "version" : version
-                            }]
-                        }
-                    }
+                    service: {int(port): [{"product": product, "version": version}]}
+                }
             else:
                 if service not in TEST_STATE[self.ip]["service_versions"]:
                     TEST_STATE[self.ip]["service_versions"][service] = {}
                 if int(port) not in TEST_STATE[self.ip]["service_versions"][service]:
                     TEST_STATE[self.ip]["service_versions"][service][int(port)] = []
-                if self._has_product_version(TEST_STATE[self.ip]["service_versions"][service][int(port)], product, version):
-                    TEST_STATE[self.ip]["service_versions"][service][int(port)].append({
-                                                                                            "product": product,
-                                                                                            "version": version
-                                                                                        })
-                                    
-                    
-    
+                if self._has_product_version(
+                    TEST_STATE[self.ip]["service_versions"][service][int(port)],
+                    product,
+                    version,
+                ):
+                    TEST_STATE[self.ip]["service_versions"][service][int(port)].append(
+                        {"product": product, "version": version}
+                    )
 
     def add_udp_service_port(self, service: str, port: int):
         """Add a UDP Service port entry
@@ -253,9 +248,9 @@ class TestHost:
                     TEST_STATE[self.ip]["udp_service_port"][service] = []
                 if int(port) not in TEST_STATE[self.ip]["udp_service_port"][service]:
                     TEST_STATE[self.ip]["udp_service_port"][service].append(int(port))
-                    
+
     def add_os_version(self, os_version: str):
-        """Add a os_version 
+        """Add a os_version
 
         Args:
             os_version (str): os_version name, example Windows 10 x64
@@ -267,9 +262,9 @@ class TestHost:
             else:
                 if os_version not in TEST_STATE[self.ip]["os_version"]:
                     TEST_STATE[self.ip]["os_version"].append(os_version)
-                    
+
     def add_hostname(self, hostname: str):
-        """Add a hostname. We use a list, because not all modules / tools gives the same hostname 
+        """Add a hostname. We use a list, because not all modules / tools gives the same hostname
 
         Args:
             hostname (str): hostname  example win2k12
@@ -281,9 +276,9 @@ class TestHost:
             else:
                 if hostname not in TEST_STATE[self.ip]["hostnames"]:
                     TEST_STATE[self.ip]["hostnames"].append(hostname)
-    
+
     def add_service(self, service: str):
-        """Add a Service 
+        """Add a Service
 
         Args:
             service (str): service name, example http
@@ -296,9 +291,9 @@ class TestHost:
             else:
                 if service not in TEST_STATE[self.ip]["services"]:
                     TEST_STATE[self.ip]["services"].append(service)
-    
+
     def add_tcp_port(self, port):
-        """Add a TCP port 
+        """Add a TCP port
 
         Args:
             port (int): service port, example 80
@@ -310,9 +305,9 @@ class TestHost:
             else:
                 if int(port) not in TEST_STATE[self.ip]["tcp_ports"]:
                     TEST_STATE[self.ip]["tcp_ports"].append(int(port))
-    
+
     def add_udp_port(self, port):
-        """Add a UDP Port 
+        """Add a UDP Port
 
         Args:
             port (int): service port, example 53
@@ -323,9 +318,16 @@ class TestHost:
                 TEST_STATE[self.ip]["udp_ports"] = [int(port)]
             else:
                 if int(port) not in TEST_STATE[self.ip]["udp_ports"]:
-                    TEST_STATE[self.ip]["udp_ports"].append(int(port))                  
-                                    
-    def set_test_state(self, testid: str, state: str, module_name: str = None, target: str = None, args: list = None):
+                    TEST_STATE[self.ip]["udp_ports"].append(int(port))
+
+    def set_test_state(
+        self,
+        testid: str,
+        state: str,
+        module_name: str = None,
+        target: str = None,
+        args: list = None,
+    ):
         """Set test state. Omitted values won't override what's in state
 
         Args:
@@ -340,21 +342,21 @@ class TestHost:
             if "tests_state" not in TEST_STATE[self.ip]:
                 TEST_STATE[self.ip]["tests_state"] = {}
             if testid not in TEST_STATE[self.ip]["tests_state"]:
-                TEST_STATE[self.ip]["tests_state"][testid] = {
-                    "state": state
-                }
+                TEST_STATE[self.ip]["tests_state"][testid] = {"state": state}
             else:
                 TEST_STATE[self.ip]["tests_state"][testid]["state"] = state
             if module_name is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["module"] = module_name  
+                TEST_STATE[self.ip]["tests_state"][testid]["module"] = module_name
             if target is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["target"] = target  
+                TEST_STATE[self.ip]["tests_state"][testid]["target"] = target
             if args is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["args"] = args  
+                TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
 
     def __repr__(self):
         return f"{self.ip} - {self.hostnames} - {self.os_family} - {self.os_version}"
-    
+
     def dump(self):
         with statelock:
-            logger.debug("Dump of %s: \n %s", self.ip, json.dumps(TEST_STATE[self.ip], indent=4))
+            logger.debug(
+                "Dump of %s: \n %s", self.ip, json.dumps(TEST_STATE[self.ip], indent=4)
+            )

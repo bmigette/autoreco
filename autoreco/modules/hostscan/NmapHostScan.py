@@ -1,10 +1,17 @@
 import nmap
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ...config import NMAP_DEFAULT_TCP_PORT_OPTION, NMAP_DEFAULT_UDP_PORT_OPTION, NMAP_HOSTSCAN_OPTIONS
+from ...config import (
+    NMAP_DEFAULT_TCP_PORT_OPTION,
+    NMAP_DEFAULT_UDP_PORT_OPTION,
+    NMAP_HOSTSCAN_OPTIONS,
+)
 from ...TestHost import TestHost
 
+
 class NmapHostScan(ModuleInterface):
+    """Class to run TCP/UDP scan against a single host"""
+
     def run(self):
         nm = nmap.PortScanner()
         outname = self.get_log_name("log")
@@ -22,8 +29,8 @@ class NmapHostScan(ModuleInterface):
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
         nmargs = f"{args} {protocol} {ports} -oN {outname}"
-        
-        logger.debug("Starting nmap with args %s", nmargs)    
+
+        logger.debug("Starting nmap with args %s", nmargs)
         self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
@@ -31,8 +38,7 @@ class NmapHostScan(ModuleInterface):
         with open(self.get_log_name("xml"), "w") as f:
             f.write(str(xml))
         self.update_state()
-            
-        
+
     def update_state(self):
         logger.debug("nmap scan result: \n %s", self.lastreturn)
         keys = list(self.lastreturn["scan"].keys())
@@ -42,7 +48,7 @@ class NmapHostScan(ModuleInterface):
         self.ip = ip
         root = self.lastreturn["scan"][keys[0]]
         hostobject = self.get_host_obj(ip)
-        if "hostnames" in root and len(root["hostnames"]) > 0:                
+        if "hostnames" in root and len(root["hostnames"]) > 0:
             for hostname in root["hostnames"]:
                 hostobject.add_hostname(hostname)
         if "tcp" in root:
@@ -63,7 +69,7 @@ class NmapHostScan(ModuleInterface):
                     hostobject.add_os_version(match["name"])
 
         hostobject.dump()
-        
+
     def _update_tcp_state(self, root, hostobject: TestHost):
         for port, data in root["tcp"].items():
             if data["state"] != "open":
@@ -72,8 +78,10 @@ class NmapHostScan(ModuleInterface):
             hostobject.add_tcp_port(port)
             hostobject.add_tcp_service_port(data["name"], port)
             if data["product"]:
-                hostobject.add_service_versions(data["name"], port, data["product"], data["version"])
-                
+                hostobject.add_service_versions(
+                    data["name"], port, data["product"], data["version"]
+                )
+
     def _update_udp_state(self, root, hostobject: TestHost):
         for port, data in root["tcp"].items():
             if data["state"] != "open":
@@ -82,6 +90,6 @@ class NmapHostScan(ModuleInterface):
             hostobject.add_udp_port(port)
             hostobject.add_udp_service_port(data["name"], port)
             if data["product"]:
-                hostobject.add_service_versions(data["name"], port, data["product"], data["version"])        
-        
-                        
+                hostobject.add_service_versions(
+                    data["name"], port, data["product"], data["version"]
+                )
