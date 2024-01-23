@@ -84,7 +84,7 @@ class NmapHostScan(ModuleInterface):
 
     def _update_udp_state(self, root, hostobject: TestHost):
         for port, data in root["tcp"].items():
-            if data["state"] != "open":
+            if data["state"] != "open": # TODO Check if this works for UDP
                 continue
             hostobject.add_service(data["name"])
             hostobject.add_udp_port(port)

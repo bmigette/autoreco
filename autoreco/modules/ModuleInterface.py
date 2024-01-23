@@ -49,7 +49,7 @@ class ModuleInterface(ABC):
 
     def start(self):
         logger.info(
-            "\n" + "-" * 50 + "\n Starting test %s against target %s with module %s",
+            "\n" + "-" * 50 + "\nStarting test %s against target %s with module %s" + "\n" + "-" * 50,
             self.testid,
             self.target,
             self.module_name,
