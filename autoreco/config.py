@@ -9,4 +9,10 @@ DEFAULT_PROCESS_TIMEOUT = 600 # Default timeout for a process
 
 ##### Modules Specific Config #####
 
+# NETEXEC DISCOVERY MODULE
 NETEXEC_DISCOVERY_PROTOCOLS = ["smb", "rdp", "wmi"]
+
+# NMAP HOST SCAN OPTIONS
+NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"
+NMAP_DEFAULT_UDP_PORT_OPTION = "--top-ports 1000"
+NMAP_HOSTSCAN_OPTIONS = "-sC -sV -Pn -T3 --version-all -O --script-timeout 60"

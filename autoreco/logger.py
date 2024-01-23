@@ -13,7 +13,7 @@ logger = logging.getLogger("autoreco")
 logger.setLevel(LOGLEVEL)  
 
 formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s')
+    '%(asctime)s - %(threadName)s - %(module)s - %(levelname)s - %(message)s')
 
 if STDOUT_LOGGING:
     handler = logging.StreamHandler(sys.stdout)

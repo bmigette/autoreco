@@ -25,12 +25,12 @@ class NetExecDiscovery(ModuleInterface):
                 hostobj.add_tcp_port(port)
                 hostobj.add_tcp_service_port(protocol, port)
                 if hostname.lower() != "none":
-                    hostobj.hostname = hostname
+                    hostobj.add_hostname(hostname)
                 parts2 = parts[1].strip().split("(")
                 os = parts2[0].strip()
                 if "windows" in os.lower():
                     hostobj.os_family = "windows"
-                    hostobj.os_version = os
+                    hostobj.add_os_version(os)
                 else:
                     hostobj.os_family = os
                 name = parts2[1].split(":")[1].replace(")", "").strip()

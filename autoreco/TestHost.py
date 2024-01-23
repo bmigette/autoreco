@@ -1,20 +1,33 @@
 from .state import statelock, TEST_STATE, WORKING_DIR
+from .logger import logger
 import re
+import json
 
 """
 Format is {
     "1.2.3.4": {
         "ip": "1.2.3.4",
-        "hostname": "host.xxx.com",
+        "hostnames": ["host.xxx.com"],
         "domain": "xxx.com"
         "os_family": "windows",
-        "os_version": "windows 10 xxx",
+        "os_version": ["windows 10 xxx"],
         "services": ["http", "dns"],
         "tcp_ports": [80, 8080, 443],
         "udp_ports": [80, 8080, 443],
         "tcp_service_ports": {
             "http": [80, 8080]
         },
+        "udp_service_ports": {
+            "dns": [53]
+        },
+        service_versions : {
+            "http" : {
+                80: [{
+                    "product": "Microsoft HTTPAPI httpd",
+                    "version": "2.0"
+                }]
+            }
+        }
         tests_state : {
             "xxxx" : {
                 "module": "moduleName",
@@ -73,12 +86,12 @@ class TestHost:
             return fieldname in TEST_STATE[self.ip]
 
     @property
-    def hostname(self):
-        return self._state_field_get("hostname")
+    def hostnames(self):
+        return self._state_field_get("hostnames")
 
-    @hostname.setter
-    def hostname(self, value):
-        return self._state_field_set("hostname", value)
+    @hostnames.setter
+    def hostnames(self, value):
+        return self._state_field_set("hostnames", value)
 
     @property
     def os_family(self):
@@ -152,6 +165,8 @@ class TestHost:
 
 
     def has_test(self, testid):
+        if not self._state_field_exists("tests_state"):
+            return False
         return testid in self.tests_state     
     
     def add_tcp_service_port(self, service: str, port: int):
@@ -171,6 +186,55 @@ class TestHost:
                     TEST_STATE[self.ip]["tcp_service_ports"][service] = []
                 if int(port) not in TEST_STATE[self.ip]["tcp_service_ports"][service]:
                     TEST_STATE[self.ip]["tcp_service_ports"][service].append(int(port))
+                    
+    
+    def _has_product_version(self, slist, product, version):
+        """Checks if a product / version already exists in state
+
+        Args:
+            slist (list): state list to look into
+            product (str): product
+            version (str): version
+        """
+        for item in slist:
+            if item["product"] == product and item["version"] == version:
+                return True
+        return False
+    
+    def add_service_versions(self, service: str, port: int, product: str, version: str):
+        """Add a TCP Service port entry
+
+        Args:
+            service (str): service name, example http
+            port (int): port number
+            product (str): product
+            version (str): version
+        """
+        service = service.lower()
+        global TEST_STATE
+        with statelock:
+            if "service_versions" not in TEST_STATE[self.ip]:
+                TEST_STATE[self.ip]["service_versions"] = {
+                    service: {
+                            int(port): [{
+                                "product" : product,
+                                "version" : version
+                            }]
+                        }
+                    }
+            else:
+                if service not in TEST_STATE[self.ip]["service_versions"]:
+                    TEST_STATE[self.ip]["service_versions"][service] = {}
+                if int(port) not in TEST_STATE[self.ip]["service_versions"][service]:
+                    TEST_STATE[self.ip]["service_versions"][service][int(port)] = []
+                if self._has_product_version(TEST_STATE[self.ip]["service_versions"][service][int(port)], product, version):
+                    TEST_STATE[self.ip]["service_versions"][service][int(port)].append({
+                                                                                            "product": product,
+                                                                                            "version": version
+                                                                                        })
+                                    
+                    
+    
 
     def add_udp_service_port(self, service: str, port: int):
         """Add a UDP Service port entry
@@ -190,6 +254,34 @@ class TestHost:
                 if int(port) not in TEST_STATE[self.ip]["udp_service_port"][service]:
                     TEST_STATE[self.ip]["udp_service_port"][service].append(int(port))
                     
+    def add_os_version(self, os_version: str):
+        """Add a os_version 
+
+        Args:
+            os_version (str): os_version name, example Windows 10 x64
+        """
+        global TEST_STATE
+        with statelock:
+            if "os_version" not in TEST_STATE[self.ip]:
+                TEST_STATE[self.ip]["os_version"] = [os_version]
+            else:
+                if os_version not in TEST_STATE[self.ip]["os_version"]:
+                    TEST_STATE[self.ip]["os_version"].append(os_version)
+                    
+    def add_hostname(self, hostname: str):
+        """Add a hostname. We use a list, because not all modules / tools gives the same hostname 
+
+        Args:
+            hostname (str): hostname  example win2k12
+        """
+        global TEST_STATE
+        with statelock:
+            if "hostnames" not in TEST_STATE[self.ip]:
+                TEST_STATE[self.ip]["hostnames"] = [hostname]
+            else:
+                if hostname not in TEST_STATE[self.ip]["hostnames"]:
+                    TEST_STATE[self.ip]["hostnames"].append(hostname)
+    
     def add_service(self, service: str):
         """Add a Service 
 
@@ -261,4 +353,8 @@ class TestHost:
                 TEST_STATE[self.ip]["tests_state"][testid]["args"] = args  
 
     def __repr__(self):
-        return f"{self.ip} - {self.hostname} - {self.os_family} - {self.os_version}"
+        return f"{self.ip} - {self.hostnames} - {self.os_family} - {self.os_version}"
+    
+    def dump(self):
+        with statelock:
+            logger.debug("Dump of %s: \n %s", self.ip, json.dumps(TEST_STATE[self.ip], indent=4))

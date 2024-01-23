@@ -17,6 +17,7 @@ JOB_TEMPLATE = {
     "args": {}
 }
 class _WorkThread():
+    
     def __init__(self, thread_id: str, queue: Queue,  complete_callback):
         """Constructor
 
@@ -31,6 +32,7 @@ class _WorkThread():
         self.modules = ModuleLoader.get_modules()
         self.stopevent = Event()
         self.thread = Thread(target=self.thread_consumer, args=(self.stopevent,))
+        self.busy = False
         self.thread.start()
     
     def stop(self):
@@ -51,14 +53,18 @@ class _WorkThread():
         """
         try:
             #def __init__(self, testid, target, args = {}):
+            self.busy = True
             module_object = self.modules[job["module_name"]](job["job_id"], job["target"], job["module_name"], job["args"])
             module_object.start()
         finally:
+            self.busy = False
             if self.complete_callback:
                 try:
                     self.complete_callback()
                 except Exception as e:
                     logger.error("Error in thread callback %s: %s", self.thread_id, e, exc_info=True)
+                    
+    
 
 
 
@@ -98,19 +104,34 @@ class WorkThreader():
     def add_job(job: dict):
         logger.debug("Adding job with data %s", job)
         WorkThreader.queue.put(job)
+        logger.debug("======== QUEUE SIZE: %s ========", WorkThreader.queue.qsize())
 
-    def start_threads(complete_callback):
+    def start_threads(complete_callback): #TODO: Create a watchdog that prints state
         for i in range (0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(i, WorkThreader.queue, complete_callback)
-    
+            
+    def finished() -> bool:
+        """Returns true if all tasks finished
+
+        Returns:
+            bool: true if finished, false otherwise
+        """
+        if not WorkThreader.queue.empty():
+            return False
+        for i, inst in WorkThreader._instances.items():
+            if inst.busy:
+                return False
+            
+        return True
+        
     def stop_threads():
         logger.info("Stopping threads...")
-        for i in range (0, NUM_THREADS):
-            WorkThreader._instances[str(i)].stop()
+        for i, inst in WorkThreader._instances.items():
+            inst.stop()
             
-        for i in range (0, NUM_THREADS):  
-            WorkThreader._instances[str(i)].thread.join()
-            del WorkThreader._instances[str(i)]
+        for i, inst in WorkThreader._instances.items():
+            inst.thread.join()
+            del inst
             
 

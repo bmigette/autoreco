@@ -12,6 +12,5 @@ See https://superfastpython.com/lock-an-object-in-python/#Lock_an_Object
 """
 TEST_STATE = {}
 
-datelock = threading.Lock()
 TEST_DATE = None
 TEST_DATE_STR = None

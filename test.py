@@ -3,8 +3,10 @@ import autoreco.state
 import autoreco.config
 import logging
 from datetime import datetime
+import json
 
 autoreco.config.LOGLEVEL = logging.DEBUG
+autoreco.config.NMAP_DEFAULT_TCP_PORT_OPTION = "--top-ports 10"
 
 autoreco.state.WORKING_DIR  = "/tmp/autoreco"
 autoreco.state.TEST_DATE = datetime.now()
@@ -25,5 +27,20 @@ runner.run()
 #         "target": "192.168.1.0/24",
 #         "args": {"protocol": "smb"}            
 #     }
+
+# WorkThreader.start_threads(None)
+
+# job = {
+#         "module_name": "hostscan.NmapHostScan",
+#         "job_id": "hostscan.NmapHostScantcp",
+#         "target": "192.168.1.252",
+#         "args": {"protocol": "tcp"}    
+#     }
 # WorkThreader.add_job(job)
 # WorkThreader.stop_threads()
+# with autoreco.state.statelock:
+#     logger.debug("State: %s", json.dumps(autoreco.state.TEST_STATE, indent=4))
+#     logger.info("="*50)
+#     with open(os.path.join(autoreco.state.WORKING_DIR, "state.json"), "w") as f:
+#         f.write(json.dumps(autoreco.state.TEST_STATE, indent=4))
+

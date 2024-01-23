@@ -1,4 +1,0 @@
-# Nmap 7.94SVN scan initiated Mon Jan 22 20:21:06 2024 as: nmap -oX - -sn -T4 -oN bn target
-Failed to resolve "target".
-WARNING: No targets were specified, so 0 hosts scanned.
-# Nmap done at Mon Jan 22 20:21:06 2024 -- 0 IP addresses (0 hosts up) scanned in 0.05 seconds

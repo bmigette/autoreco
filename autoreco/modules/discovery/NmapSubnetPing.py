@@ -18,8 +18,6 @@ class NmapSubnetPing(ModuleInterface):
     def update_state(self):
         for ip, data in self.lastreturn["scan"].items():
             if "hostnames" in data and len(data["hostnames"]) > 0:
-                if len(data["hostnames"]) > 1:
-                    raise Exception("Many Hostnames found, not sure how would happen: "+str(data["hostnames"]))
                 h = self.get_host_obj(ip)
-                if data["hostnames"][0]["name"]:                    
-                    h.hostname =  data["hostnames"][0]["name"]
+                for hostname in data["hostnames"]:
+                    h.add_hostname(hostname)

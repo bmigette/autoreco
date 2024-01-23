@@ -16,7 +16,12 @@ autoreco.state.TEST_DATE = datetime.now()
 autoreco.state.TEST_DATE_STR = autoreco.state.TEST_DATE.strftime("%Y_%m_%d__%H_%M_%S")
 import autoreco.config
 
+def check_privileges():
+    if not os.environ.get("SUDO_UID") and os.geteuid() != 0:
+        raise PermissionError("You need to run this script with sudo or as root (needed for some nmap options)")
+    
 def main():
+    check_privileges()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-od", "--output-dir", help="Output Directory. (defaults to current dir)", default=None)
@@ -24,6 +29,10 @@ def main():
         "-sn", "--subnet",  help="Subnet to scan", default=None)
     parser.add_argument(
         "-dn", "--domain",  help="DNS Domain to scan", default=None)
+    parser.add_argument(
+        "-h", "--host",  help="Host to scan", default=None)
+    parser.add_argument(
+        "-t", "--threads",  help="number of threads", default=autoreco.config.NUM_THREADS)
     parser.add_argument(
         "-v", "--verbose",  help="Verbose Logs (Debug)", action='store_true')
 
@@ -36,10 +45,11 @@ def main():
     if args.verbose:
         autoreco.config.LOGLEVEL = logging.DEBUG
     
+    autoreco.config.NUM_THREADS = args.num_threads
         
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner
-    runner = TestRunner(args.subnet, args.domain)
+    runner = TestRunner(args.subnet, args.domain, args.host)
     runner.run()
     
 

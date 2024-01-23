@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from ..logger import logger
-from ..state import WORKING_DIR, TEST_DATE, TEST_DATE_STR, datelock
+from ..state import WORKING_DIR, TEST_DATE, TEST_DATE_STR
 from ..config import DEFAULT_PROCESS_TIMEOUT
 import os
 from subprocess import STDOUT, check_output
@@ -17,8 +17,12 @@ class ModuleInterface(ABC):
         self.testid = testid
         self.target = target
         self.module_name = module_name
+        if TestHost.is_ip(target):
+            self.ip = target
+        else:
+            self.ip = None
 
-    def get_host_obj(self, ip: str):
+    def get_host_obj(self, ip: str) -> TestHost:
         return TestHost(ip)
     
     def get_system_cmd_outptut(self, command: str, timeout: int = DEFAULT_PROCESS_TIMEOUT):
@@ -41,20 +45,28 @@ class ModuleInterface(ABC):
         return ret
 
     def start(self):
-        logger.info("Starting test %s against target %s with module %s", self.testid, self.target, self.module_name )
+        logger.info("\n" + "-"*50 + "\n Starting test %s against target %s with module %s", self.testid, self.target, self.module_name)
+        if self.is_discovery():
+            hostip = "discovery"
+        else:
+            if self.ip is None:
+                raise Exception("Module should set IP Address")
+            hostip = self.ip
         try:
             self.status="started"
-            self.get_host_obj("discovery").set_test_state(self.testid, self.status, self.module_name, self.target, self.args)
+            self.get_host_obj(hostip).set_test_state(self.testid, self.status, self.module_name, self.target, self.args)
             self.run()
             self.status="done"
         except Exception as e:
             logger.error("Error in test %s against target %s: %s", self.testid, self.target, e, exc_info=True)
             self.status="error"
         finally:
-            self.get_host_obj("discovery").set_test_state(self.testid, self.status)
+            self.get_host_obj(hostip).set_test_state(self.testid, self.status)
+        
+        logger.info("\n" + "-" * 50 + "\n test %s against target %s with module %s result: %s", self.testid, self.target, self.module_name, self.status)
     
     def is_discovery(self):
-        return "discovery." in str(self.__class__)
+        return "discovery." in self.module_name
     
     def get_outdir(self):
         global TEST_DATE_STR
@@ -62,8 +74,8 @@ class ModuleInterface(ABC):
             h = ""
         else:
             h = self.target if self.target else "" # For global modules
-        with datelock:
-            datef = f"autoreco_{TEST_DATE_STR}"
+
+        datef = f"autoreco_{TEST_DATE_STR}"
         outdir = os.path.join(WORKING_DIR, datef, h)
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)

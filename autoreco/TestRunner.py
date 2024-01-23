@@ -1,4 +1,6 @@
 from .WorkThreader import WorkThreader
+from .HostTestEvaluator import HostTestEvaluator
+from .TestHost import TestHost
 from .logger import logger
 import json
 import os
@@ -7,14 +9,34 @@ from .config import NETEXEC_DISCOVERY_PROTOCOLS
 from datetime import datetime
 
 class TestRunner(object):
-    def __init__(self, subnet=None, domain=None ):
+    def __init__(self, subnet=None, domain=None, host=None ):
 
         self.domain = domain
         self.subnet = subnet
+        self.host = host
         WorkThreader.start_threads(self.complete_callback)
 
     def complete_callback(self):
-        pass
+        logger.debug("Entering Complete Callback")
+        with statelock:
+            state = TEST_STATE.copy()
+        for k, v in state.items():
+            if k == "discovery": 
+                continue
+            host = TestHost(k)
+            evaluator = HostTestEvaluator(host)
+            tests = evaluator.get_tests()
+            for testid, payload in tests.items():
+                if host.has_test(testid):
+                    logger.debug("Skipping test %s", testid) # TODO Remove
+                else:
+                    logger.info("Adding new job for host %s: \n %s", host, json.dumps(payload, indent=4))
+                    host.set_test_state(testid, "queued")
+                    WorkThreader.add_job(payload)
+        if WorkThreader.finished():
+            WorkThreader.stop_threads()
+            self.finish()
+        
     
     def host_discovery(self, target):
         job = {
@@ -33,8 +55,18 @@ class TestRunner(object):
             }
             WorkThreader.add_job(job)
             
-    def host_scan(self):
-        pass
+    def host_scan(self, host_ip):
+        if not TestHost.is_ip(host_ip):
+            raise Exception("Only IP supported as of now")
+        h = TestHost(host_ip) #Will create empty host in state
+        self.complete_callback()
+    
+    def print_state(self):
+        with statelock:
+            logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
+            logger.info("="*50)
+            with open(os.path.join(WORKING_DIR, "state.json"), "w") as f:
+                f.write(json.dumps(TEST_STATE, indent=4))
 
     def run(self):
         try:
@@ -43,24 +75,22 @@ class TestRunner(object):
             logger.info("="*50)
             if self.subnet:
                 self.host_discovery(self.subnet)
-            self.host_scan()
+            # not used atm, host scan triggered after discovery
+            if self.host:
+                self.host_scan(self.host)
             
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
-        finally:            
-            WorkThreader.stop_threads()
-            
-            logger.info("="*50)
-            logger.info("Tests Complete at %s", datetime.now().isoformat())
-            logger.info("="*50)
 
-            with statelock:
-                logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
-                logger.info("="*50)
-                with open(os.path.join(WORKING_DIR, "state.json"), "w") as f:
-                    f.write(json.dumps(TEST_STATE, indent=4))
             
-            self.print_summary()
+    def finish(self):
+        logger.info("="*50)
+        logger.info("Tests Complete at %s", datetime.now().isoformat())
+        logger.info("="*50)
+
+        self.print_state()
+        
+        self.print_summary()
                     
     def print_summary(self):
         total_tests = 0
