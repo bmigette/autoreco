@@ -51,7 +51,7 @@ class _WorkThread():
         """
         try:
             #def __init__(self, testid, target, args = {}):
-            module_object = self.modules[job["module_name"]](job["job_id"], job["target"], job["args"])
+            module_object = self.modules[job["module_name"]](job["job_id"], job["target"], job["module_name"], job["args"])
             module_object.start()
         finally:
             if self.complete_callback:
@@ -113,6 +113,4 @@ class WorkThreader():
             WorkThreader._instances[str(i)].thread.join()
             del WorkThreader._instances[str(i)]
             
-        logger.info("="*50)
-        logger.info("Tests Complete at %s", datetime.now().isoformat())
-        logger.info("="*50)
+

@@ -1,7 +1,6 @@
 import nmap
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ...state import statelock, TEST_STATE
 
 class NmapSubnetPing(ModuleInterface):
     def run(self):
@@ -17,9 +16,10 @@ class NmapSubnetPing(ModuleInterface):
             
         
     def update_state(self):
-        with statelock:
-            for ip, data in self.lastreturn["scan"].items():
-                if ip not in TEST_STATE:
-                    TEST_STATE[ip] = {"ip": ip}
-                hostnamesdata = data["hostnames"] if "hostnames" in data else []
-                TEST_STATE[ip]["hostnames"] = [x["name"] for x in hostnamesdata]
+        for ip, data in self.lastreturn["scan"].items():
+            if "hostnames" in data and len(data["hostnames"]) > 0:
+                if len(data["hostnames"]) > 1:
+                    raise Exception("Many Hostnames found, not sure how would happen: "+str(data["hostnames"]))
+                h = self.get_host_obj(ip)
+                if data["hostnames"][0]["name"]:                    
+                    h.hostname =  data["hostnames"][0]["name"]

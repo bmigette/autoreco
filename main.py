@@ -9,8 +9,11 @@ __author__ = "Bastien Migette"
 import argparse
 import logging
 import os
+from datetime import datetime
 import autoreco.state
 autoreco.state.WORKING_DIR = os.getcwd()
+autoreco.state.TEST_DATE = datetime.now()
+autoreco.state.TEST_DATE_STR = autoreco.state.TEST_DATE.strftime("%Y_%m_%d__%H_%M_%S")
 import autoreco.config
 
 def main():
@@ -33,6 +36,7 @@ def main():
     if args.verbose:
         autoreco.config.LOGLEVEL = logging.DEBUG
     
+        
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner
     runner = TestRunner(args.subnet, args.domain)

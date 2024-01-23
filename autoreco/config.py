@@ -5,3 +5,8 @@ NUM_THREADS = 8 # Number of threads
 QUEUE_SIZE = 666 # Job queue size
 QUEUE_WAIT_TIME = 10 # Time to wait for a queue item. This is time for graceful shutdown essentially
 LOGLEVEL = logging.INFO
+DEFAULT_PROCESS_TIMEOUT = 600 # Default timeout for a process
+
+##### Modules Specific Config #####
+
+NETEXEC_DISCOVERY_PROTOCOLS = ["smb", "rdp", "wmi"]
