@@ -51,12 +51,8 @@ def main():
         default=autoreco.config.NMAP_SPEED,
     )
 
-    parser.add_argument(
-        "--scm-api-endpoint",
-        help="SCM Api endpoint, for example paas-3.prod.eu",
-        action="store_true",
-    )
-
+    #add option for Process timeout
+    
     args = parser.parse_args()
     if args.output_dir:
         autoreco.state.WORKING_DIR = args.output_dir

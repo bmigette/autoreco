@@ -111,7 +111,7 @@ class WorkThreader:
         WorkThreader.queue.put(job)
         logger.debug("======== QUEUE SIZE: %s ========", WorkThreader.queue.qsize())
 
-    def start_threads(complete_callback):  # TODO: Create a watchdog that prints state
+    def start_threads(complete_callback):  # TODO: Create a watchdog that prints state, and also save state to disk to allow resume later ?
         for i in range(0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(

@@ -1,6 +1,7 @@
 import nmap
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
+from ...config import NMAP_MAX_HOST_TIME
 
 
 class NmapSubnetPing(ModuleInterface):
@@ -9,7 +10,7 @@ class NmapSubnetPing(ModuleInterface):
     def run(self):
         nm = nmap.PortScanner()
         outname = self.get_log_name("log")
-        self.lastreturn = nm.scan(self.target, None, f"-sn -T4 -oN {outname}")
+        self.lastreturn = nm.scan(self.target, None, f"-sn -T4 -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}")
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
         logger.debug("XML Output: %s", xml)

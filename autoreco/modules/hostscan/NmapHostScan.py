@@ -4,7 +4,9 @@ from ...logger import logger
 from ...config import (
     NMAP_DEFAULT_TCP_PORT_OPTION,
     NMAP_DEFAULT_UDP_PORT_OPTION,
-    NMAP_HOSTSCAN_OPTIONS,
+    NMAP_TCP_HOSTSCAN_OPTIONS,
+    NMAP_UDP_HOSTSCAN_OPTIONS,
+    NMAP_MAX_HOST_TIME
 )
 from ...TestHost import TestHost
 
@@ -13,22 +15,25 @@ class NmapHostScan(ModuleInterface):
     """Class to run TCP/UDP scan against a single host"""
 
     def run(self):
+        # TODO: add support for custom DNS server ?
         nm = nmap.PortScanner()
         outname = self.get_log_name("log")
-        args = NMAP_HOSTSCAN_OPTIONS
+        
         protocol = ""
         if "protocol" in self.args and self.args["protocol"].lower() == "udp":
+            args = NMAP_UDP_HOSTSCAN_OPTIONS
             protocol = "-sU"
             if "ports" in self.args:
                 ports = "-p " + ",".join(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_UDP_PORT_OPTION
         else:
+            args = NMAP_TCP_HOSTSCAN_OPTIONS
             if "ports" in self.args:
                 ports = "-p " + ",".join(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
-        nmargs = f"{args} {protocol} {ports} -oN {outname}"
+        nmargs = f"{args} {protocol} {ports} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}" # TODO: Find a way to make a timeout for this
 
         logger.debug("Starting nmap with args %s", nmargs)
         self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)

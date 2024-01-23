@@ -41,7 +41,7 @@ class ModuleInterface(ABC):
         if not isinstance(command, list):
             command = shlex.split(command)
         logger.debug("Executing command %s in module %s...", command, self.module_name)
-        ret = check_output(command, stderr=STDOUT, timeout=timeout)
+        ret = check_output(command, stderr=STDOUT, timeout=timeout) # TODO Test THIS
         if type(ret).__name__ == "bytes":
             ret = ret.decode("utf-8")
         logger.debug("Output: %s", ret)
