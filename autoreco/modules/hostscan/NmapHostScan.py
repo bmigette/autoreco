@@ -50,7 +50,7 @@ class NmapHostScan(ModuleInterface):
         hostobject = self.get_host_obj(ip)
         if "hostnames" in root and len(root["hostnames"]) > 0:
             for hostname in root["hostnames"]:
-                hostobject.add_hostname(hostname)
+                hostobject.add_hostname(hostname["name"])
         if "tcp" in root:
             try:
                 self._update_tcp_state(root, hostobject)

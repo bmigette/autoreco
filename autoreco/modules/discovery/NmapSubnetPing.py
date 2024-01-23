@@ -22,4 +22,4 @@ class NmapSubnetPing(ModuleInterface):
             if "hostnames" in data and len(data["hostnames"]) > 0:
                 h = self.get_host_obj(ip)
                 for hostname in data["hostnames"]:
-                    h.add_hostname(hostname)
+                    h.add_hostname(hostname["name"])

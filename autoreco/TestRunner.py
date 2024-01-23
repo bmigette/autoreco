@@ -30,7 +30,7 @@ class TestRunner(object):
             tests = evaluator.get_tests()
             for testid, payload in tests.items():
                 if host.has_test(testid):
-                    logger.debug("Skipping test %s", testid)  # TODO Remove
+                    pass
                 else:
                     logger.info(
                         "Adding new job for host %s: \n %s",
