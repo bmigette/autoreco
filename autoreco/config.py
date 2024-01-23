@@ -15,4 +15,5 @@ NETEXEC_DISCOVERY_PROTOCOLS = ["smb", "rdp", "wmi"]
 # NMAP HOST SCAN OPTIONS
 NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"
 NMAP_DEFAULT_UDP_PORT_OPTION = "--top-ports 1000"
-NMAP_HOSTSCAN_OPTIONS = "-sC -sV -Pn -T5 --version-all -O --script-timeout 60"
+NMAP_SPEED = 5
+NMAP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
