@@ -1,4 +1,4 @@
-from .state import statelock, TEST_STATE, WORKING_DIR
+from .state import statelock, TEST_STATE
 from .logger import logger
 import re
 import json
@@ -76,10 +76,10 @@ class TestHost:
             if hostip not in TEST_STATE:
                 TEST_STATE[hostip] = {}
 
-    def _state_field_get(self, fieldname):
+    def _state_field_get(self, fieldname, default_value = None):
         with statelock:
             if self.ip not in TEST_STATE or fieldname not in TEST_STATE[self.ip]:
-                return None
+                return default_value
             return TEST_STATE[self.ip][fieldname]
 
     def _state_field_set(self, fieldname, value):
@@ -92,7 +92,7 @@ class TestHost:
 
     @property
     def hostnames(self):
-        return self._state_field_get("hostnames")
+        return self._state_field_get("hostnames", [])
 
     @hostnames.setter
     def hostnames(self, value):
@@ -119,7 +119,7 @@ class TestHost:
 
     @property
     def services(self):
-        return self._state_field_get("services")
+        return self._state_field_get("services", [])
 
     @services.setter
     def services(self, value):
@@ -127,7 +127,7 @@ class TestHost:
 
     @property
     def tcp_ports(self):
-        return self._state_field_get("tcp_ports")
+        return self._state_field_get("tcp_ports", [])
 
     @tcp_ports.setter
     def tcp_ports(self, value):
@@ -135,7 +135,7 @@ class TestHost:
 
     @property
     def tcp_ports(self):
-        return self._state_field_get("udp_ports")
+        return self._state_field_get("udp_ports", [])
 
     @tcp_ports.setter
     def tcp_ports(self, value):
@@ -143,7 +143,7 @@ class TestHost:
 
     @property
     def tcp_service_ports(self):
-        return self._state_field_get("tcp_service_ports")
+        return self._state_field_get("tcp_service_ports", {})
 
     @tcp_service_ports.setter
     def tcp_service_ports(self, value):
@@ -151,7 +151,7 @@ class TestHost:
 
     @property
     def udp_service_ports(self):
-        return self._state_field_get("udp_service_ports")
+        return self._state_field_get("udp_service_ports", {})
 
     @udp_service_ports.setter
     def udp_service_ports(self, value):
@@ -159,7 +159,7 @@ class TestHost:
 
     @property
     def tests_state(self):
-        return self._state_field_get("tests_state")
+        return self._state_field_get("tests_state", [])
 
     @tests_state.setter
     def tests_state(self, value):
@@ -269,6 +269,9 @@ class TestHost:
         Args:
             hostname (str): hostname  example win2k12
         """
+        if not hostname or len(hostname) < 1:
+            logger.debug("Skipping Invalid hostname...", exc_info=True)
+            return
         global TEST_STATE
         with statelock:
             if "hostnames" not in TEST_STATE[self.ip]:

@@ -12,21 +12,12 @@ import os
 from datetime import datetime
 import autoreco.state
 
-autoreco.state.WORKING_DIR = os.getcwd()
-autoreco.state.TEST_DATE = datetime.now()
-autoreco.state.TEST_DATE_STR = autoreco.state.TEST_DATE.strftime("%Y_%m_%d__%H_%M_%S")
+autoreco.state.set_working_dir(os.getcwd(), True)
+
 import autoreco.config
 
 
-def check_privileges():
-    if not os.environ.get("SUDO_UID") and os.geteuid() != 0:
-        raise PermissionError(
-            "You need to run this script with sudo or as root (needed for some nmap options)"
-        )
-
-
 def main():
-    check_privileges()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-od",
@@ -35,13 +26,25 @@ def main():
         default=None,
     )
     parser.add_argument("-sn", "--subnet", help="Subnet to scan", default=None)
-    parser.add_argument("-dn", "--domain", help="DNS Domain to scan", default=None)
-    parser.add_argument("-h", "--host", help="Host to scan", default=None)
     parser.add_argument(
-        "-t", "--threads", help="number of threads", default=autoreco.config.NUM_THREADS
+        "-dn", "--domain", help="DNS Domains to scan", default=[], nargs="*"
+    )
+    parser.add_argument("--host", help="Hosts to scan", default=[], nargs="*")
+    parser.add_argument(
+        "-t", "--threads", help="Number of threads", default=autoreco.config.NUM_THREADS
+    )
+    parser.add_argument(
+        "--dns-server", help="DNS Server", default=autoreco.config.DNS_SERVER
     )
     parser.add_argument(
         "-v", "--verbose", help="Verbose Logs (Debug)", action="store_true"
+    )
+    parser.add_argument(
+        "-tf",
+        "--test-filter",
+        help="Executes only tests that matches filters, example: *nmap*. fnmatch Format",
+        default=[],
+        nargs="*",
     )
     parser.add_argument(
         "-ns",
@@ -51,16 +54,18 @@ def main():
         default=autoreco.config.NMAP_SPEED,
     )
 
-    #add option for Process timeout
-    
+    # add option fod DNS Server
+
     args = parser.parse_args()
     if args.output_dir:
-        autoreco.state.WORKING_DIR = args.output_dir
+        autoreco.state.set_working_dir(args.output_dir)
     if args.verbose:
         autoreco.config.LOGLEVEL = logging.DEBUG
 
-    autoreco.config.NUM_THREADS = args.num_threads
+    autoreco.config.NUM_THREADS = args.threads
     autoreco.config.NMAP_SPEED = args.nmap_speed
+    autoreco.config.TEST_FILTERS = args.test_filter
+    autoreco.config.DNS_SERVER = args.dns_server
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner
 

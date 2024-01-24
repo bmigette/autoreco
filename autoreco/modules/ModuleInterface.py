@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from ..logger import logger
-from ..state import WORKING_DIR, TEST_DATE, TEST_DATE_STR
+from ..state import TEST_WORKING_DIR, TEST_DATE, TEST_DATE_STR
 from ..config import DEFAULT_PROCESS_TIMEOUT
 import os
 from subprocess import STDOUT, check_output
 import shlex
 from ..TestHost import TestHost
 import re
-
+from pathlib import Path
 
 class ModuleInterface(ABC):
     """Generic modules functions"""
@@ -27,7 +27,7 @@ class ModuleInterface(ABC):
         return TestHost(ip)
 
     def get_system_cmd_outptut(
-        self, command: str, timeout: int = DEFAULT_PROCESS_TIMEOUT
+        self, command: str, timeout: int = DEFAULT_PROCESS_TIMEOUT, logoutput = None
     ):
         """Run a system command and get the output
 
@@ -45,9 +45,20 @@ class ModuleInterface(ABC):
         if type(ret).__name__ == "bytes":
             ret = ret.decode("utf-8")
         logger.debug("Output: %s", ret)
+        if logoutput:
+            try:
+                with open(logoutput, "w") as f:
+                    f.write(ret)
+            except Exception as e:
+                logger.error("Could not write to file %s: %s", logoutput, e)
         return ret
 
     def start(self):
+        """Start the module
+
+        Raises:
+            Exception: sth went wrong
+        """
         logger.info(
             "\n" + "-" * 50 + "\nStarting test %s against target %s with module %s" + "\n" + "-" * 50,
             self.testid,
@@ -97,8 +108,7 @@ class ModuleInterface(ABC):
         else:
             h = self.target if self.target else ""  # For global modules
 
-        datef = f"autoreco_{TEST_DATE_STR}"
-        outdir = os.path.join(WORKING_DIR, datef, h)
+        outdir = os.path.join(TEST_WORKING_DIR, h)
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
         return outdir
@@ -106,11 +116,13 @@ class ModuleInterface(ABC):
     def _get_flatten_args(self):
         args = []
         for k, v in self.args.items():
-            args.append(re.sub(r"\W+", "", v))
+            if os.path.isfile(v):
+                v = Path(v).stem
+            v.replace(",","+")
+            args.append(re.sub(r"[\W\.\+]+", "", v))
         return "-".join(args)
 
     def get_log_name(self, ext="out"):  # TODO Add Timestamp ?
-        h = self.target if self.target else ""  # For global modules
         outdir = self.get_outdir()
 
         s = ""
@@ -123,7 +135,7 @@ class ModuleInterface(ABC):
         the_ext = ext
         if the_ext and not the_ext[0] == ".":
             the_ext = "." + the_ext
-        filename = f"{self.__class__.__name__}_{h}_{s}_{p}_{args}{the_ext}".replace(
+        filename = f"{self.__class__.__name__}_{s}_{p}_{args}{the_ext}".replace(
             "/", "-"
         ).replace(",", "-")
         return os.path.join(outdir, filename)

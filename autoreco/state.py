@@ -1,7 +1,8 @@
-WORKING_DIR = None
+
 import threading
 statelock = threading.Lock()
-
+import os
+from datetime import datetime
 """
 State module. The variables below are global to the scope of the script
 """
@@ -18,3 +19,17 @@ TEST_STATE = {}
 
 TEST_DATE = None
 TEST_DATE_STR = None
+WORKING_DIR = None
+TEST_WORKING_DIR = None
+
+domainlock = threading.Lock()
+KNOWN_DOMAINS = []
+
+def set_working_dir(dir, nocreate = False):
+    global TEST_DATE, TEST_DATE_STR, WORKING_DIR, TEST_WORKING_DIR
+    WORKING_DIR = dir
+    TEST_DATE = datetime.now()
+    TEST_DATE_STR = TEST_DATE.strftime("%Y_%m_%d__%H_%M_%S")
+    TEST_WORKING_DIR = os.path.join(WORKING_DIR, f"autoreco_{TEST_DATE_STR}")
+    if not nocreate:
+        os.makedirs(TEST_WORKING_DIR, exist_ok=True)

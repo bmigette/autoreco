@@ -8,9 +8,8 @@ import json
 autoreco.config.LOGLEVEL = logging.DEBUG
 autoreco.config.NMAP_DEFAULT_TCP_PORT_OPTION = "--top-ports 10"
 
-autoreco.state.WORKING_DIR  = "/tmp/autoreco"
-autoreco.state.TEST_DATE = datetime.now()
-autoreco.state.TEST_DATE_STR = autoreco.state.TEST_DATE.strftime("%Y_%m_%d__%H_%M_%S")
+autoreco.state.set_working_dir("/tmp/autoreco")
+
 from autoreco.logger import logger
 
 
@@ -19,7 +18,7 @@ from autoreco.WorkThreader import WorkThreader
 
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
-runner = TestRunner("192.168.1.0/24", None)
+runner = TestRunner(hosts=["192.168.158.11"])
 runner.run()
 # job = {
 #         "module_name": "discovery.NetExecDiscovery",
@@ -41,6 +40,6 @@ runner.run()
 # with autoreco.state.statelock:
 #     logger.debug("State: %s", json.dumps(autoreco.state.TEST_STATE, indent=4))
 #     logger.info("="*50)
-#     with open(os.path.join(autoreco.state.WORKING_DIR, "state.json"), "w") as f:
+#     with open(os.path.join(autoreco.state.TEST_WORKING_DIR, "state.json"), "w") as f:
 #         f.write(json.dumps(autoreco.state.TEST_STATE, indent=4))
 

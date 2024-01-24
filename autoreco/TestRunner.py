@@ -2,9 +2,10 @@ from .WorkThreader import WorkThreader
 from .HostTestEvaluator import HostTestEvaluator
 from .TestHost import TestHost
 from .logger import logger
+from .utils import print_summary
 import json
 import os
-from .state import statelock, TEST_STATE, WORKING_DIR
+from .state import statelock, domainlock, KNOWN_DOMAINS, TEST_STATE, TEST_WORKING_DIR
 from .config import NETEXEC_DISCOVERY_PROTOCOLS
 from datetime import datetime
 
@@ -12,10 +13,14 @@ from datetime import datetime
 class TestRunner(object):
     """Class responsible to run tests, stop threads, etc..."""
 
-    def __init__(self, subnet=None, domain=None, host=None):
-        self.domain = domain
+    def __init__(self, subnet=None, domains=[], hosts=[]):
+        self.domaisn = domains
         self.subnet = subnet
-        self.host = host
+        self.hosts = hosts
+        if len(domains) > 0:
+            with domainlock:
+                KNOWN_DOMAINS = domains.copy()
+                
         WorkThreader.start_threads(self.complete_callback)
 
     def complete_callback(self):
@@ -70,22 +75,25 @@ class TestRunner(object):
         with statelock:
             logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
             logger.info("=" * 50)
-            with open(os.path.join(WORKING_DIR, "state.json"), "w") as f:
-                f.write(json.dumps(TEST_STATE, indent=4))
 
+
+            
     def run(self):
         try:
             logger.info("=" * 50)
             logger.info("Tests Started at %s", datetime.now().isoformat())
+            logger.info("Output Dir: %s", TEST_WORKING_DIR)
             logger.info("=" * 50)
             if self.subnet:
                 self.host_discovery(self.subnet)
             # not used atm, host scan triggered after discovery
-            if self.host:
-                self.host_scan(self.host)
+            if self.hosts:
+                for host in self.hosts:
+                    self.host_scan(host)
 
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
+            WorkThreader.stop_threads()
 
     def finish(self):
         logger.info("=" * 50)
@@ -96,25 +104,4 @@ class TestRunner(object):
 
         self.print_summary()
 
-    def print_summary(self):
-        total_tests = 0
-        total_hosts = 0
-        success_tests = 0
-        failed_tests = 0
-        with statelock:
-            for host, data in TEST_STATE.items():
-                total_hosts += 1
-                if "tests_state" in data:
-                    for testid, testdata in data["tests_state"].items():
-                        total_tests += 1
-                        if testdata["state"] == "done":
-                            success_tests += 1
-                        elif testdata["state"] == "error":
-                            failed_tests += 1
-                        else:
-                            logger.warn("Test %s state: %s", testid, testdata["state"])
-
-            logger.info("=" * 50)
-            logger.info("# Ran %s Tests against %s hosts", total_tests, total_hosts)
-            logger.info("# Success: %s, Failed: %s", success_tests, failed_tests)
-            logger.info("=" * 50)
+    

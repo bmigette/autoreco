@@ -71,7 +71,7 @@ class NmapHostScan(ModuleInterface):
             if len(root["osmatch"]) > 0:
                 hostobject.os_family = root["osmatch"][0]["osclass"][0]["osfamily"]
                 for match in root["osmatch"]:
-                    hostobject.add_os_version(match["name"])
+                    hostobject.add_os_version(match["name"]) # TODO Add certainty here ?
 
         hostobject.dump()
 

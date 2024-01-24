@@ -2,16 +2,71 @@ from threading import Thread
 from threading import Event
 from queue import Queue, Empty
 from .logger import logger
-from .config import NUM_THREADS, QUEUE_SIZE, QUEUE_WAIT_TIME
+from .config import NUM_THREADS, QUEUE_SIZE, QUEUE_WAIT_TIME, TEST_FILTERS, WATCHDOG_INTERVAL, WATCHDOG_SLEEP_INTERVAL
 from .modules.ModuleLoader import ModuleLoader
+from .state import statelock, TEST_STATE, TEST_WORKING_DIR
+from .utils import print_summary
 from datetime import datetime
-
+import fnmatch
+import os
+import json
+import time
 """
 Job Syntax:
 """
 JOB_TEMPLATE = {"module_name": "", "job_id": "", "target": "", "args": {}}
 
 
+class Watchdog:
+    """Class to regularly save state and print thread status
+    """
+    def __init__(self):
+        self.stopevent = Event()
+        self.thread = Thread(target=self.watch, args=(self.stopevent,))      
+        self.thread.start()
+    
+    def watch(self, stopevent):
+        last_date = datetime.now()
+        last_loop_date = datetime.now()
+        while not stopevent.is_set():
+            last_date = datetime.now()
+            if abs((last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL):
+                last_loop_date = last_date
+                self.print_thread_stats()
+                print_summary()
+                self.write_state()
+            time.sleep(WATCHDOG_SLEEP_INTERVAL)
+        self.write_state() # Final write on exit
+        
+    def stop(self):
+        logger.debug("Stopping Watchdog")
+        self.stopevent.set()
+    
+    def print_thread_stats(self):
+        try:
+            logger.debug("="*50)
+            logger.debug("| Threads Status:")
+            logger.debug("-"*50)
+            for i, inst in WorkThreader._instances.items():
+                job = ""
+                if inst.current_job:
+                    job = inst.current_job_date.strftime("%H:%M:%S") + ": " + inst.current_job["module_name"] + " / " + inst.current_job["target"] + " / " + str(inst.current_job["args"])
+                    if len(job) > 255: # TODO: Check term size dynamicallyy ??
+                        job = job[:255]
+                extra_space = " " if inst.busy else ""
+                logger.debug("| Thread %s | Busy %s  %s| %s", inst.thread_id, inst.busy, extra_space, job)
+            logger.debug("="*50)
+        except Exception as e:
+            logger.error("Error int print_thread_stats: %s", e, exc_info=True)
+            
+    def write_state(self):
+        try:
+            with statelock:
+                with open(os.path.join(TEST_WORKING_DIR, "state.json"), "w") as f:
+                    f.write(json.dumps(TEST_STATE, indent=4))
+        except Exception as e:
+            logger.error("Error when writing state file: %s", e, exc_info=True)
+            
 class _WorkThread:
     """Single thread class. This class is the one picking up jobs from the queue, and executing it with appropriate module"""
 
@@ -26,11 +81,14 @@ class _WorkThread:
         self.thread_id = thread_id
         self.queue = queue
         self.complete_callback = complete_callback
+        self.current_job = None
+        self.current_job_date = None
         self.modules = ModuleLoader.get_modules()
         self.stopevent = Event()
         self.thread = Thread(target=self.thread_consumer, args=(self.stopevent,))
         self.busy = False
         self.thread.start()
+        
 
     def stop(self):
         logger.debug("Stopping thread %s...", self.thread_id)
@@ -50,6 +108,8 @@ class _WorkThread:
         """
         try:
             # def __init__(self, testid, target, args = {}):
+            self.current_job = job
+            self.current_job_date = datetime.now()
             self.busy = True
             module_object = self.modules[job["module_name"]](
                 job["job_id"], job["target"], job["module_name"], job["args"]
@@ -57,6 +117,8 @@ class _WorkThread:
             module_object.start()
         finally:
             self.busy = False
+            self.current_job = None
+            self.current_job_date = None
             if self.complete_callback:
                 try:
                     self.complete_callback()
@@ -105,18 +167,32 @@ class WorkThreader:
 
     _instances = {}
     queue = Queue(QUEUE_SIZE)
-
+    watchdog = None
     def add_job(job: dict):
-        logger.debug("Adding job with data %s", job)
-        WorkThreader.queue.put(job)
+        if TEST_FILTERS and len(TEST_FILTERS) > 0:
+            for filter in TEST_FILTERS:
+                if fnmatch.fnmatch(filter.lower(), job["module_name"].lower()):
+                    logger.debug("Adding job with data %s", job)
+                    WorkThreader.queue.put(job)
+                    break
+            logger.info("Skipping job because does not match filter.Data:\n%s", job)
+        else:
+            logger.debug("Adding job with data %s", job)
+            WorkThreader.queue.put(job)
         logger.debug("======== QUEUE SIZE: %s ========", WorkThreader.queue.qsize())
 
-    def start_threads(complete_callback):  # TODO: Create a watchdog that prints state, and also save state to disk to allow resume later ?
+    def start_threads(complete_callback):  
+        """Start the worker threads
+
+        Args:
+            complete_callback (func): Callback notification when a thread is done
+        """
         for i in range(0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(
                 i, WorkThreader.queue, complete_callback
             )
+        WorkThreader.watchdog = Watchdog()
 
     def finished() -> bool:
         """Returns true if all tasks finished
@@ -134,9 +210,10 @@ class WorkThreader:
 
     def stop_threads():
         logger.info("Stopping threads...")
+        WorkThreader.watchdog.stop()
         for i, inst in WorkThreader._instances.items():
             inst.stop()
 
         for i, inst in WorkThreader._instances.items():
-            inst.thread.join()
+            #inst.thread.join()
             del inst
