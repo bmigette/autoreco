@@ -117,7 +117,8 @@ class ModuleInterface(ABC):
         args = []
         for k, v in self.args.items():
             if isinstance(v, list):
-                v = "+".join(v)
+                v = "+".join(map(str,v))
+            v = str(v)
             if os.path.isfile(v):
                 v = Path(v).stem
             v.replace(",","+")
