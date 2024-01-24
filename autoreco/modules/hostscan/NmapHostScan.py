@@ -6,7 +6,7 @@ from ...config import (
     NMAP_DEFAULT_UDP_PORT_OPTION,
     NMAP_TCP_HOSTSCAN_OPTIONS,
     NMAP_UDP_HOSTSCAN_OPTIONS,
-    NMAP_MAX_HOST_TIME
+    NMAP_MAX_HOST_TIME,
 )
 from ...TestHost import TestHost
 
@@ -18,7 +18,7 @@ class NmapHostScan(ModuleInterface):
         # TODO: add support for custom DNS server ?
         nm = nmap.PortScanner()
         outname = self.get_log_name("log")
-        
+
         protocol = ""
         if "protocol" in self.args and self.args["protocol"].lower() == "udp":
             args = NMAP_UDP_HOSTSCAN_OPTIONS
@@ -30,13 +30,13 @@ class NmapHostScan(ModuleInterface):
         else:
             args = NMAP_TCP_HOSTSCAN_OPTIONS
             if "ports" in self.args:
-                ports = "-p " + ",".join(self.args["ports"])
+                ports = "-p " + ",".join(map(str, self.args["ports"]))
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
         scripts = ""
         if "script" in self.args:
             scripts = "--script=" + self.args["script"]
-        nmargs = f"{args} {protocol} {ports} {scripts} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}" 
+        nmargs = f"{args} {protocol} {ports} {scripts} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}"
 
         logger.debug("Starting nmap with args %s", nmargs)
         self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)
@@ -74,7 +74,9 @@ class NmapHostScan(ModuleInterface):
             if len(root["osmatch"]) > 0:
                 hostobject.os_family = root["osmatch"][0]["osclass"][0]["osfamily"]
                 for match in root["osmatch"]:
-                    hostobject.add_os_version(match["name"]) # TODO Add certainty here ?
+                    hostobject.add_os_version(
+                        match["name"]
+                    )  # TODO Add certainty here ?
 
         hostobject.dump()
 
@@ -92,7 +94,7 @@ class NmapHostScan(ModuleInterface):
 
     def _update_udp_state(self, root, hostobject: TestHost):
         for port, data in root["tcp"].items():
-            if data["state"] != "open": # TODO Check if this works for UDP
+            if data["state"] != "open":  # TODO Check if this works for UDP
                 continue
             hostobject.add_service(data["name"])
             hostobject.add_udp_port(port)
