@@ -148,12 +148,12 @@ class ModuleInterface(ABC):
         """
         outdir = self.get_outdir()
 
-
+      
         args = self._get_flatten_args(argusekey)
         the_ext = ext
         if the_ext and not the_ext[0] == ".":
             the_ext = "." + the_ext
-        filename = f"{self.module_name}__{args}{the_ext}".replace(
+        filename = f"{self.__class__.__name__}_{args}{the_ext}".replace(
             "/", "-"
         ).replace(",", "-")
         return os.path.join(outdir, filename)
