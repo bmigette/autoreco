@@ -133,7 +133,7 @@ class ModuleInterface(ABC):
                 if os.path.isfile(v):
                     v = Path(v).stem
                 v.replace(",","+")
-            args.append(re.sub(r"[\W\.\+]+", "", v))
+            args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "", v))
         return "-".join(args)
 
     def get_log_name(self, ext="out", argusekey = []):  # TODO Add Timestamp ?

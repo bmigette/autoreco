@@ -17,7 +17,8 @@ def print_summary():
                     elif testdata["state"] == "error":
                         failed_tests += 1
                     else:
-                        logger.warn("Test %s state: %s", testid, testdata["state"])
+                        pass
+                        #logger.warn("Test %s state: %s", testid, testdata["state"])
 
         logger.info("=" * 50)
         logger.info("# Ran %s Tests against %s hosts", total_tests, total_hosts)
