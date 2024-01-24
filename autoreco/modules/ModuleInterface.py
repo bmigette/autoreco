@@ -91,7 +91,7 @@ class ModuleInterface(ABC):
             self.get_host_obj(hostip).set_test_state(self.testid, self.status)
 
         logger.info(
-            "\n" + "-" * 50 + "\n test %s against target %s with module %s result: %s",
+            "\n" + "-" * 50 + "\ntest %s against target %s with module %s result: %s" + "\n" + "-" * 50,
             self.testid,
             self.target,
             self.module_name,
@@ -113,32 +113,47 @@ class ModuleInterface(ABC):
             os.makedirs(outdir, exist_ok=True)
         return outdir
 
-    def _get_flatten_args(self):
+    def _get_flatten_args(self, argusekey):
+        """strip bad chars and flatten args to make unique log file names
+
+        Args:
+            argusekey (list, optional): Will use the arg key instead of values for all keys in this list. Defaults to [].
+
+        Returns:
+            str: flattened args
+        """
         args = []
         for k, v in self.args.items():
-            if isinstance(v, list):
-                v = "+".join(map(str,v))
-            v = str(v)
-            if os.path.isfile(v):
-                v = Path(v).stem
-            v.replace(",","+")
+            if k in argusekey:
+                v = k
+            else:
+                if isinstance(v, list):
+                    v = "+".join(map(str,v))
+                v = str(v)
+                if os.path.isfile(v):
+                    v = Path(v).stem
+                v.replace(",","+")
             args.append(re.sub(r"[\W\.\+]+", "", v))
         return "-".join(args)
 
-    def get_log_name(self, ext="out"):  # TODO Add Timestamp ?
+    def get_log_name(self, ext="out", argusekey = []):  # TODO Add Timestamp ?
+        """Get log file name to output from a module
+
+        Args:
+            ext (str, optional): Extention. Defaults to "out".
+            argusekey (list, optional): Will use the arg key instead of values for all keys in this list. Defaults to [].
+
+        Returns:
+            _type_: _description_
+        """
         outdir = self.get_outdir()
 
-        s = ""
-        p = ""
-        if "service" in self.args:
-            s = self.args["service"]
-        if "port" in self.args:
-            p = self.args["port"]
-        args = self._get_flatten_args()
+
+        args = self._get_flatten_args(argusekey)
         the_ext = ext
         if the_ext and not the_ext[0] == ".":
             the_ext = "." + the_ext
-        filename = f"{self.__class__.__name__}_{s}_{p}_{args}{the_ext}".replace(
+        filename = f"{self.module_name}__{args}{the_ext}".replace(
             "/", "-"
         ).replace(",", "-")
         return os.path.join(outdir, filename)

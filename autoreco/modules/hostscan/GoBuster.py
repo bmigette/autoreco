@@ -17,7 +17,7 @@ class GoBuster(ModuleInterface): # TODO: Support custom host via custom header
         ext = ""
         if "extensions" in self.args:
             ext = "-x " + self.args["extensions"]
-        output = "-o " + self.get_log_name(".log")
+        output = "-o " + self.get_log_name(".log", ["extensions"])
         url = ""
         if "url" in self.args: #DNS mode does not use urls
             url = "-u " + self.args["url"]

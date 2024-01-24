@@ -102,6 +102,6 @@ class TestRunner(object):
 
         self.print_state()
 
-        self.print_summary()
+        print_summary()
 
     
