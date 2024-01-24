@@ -1,7 +1,7 @@
 from .logger import logger
 from .state import statelock, TEST_STATE
 
-def print_summary(self):
+def print_summary():
     total_tests = 0
     total_hosts = 0
     success_tests = 0

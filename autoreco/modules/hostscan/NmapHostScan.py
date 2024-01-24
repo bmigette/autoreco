@@ -33,7 +33,10 @@ class NmapHostScan(ModuleInterface):
                 ports = "-p " + ",".join(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
-        nmargs = f"{args} {protocol} {ports} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}" # TODO: Find a way to make a timeout for this
+        scripts = ""
+        if "script" in self.args:
+            scripts = "--script=" + self.args["script"]
+        nmargs = f"{args} {protocol} {ports} {scripts} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}" 
 
         logger.debug("Starting nmap with args %s", nmargs)
         self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)

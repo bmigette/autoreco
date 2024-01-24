@@ -116,6 +116,8 @@ class ModuleInterface(ABC):
     def _get_flatten_args(self):
         args = []
         for k, v in self.args.items():
+            if isinstance(v, list):
+                v = "+".join(v)
             if os.path.isfile(v):
                 v = Path(v).stem
             v.replace(",","+")

@@ -29,12 +29,15 @@ class Watchdog:
         last_date = datetime.now()
         last_loop_date = datetime.now()
         while not stopevent.is_set():
-            last_date = datetime.now()
-            if abs((last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL):
-                last_loop_date = last_date
-                self.print_thread_stats()
-                print_summary()
-                self.write_state()
+            try:
+                last_date = datetime.now()
+                if abs((last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL):
+                    last_loop_date = last_date
+                    self.print_thread_stats()
+                    print_summary()
+                    self.write_state()
+            except Exception as e:
+                logger.error("Error in watchdog: %s", e, exc_info=True)
             time.sleep(WATCHDOG_SLEEP_INTERVAL)
         self.write_state() # Final write on exit
         

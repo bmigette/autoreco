@@ -40,14 +40,14 @@ class HostTestEvaluator:
         for s in services:
             if s in self.hostobject.tcp_service_ports:
                 r.extend(self.hostobject.tcp_service_ports[s])
-        return set(r)
+        return list(set(r))
 
     def get_udp_services_ports(self, services: list):
         r = []
         for s in services:
             if s in self.hostobject.udp_service_ports:
                 r.extend(self.hostobject.udp_service_ports[s])
-        return set(r)
+        return list(set(r))
 
     def get_dns_tests(self):
         """Create dns jobs
@@ -77,7 +77,41 @@ class HostTestEvaluator:
         return tests
 
     def get_nmap_specific_tests(self):
-        return {}  # TODO
+        tests = {}
+        if (
+            "microsoft-ds" in self.hostobject.services
+            or "netbios-ssn" in self.hostobject.services
+        ):
+            ports = self.get_tcp_services_ports(["microsoft-ds", "netbios-ssn"])
+            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbenum_{ports}"
+            tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "args": {"script": "smb-enum*", "ports": ports},
+            }
+            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
+            tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "args": {"script": "smb-vuln*", "ports": ports},
+            }
+            
+        if (
+            "http" in self.hostobject.services
+            or "https" in self.hostobject.services
+        ):   
+            ports = self.get_tcp_services_ports(["http", "https"])
+            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
+            tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
+            }
+        
+        return tests
 
     def get_known_domains(self):
         # TODO: Parse domain names from state
@@ -108,6 +142,7 @@ class HostTestEvaluator:
                                 "extensions": GOBUSTER_FILE_EXT,
                                 "mode": "dir",
                                 "wordlist": w,
+                                "fsrc": "fsrc" # This is only to display in log filename
                             },
                         }
 
@@ -122,6 +157,7 @@ class HostTestEvaluator:
                                     "extensions": GOBUSTER_FILE_EXT,
                                     "wordlist": w,
                                     "mode": "dir",
+                                    "fsrc": "fsrc" # This is only to display in log filename
                                 },
                             }
 
