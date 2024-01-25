@@ -1,9 +1,9 @@
 from .logger import logger
 from .TestHost import TestHost
-from .state import domainlock, KNOWN_DOMAINS
+from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
 from .config import GOBUSTER_WORDLISTS, GOBUSTER_FILE_EXT
 from pathlib import Path
-
+import re
 
 class HostTestEvaluator:
     """
@@ -28,10 +28,12 @@ class HostTestEvaluator:
         tests = self._safe_merge(tests, self.get_generic_tests())
         tests = self._safe_merge(tests, self.get_nmap_specific_tests())
         tests = self._safe_merge(tests, self.get_dns_tests())
+        tests = self._safe_merge(tests, self.get_file_tests())
         tests = self._safe_merge(tests, self.get_web_tests())
         tests = self._safe_merge(tests, self.get_web_file_tests())
+        # TODO NFS Scan
 
-        logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
+        #logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         return tests
 
@@ -49,6 +51,21 @@ class HostTestEvaluator:
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
+    def get_file_tests(self):
+        tests = {}
+        if (
+            "microsoft-ds" in self.hostobject.services
+            or "netbios-ssn" in self.hostobject.services
+        ):
+            jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smbshares_spider"
+            tests[jobid] = {
+                "module_name": "hostscan.NetExecHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "args": {"action": "action", "spider": True},
+            }
+        return tests
+    
     def get_dns_tests(self):
         """Create dns jobs
 
@@ -114,9 +131,31 @@ class HostTestEvaluator:
         return tests
 
     def get_known_domains(self):
-        # TODO: Parse domain names from state
-        with domainlock:
+        global KNOWN_DOMAINS, TEST_STATE
+        with domainlock:            
             doms = KNOWN_DOMAINS.copy()
+        with statelock:
+            state = TEST_STATE.copy()
+        for k, v in state.items():
+            if k == "discovery":
+                continue
+            hostobj = TestHost(k)
+            if hostobj.domain:
+                doms.append(hostobj.domain)
+            for hostname in hostobj.hostnames:
+                parts = hostname.split(".")
+                if len(parts) > 1:
+                    doms.append(".".join(parts[-2:]))
+        doms2 = []
+        for d in doms:
+            d = d.lower()
+            d = re.sub(r"[^a-zA-Z0-9\.\-]+", "", d)
+            if d:
+                doms2.append(d)
+        doms = list(set(doms2))
+        with domainlock:            
+            KNOWN_DOMAINS = doms.copy()
+        logger.debug("Known Domains: %s", doms)
         return doms
 
     def get_web_file_tests(self):
@@ -153,10 +192,11 @@ class HostTestEvaluator:
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
                                 "args": {
-                                    "url": f"{s}://{h}:{p}",
+                                    "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "extensions": GOBUSTER_FILE_EXT,
                                     "wordlist": w,
                                     "mode": "dir",
+                                    "host": h,
                                     "fsrc": "fsrc" # This is only to display in log filename
                                 },
                             }
@@ -197,9 +237,10 @@ class HostTestEvaluator:
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
                                 "args": {
-                                    "url": f"{s}://{h}:{p}",
+                                    "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "wordlist": w,
                                     "mode": "dir",
+                                    "host": h
                                 },
                             }
                     ## Trying to get new VHosts

@@ -99,6 +99,14 @@ class TestHost:
         return self._state_field_set("hostnames", value)
 
     @property
+    def domain(self):
+        return self._state_field_get("domain")
+
+    @domain.setter
+    def domain(self, value):
+        return self._state_field_set("domain", value)
+
+    @property
     def os_family(self):
         return self._state_field_get("os_family")
 
@@ -264,6 +272,9 @@ class TestHost:
                     TEST_STATE[self.ip]["os_version"].append(os_version)
 
     def add_hostname(self, hostname: str):
+        # Also what is this stupid none
+        # 2024-01-24 22:55:55,370 - Thread-8 (thread_consumer) - TestHost - DEBUG - Skipping Invalid hostname...
+        # NoneType: None
         """Add a hostname. We use a list, because not all modules / tools gives the same hostname
 
         Args:

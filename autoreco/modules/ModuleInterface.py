@@ -41,13 +41,13 @@ class ModuleInterface(ABC):
         if not isinstance(command, list):
             command = shlex.split(command)
         logger.debug("Executing command %s in module %s...", command, self.module_name)
-        ret = check_output(command, stderr=STDOUT, timeout=timeout) # TODO Test THIS
+        ret = check_output(command, stderr=STDOUT, timeout=timeout)
         if type(ret).__name__ == "bytes":
             ret = ret.decode("utf-8")
         logger.debug("Output: %s", ret)
         if logoutput:
             try:
-                with open(logoutput, "w") as f:
+                with open(logoutput, "a") as f: 
                     f.write(ret)
             except Exception as e:
                 logger.error("Could not write to file %s: %s", logoutput, e)
@@ -101,14 +101,17 @@ class ModuleInterface(ABC):
     def is_discovery(self):
         return "discovery." in self.module_name
 
-    def get_outdir(self):
+    def get_outdir(self, folder = None):
         global TEST_DATE_STR
         if self.is_discovery():
             h = ""
         else:
             h = self.target if self.target else ""  # For global modules
 
-        outdir = os.path.join(TEST_WORKING_DIR, h)
+        if folder:
+            outdir = os.path.join(TEST_WORKING_DIR, h, folder)
+        else:
+            outdir = os.path.join(TEST_WORKING_DIR, h)
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
         return outdir
@@ -136,7 +139,7 @@ class ModuleInterface(ABC):
             args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "", v))
         return "-".join(args)
 
-    def get_log_name(self, ext="out", argusekey = []):  # TODO Add Timestamp ?
+    def get_log_name(self, ext="out", argusekey = [], folder=None):  
         """Get log file name to output from a module
 
         Args:
@@ -146,7 +149,7 @@ class ModuleInterface(ABC):
         Returns:
             _type_: _description_
         """
-        outdir = self.get_outdir()
+        outdir = self.get_outdir(folder)
 
       
         args = self._get_flatten_args(argusekey)

@@ -1,5 +1,7 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
+from ..common.parsers import parse_netexec_hostline
+
 import re
 
 
@@ -20,24 +22,5 @@ class NetExecDiscovery(ModuleInterface):
         for line in self.output.split("\n"):
             if "[*]" in line:
                 logger.debug("Processing netexec line %s", line)
-                line = re.sub("\s\s*", " ", line)
-                parts = line.split("[*]")
-                protocol, hostip, port, hostname = parts[0].strip().split(" ")
-                hostobj = self.get_host_obj(hostip)
-                hostobj.add_service(protocol)
-                hostobj.add_tcp_port(port)
-                hostobj.add_tcp_service_port(protocol, port)
-                if hostname.lower() != "none":
-                    hostobj.add_hostname(hostname)
-                parts2 = parts[1].strip().split("(")
-                os = parts2[0].strip()
-                if "windows" in os.lower():
-                    hostobj.os_family = "windows"
-                    hostobj.add_os_version(os)
-                else:
-                    hostobj.os_family = os
-                name = parts2[1].split(":")[1].replace(")", "").strip()
-                domain = parts2[2].split(":")[1].replace(")", "").strip()
-                if domain != name:
-                    hostobj.domain = domain
-                logger.info("netexec processed host %s", str(hostobj))
+                res = parse_netexec_hostline(line, True)
+                logger.info("netexec processed target %s", str(self.target))

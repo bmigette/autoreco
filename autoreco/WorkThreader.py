@@ -2,15 +2,23 @@ from threading import Thread
 from threading import Event
 from queue import Queue, Empty
 from .logger import logger
-from .config import NUM_THREADS, QUEUE_SIZE, QUEUE_WAIT_TIME, TEST_FILTERS, WATCHDOG_INTERVAL, WATCHDOG_SLEEP_INTERVAL
+from .config import (
+    NUM_THREADS,
+    QUEUE_SIZE,
+    QUEUE_WAIT_TIME,
+    TEST_FILTERS,
+    WATCHDOG_INTERVAL,
+    WATCHDOG_SLEEP_INTERVAL,
+)
 from .modules.ModuleLoader import ModuleLoader
-from .state import statelock, TEST_STATE, TEST_WORKING_DIR
+from .state import statelock, TEST_STATE, TEST_WORKING_DIR, domainlock, KNOWN_DOMAINS
 from .utils import print_summary
 from datetime import datetime
 import fnmatch
 import os
 import json
 import time
+
 """
 Job Syntax:
 """
@@ -18,20 +26,22 @@ JOB_TEMPLATE = {"module_name": "", "job_id": "", "target": "", "args": {}}
 
 
 class Watchdog:
-    """Class to regularly save state and print thread status
-    """
+    """Class to regularly save state and print thread status"""
+
     def __init__(self):
         self.stopevent = Event()
-        self.thread = Thread(target=self.watch, args=(self.stopevent,))      
+        self.thread = Thread(target=self.watch, args=(self.stopevent,))
         self.thread.start()
-    
+
     def watch(self, stopevent):
         last_date = datetime.now()
         last_loop_date = datetime.now()
         while not stopevent.is_set():
             try:
                 last_date = datetime.now()
-                if abs((last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL):
+                if abs(
+                    (last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL
+                ):
                     last_loop_date = last_date
                     self.print_thread_stats()
                     print_summary()
@@ -39,37 +49,56 @@ class Watchdog:
             except Exception as e:
                 logger.error("Error in watchdog: %s", e, exc_info=True)
             time.sleep(WATCHDOG_SLEEP_INTERVAL)
-        self.write_state() # Final write on exit
-        
+        self.write_state()  # Final write on exit
+
     def stop(self):
         logger.debug("Stopping Watchdog")
         self.stopevent.set()
-    
+
     def print_thread_stats(self):
         try:
-            logger.debug("="*50)
+            logger.debug("=" * 50)
             logger.debug("| Threads Status:")
-            logger.debug("-"*50)
+            logger.debug("-" * 50)
             for i, inst in WorkThreader._instances.items():
                 job = ""
                 if inst.current_job:
-                    job = inst.current_job_date.strftime("%H:%M:%S") + ": " + inst.current_job["module_name"] + " / " + inst.current_job["target"] + " / " + str(inst.current_job["args"])
-                    if len(job) > 255: # TODO: Check term size dynamicallyy ??
+                    job = (
+                        inst.current_job_date.strftime("%H:%M:%S")
+                        + ": "
+                        + inst.current_job["module_name"]
+                        + " / "
+                        + inst.current_job["target"]
+                        + " / "
+                        + str(inst.current_job["args"])
+                    )
+                    if len(job) > 255:  # TODO: Check term size dynamicallyy ??
                         job = job[:255]
                 extra_space = " " if inst.busy else ""
-                logger.debug("| Thread %s | Busy %s  %s| %s", inst.thread_id, inst.busy, extra_space, job)
-            logger.debug("="*50)
+                logger.debug(
+                    "| Thread %s | Busy %s  %s| %s",
+                    inst.thread_id,
+                    inst.busy,
+                    extra_space,
+                    job,
+                )
+            logger.debug("=" * 50)
         except Exception as e:
             logger.error("Error int print_thread_stats: %s", e, exc_info=True)
-            
+
     def write_state(self):
+        global KNOWN_DOMAINS, TEST_WORKING_DIR, TEST_STATE
         try:
             with statelock:
                 with open(os.path.join(TEST_WORKING_DIR, "state.json"), "w") as f:
                     f.write(json.dumps(TEST_STATE, indent=4))
+            with domainlock:
+                with open(os.path.join(TEST_WORKING_DIR, "domains.json"), "w") as f:
+                    f.write(json.dumps(KNOWN_DOMAINS, indent=4))
         except Exception as e:
             logger.error("Error when writing state file: %s", e, exc_info=True)
-            
+
+
 class _WorkThread:
     """Single thread class. This class is the one picking up jobs from the queue, and executing it with appropriate module"""
 
@@ -91,7 +120,6 @@ class _WorkThread:
         self.thread = Thread(target=self.thread_consumer, args=(self.stopevent,))
         self.busy = False
         self.thread.start()
-        
 
     def stop(self):
         logger.debug("Stopping thread %s...", self.thread_id)
@@ -171,6 +199,7 @@ class WorkThreader:
     _instances = {}
     queue = Queue(QUEUE_SIZE)
     watchdog = None
+
     def add_job(job: dict):
         if TEST_FILTERS and len(TEST_FILTERS) > 0:
             for filter in TEST_FILTERS:
@@ -184,7 +213,7 @@ class WorkThreader:
             WorkThreader.queue.put(job)
         logger.debug("======== QUEUE SIZE: %s ========", WorkThreader.queue.qsize())
 
-    def start_threads(complete_callback):  
+    def start_threads(complete_callback):
         """Start the worker threads
 
         Args:
@@ -218,5 +247,5 @@ class WorkThreader:
             inst.stop()
 
         for i, inst in WorkThreader._instances.items():
-            #inst.thread.join()
+            # inst.thread.join()
             del inst

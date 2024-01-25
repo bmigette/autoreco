@@ -18,7 +18,8 @@ from autoreco.WorkThreader import WorkThreader
 
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
-runner = TestRunner(hosts=["192.168.158.11"])
+#runner = TestRunner(hosts=["192.168.158.11"])
+runner = TestRunner("192.168.199.0/24")
 runner.run()
 # job = {
 #         "module_name": "discovery.NetExecDiscovery",

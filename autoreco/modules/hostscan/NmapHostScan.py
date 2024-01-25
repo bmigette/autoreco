@@ -56,7 +56,7 @@ class NmapHostScan(ModuleInterface):
         self.ip = ip
         root = self.lastreturn["scan"][keys[0]]
         hostobject = self.get_host_obj(ip)
-        if "hostnames" in root and len(root["hostnames"]) > 0:
+        if "hostnames" in root and len(root["hostnames"]) > 0: # TODO: Parse SMB Plugins for hostname here ?
             for hostname in root["hostnames"]:
                 hostobject.add_hostname(hostname["name"])
         if "tcp" in root:
@@ -93,7 +93,7 @@ class NmapHostScan(ModuleInterface):
                 )
 
     def _update_udp_state(self, root, hostobject: TestHost):
-        for port, data in root["tcp"].items():
+        for port, data in root["udp"].items():
             if data["state"] != "open":  # TODO Check if this works for UDP
                 continue
             hostobject.add_service(data["name"])

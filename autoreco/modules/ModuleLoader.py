@@ -5,6 +5,7 @@ from .hostscan.NmapHostScan import NmapHostScan
 from .hostscan.Enum4Linux import Enum4Linux
 from .hostscan.GoBuster import GoBuster
 from .hostscan.FFUF import FFUF
+from .hostscan.NetExecHostScan import NetExecHostScan
 
 class ModuleLoader(object):
     """Load all known modules and maps it to a string"""
@@ -17,4 +18,5 @@ class ModuleLoader(object):
             "hostscan.NmapHostScan": NmapHostScan,
             "hostscan.Enum4Linux": Enum4Linux,
             "hostscan.GoBuster": GoBuster,
+            "hostscan.NetExecHostScan": NetExecHostScan,
         }

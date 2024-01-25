@@ -33,9 +33,10 @@ def main():
     parser.add_argument(
         "-t", "--threads", help="Number of threads", default=autoreco.config.NUM_THREADS
     )
-    parser.add_argument(
-        "--dns-server", help="DNS Server", default=autoreco.config.DNS_SERVER
-    )
+    # parser.add_argument(
+    #     "--dns-server", help="DNS Server", default=autoreco.config.DNS_SERVER
+    # )
+    # Not used atm, because you can just add the dns server via --host, dns enum will be performed against it
     parser.add_argument(
         "-v", "--verbose", help="Verbose Logs (Debug)", action="store_true"
     )
@@ -54,7 +55,7 @@ def main():
         default=autoreco.config.NMAP_SPEED,
     )
 
-    # add option fod DNS Server
+
 
     args = parser.parse_args()
     if args.output_dir:
@@ -65,7 +66,7 @@ def main():
     autoreco.config.NUM_THREADS = args.threads
     autoreco.config.NMAP_SPEED = args.nmap_speed
     autoreco.config.TEST_FILTERS = args.test_filter
-    autoreco.config.DNS_SERVER = args.dns_server
+    #autoreco.config.DNS_SERVER = args.dns_server
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner
 
