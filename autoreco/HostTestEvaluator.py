@@ -5,10 +5,12 @@ from .config import GOBUSTER_WORDLISTS, GOBUSTER_FILE_EXT
 from pathlib import Path
 import re
 
+
 class HostTestEvaluator:
     """
     This class scans known hosts in state, and suggest additional tests to run
     It will always return all possible tests for this host, then the TestRunner will only run tests not run previously
+    For this to work, it is important that a test with unique parameters generate always the same job id, and that this job ID is unique to this test / parameters combination
     """
 
     def __init__(self, hostobject: TestHost):
@@ -33,7 +35,7 @@ class HostTestEvaluator:
         tests = self._safe_merge(tests, self.get_web_file_tests())
         # TODO NFS Scan
 
-        #logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
+        # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         return tests
 
@@ -65,7 +67,7 @@ class HostTestEvaluator:
                 "args": {"action": "shares", "spider": True},
             }
         return tests
-    
+
     def get_dns_tests(self):
         """Create dns jobs
 
@@ -115,11 +117,8 @@ class HostTestEvaluator:
                 "target": self.hostobject.ip,
                 "args": {"script": "smb-vuln*", "ports": ports},
             }
-            
-        if (
-            "http" in self.hostobject.services
-            or "https" in self.hostobject.services
-        ):   
+
+        if "http" in self.hostobject.services or "https" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["http", "https"])
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
             tests[jobid] = {
@@ -128,12 +127,12 @@ class HostTestEvaluator:
                 "target": self.hostobject.ip,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
             }
-        
+
         return tests
 
     def get_known_domains(self):
         global KNOWN_DOMAINS, TEST_STATE
-        with domainlock:            
+        with domainlock:
             doms = KNOWN_DOMAINS.copy()
         with statelock:
             state = TEST_STATE.copy()
@@ -154,7 +153,7 @@ class HostTestEvaluator:
             if d:
                 doms2.append(d)
         doms = list(set(doms2))
-        with domainlock:            
+        with domainlock:
             KNOWN_DOMAINS = doms.copy()
         logger.debug("Known Domains: %s", doms)
         return doms
@@ -180,9 +179,9 @@ class HostTestEvaluator:
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
-                                "extensions": GOBUSTER_FILE_EXT,                                
+                                "extensions": GOBUSTER_FILE_EXT,
                                 "wordlist": w,
-                                "fsrc": "fsrc" # This is only to display in log filename
+                                "fsrc": "fsrc",  # This is only to display in log filename
                             },
                         }
 
@@ -202,8 +201,8 @@ class HostTestEvaluator:
                                     "mode": "dir",
                                     "host": h,
                                     "extensions": GOBUSTER_FILE_EXT,
-                                    "wordlist": w,          
-                                    "fsrc": "fsrc" # This is only to display in log filename
+                                    "wordlist": w,
+                                    "fsrc": "fsrc",  # This is only to display in log filename
                                 },
                             }
 
@@ -234,11 +233,10 @@ class HostTestEvaluator:
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
                                 "wordlist": w,
-                                
                             },
                         }
 
-                        for h in self.hostobject.hostnames:
+                        for h in self.hostobject.hostnames: 
                             if "." not in h:
                                 if self.hostobject.domain:
                                     h = f"{h}.{self.hostobject.domain}"
@@ -251,13 +249,13 @@ class HostTestEvaluator:
                                 "target": self.hostobject.ip,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "mode": "vhost",
+                                    "mode": "dir",
                                     "host": h,
-                                    "wordlist": w,     
+                                    "wordlist": w,
                                 },
                             }
                     ## Trying to get new VHosts
-                    for w in GOBUSTER_WORDLISTS["vhost"]:
+                    for w in GOBUSTER_WORDLISTS["vhost"]:# TODO: FFUF seems better for this with -ac option
                         for d in doms:
                             file = Path(w).stem
                             jobid = f"hostscan.GoBuster_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"

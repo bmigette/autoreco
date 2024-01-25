@@ -13,8 +13,9 @@ class NetExecDiscovery(ModuleInterface):
         if "protocol" in self.args:
             protocol = self.args["protocol"]
         logfile = self.get_log_name("log")
+        cmdfile =  self.get_log_name("cmd")
         self.command = f"netexec {protocol} {self.target} --log {logfile}"
-        self.output = self.get_system_cmd_outptut(self.command)
+        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output()
 
     def parse_output(self):

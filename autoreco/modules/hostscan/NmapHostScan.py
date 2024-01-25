@@ -86,6 +86,8 @@ class NmapHostScan(ModuleInterface):
         for port, data in root["tcp"].items():
             if data["state"] != "open":
                 continue
+            if int(port) == 443 or (data["name"] == "http" and "ssl" in str(data)):
+                data["name"] = "https"
             hostobject.add_service(data["name"])
             hostobject.add_tcp_port(port)
             hostobject.add_tcp_service_port(data["name"], port)
@@ -96,7 +98,7 @@ class NmapHostScan(ModuleInterface):
 
     def _update_udp_state(self, root, hostobject: TestHost):
         for port, data in root["udp"].items():
-            if data["state"] != "open":  # TODO Check if this works for UDP
+            if "open" not in data["state"]:  # TODO Check if this works for UDP
                 continue
             hostobject.add_service(data["name"])
             hostobject.add_udp_port(port)

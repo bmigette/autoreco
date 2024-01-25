@@ -14,6 +14,7 @@ class NetExecHostScan(ModuleInterface):
         if "protocol" in self.args:
             protocol = self.args["protocol"]
         logfile = self.get_log_name("log")
+        cmdfile =  self.get_log_name("cmd")
         spider = ""
         if "spider" in self.args:
             spider = "-M spider_plus -o OUTPUT_FOLDER=" + self.get_outdir("netexec_smb_spider_plus")
@@ -27,7 +28,7 @@ class NetExecHostScan(ModuleInterface):
         if "action" in self.args:
             action = "--" + self.args["action"]
         self.command = f"netexec {protocol} {self.target} -u {user} -p {passw} {spider} {action} --log {logfile}"
-        self.output = self.get_system_cmd_outptut(self.command)
+        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output()
 
     def parse_output(self):
@@ -42,7 +43,8 @@ class NetExecHostScan(ModuleInterface):
                 logger.info("netexec processed target %s", str(self.target))
       
 
-"""┌──(babadmin㉿kakali) - 9:56:58 - [~/offsec/exo]
+"""
+┌──(babadmin㉿kakali) - 9:56:58 - [~/offsec/exo]
 └─$ netexec smb 192.168.199.13 -u anonymous -p "" --shares -M spider_plus -o OUTPUT_FOLDER=/tmp/autoreco
 SMB         192.168.199.13  445    SAMBA            [*] Windows 6.1 Build 0 (name:SAMBA) (domain:) (signing:False) (SMBv1:False)
 SMB         192.168.199.13  445    SAMBA            [+] \anonymous:
@@ -58,4 +60,4 @@ SPIDER_P... 192.168.199.13  445    SAMBA            [*] SMB Shares:           3 
 SPIDER_P... 192.168.199.13  445    SAMBA            [*] SMB Readable Shares:  1 (files)
 SPIDER_P... 192.168.199.13  445    SAMBA            [*] Total folders found:  14
 SPIDER_P... 192.168.199.13  445    SAMBA            [*] Total files found:    0
-    """
+"""
