@@ -62,7 +62,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NetExecHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "args": {"action": "action", "spider": True},
+                "args": {"action": "shares", "spider": True},
             }
         return tests
     
@@ -73,12 +73,13 @@ class HostTestEvaluator:
             dict: jobs
         """
         tests = {}
+        doms = self.get_known_domains()
         for s in ["domain"]:
             if (
                 s in self.hostobject.udp_service_ports
             ):  # Dont think DNS would run on sth else than 5353 but who knows
                 for p in self.hostobject.udp_service_ports[s]:
-                    for d in self.get_known_domains():
+                    for d in doms:
                         for w in GOBUSTER_WORDLISTS["dns"]:
                             file = Path(w).stem
                             jobid = f"hostscan.GoBuster_dns_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
@@ -178,14 +179,19 @@ class HostTestEvaluator:
                             "target": self.hostobject.ip,
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
-                                "extensions": GOBUSTER_FILE_EXT,
                                 "mode": "dir",
+                                "extensions": GOBUSTER_FILE_EXT,                                
                                 "wordlist": w,
                                 "fsrc": "fsrc" # This is only to display in log filename
                             },
                         }
 
                         for h in self.hostobject.hostnames:
+                            if "." not in h:
+                                if self.hostobject.domain:
+                                    h = f"{h}.{self.hostobject.domain}"
+                                else:
+                                    continue
                             jobid = f"hostscan.GoBuster_dirf_{h}_{s}_{p}_{file}"
                             tests[jobid] = {
                                 "module_name": "hostscan.GoBuster",
@@ -193,10 +199,10 @@ class HostTestEvaluator:
                                 "target": self.hostobject.ip,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "extensions": GOBUSTER_FILE_EXT,
-                                    "wordlist": w,
                                     "mode": "dir",
                                     "host": h,
+                                    "extensions": GOBUSTER_FILE_EXT,
+                                    "wordlist": w,          
                                     "fsrc": "fsrc" # This is only to display in log filename
                                 },
                             }
@@ -210,6 +216,7 @@ class HostTestEvaluator:
             dict: jobs
         """
         tests = {}
+        doms = self.get_known_domains()
         for s in ["http", "https"]:
             ### Running tests against IP
             if s in self.hostobject.tcp_service_ports:
@@ -225,12 +232,18 @@ class HostTestEvaluator:
                             "target": self.hostobject.ip,
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
-                                "wordlist": w,
                                 "mode": "dir",
+                                "wordlist": w,
+                                
                             },
                         }
 
                         for h in self.hostobject.hostnames:
+                            if "." not in h:
+                                if self.hostobject.domain:
+                                    h = f"{h}.{self.hostobject.domain}"
+                                else:
+                                    continue
                             jobid = f"hostscan.GoBuster_dir_{h}_{s}_{p}_{file}"
                             tests[jobid] = {
                                 "module_name": "hostscan.GoBuster",
@@ -238,14 +251,14 @@ class HostTestEvaluator:
                                 "target": self.hostobject.ip,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "wordlist": w,
-                                    "mode": "dir",
-                                    "host": h
+                                    "mode": "vhost",
+                                    "host": h,
+                                    "wordlist": w,     
                                 },
                             }
                     ## Trying to get new VHosts
                     for w in GOBUSTER_WORDLISTS["vhost"]:
-                        for d in self.get_known_domains():
+                        for d in doms:
                             file = Path(w).stem
                             jobid = f"hostscan.GoBuster_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
                             tests[jobid] = {
@@ -254,7 +267,7 @@ class HostTestEvaluator:
                                 "target": self.hostobject.ip,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "mode": "dir",
+                                    "mode": "vhost",
                                     "domain": d,
                                     "wordlist": w,
                                 },

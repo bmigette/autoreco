@@ -281,7 +281,6 @@ class TestHost:
             hostname (str): hostname  example win2k12
         """
         if not hostname or len(hostname) < 1:
-            logger.debug("Skipping Invalid hostname...", exc_info=True)
             return
         global TEST_STATE
         with statelock:

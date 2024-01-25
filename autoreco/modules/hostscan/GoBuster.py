@@ -30,6 +30,6 @@ class GoBuster(ModuleInterface):
         self.scan_hosts(ret)
 
     def scan_hosts(self, output):
-        # TODO
+        # TODO Check if we can get vhost from logs ?
         pass
       

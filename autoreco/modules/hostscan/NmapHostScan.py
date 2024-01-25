@@ -64,11 +64,13 @@ class NmapHostScan(ModuleInterface):
                 self._update_tcp_state(root, hostobject)
             except Exception as e:
                 logger.error("Error when parsing NMAP TCP Output: %s", e, exc_info=True)
+                raise
         if "udp" in root:
             try:
                 self._update_udp_state(root, hostobject)
             except Exception as e:
                 logger.error("Error when parsing NMAP UDP Output: %s", e, exc_info=True)
+                raise
 
         if "osmatch" in root:
             if len(root["osmatch"]) > 0:
