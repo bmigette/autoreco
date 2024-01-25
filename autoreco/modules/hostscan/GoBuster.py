@@ -26,7 +26,7 @@ class GoBuster(ModuleInterface):
         host = ""
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"
-        cmd = f"gobuster {mode} -w {w} {url} {domain} {ext} {output}"
+        cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*3)
         self.scan_hosts(ret)

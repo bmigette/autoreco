@@ -1,6 +1,13 @@
 from .logger import logger
 from .state import statelock, TEST_STATE
 
+def max_output(thestr:str , max = 5000):
+    if not isinstance(thestr, str):
+        return thestr
+    if len(thestr) > max:
+        return thestr[:max] +"\ ---- output omitted ----"
+    else:
+        return thestr
 
 def print_summary():
     total_tests = 0

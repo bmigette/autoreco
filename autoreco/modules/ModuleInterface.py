@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from ..logger import logger
 from ..state import TEST_WORKING_DIR, TEST_DATE, TEST_DATE_STR
 from ..config import DEFAULT_PROCESS_TIMEOUT
+from ..utils import max_output
 import os
 from subprocess import STDOUT, check_output, CalledProcessError, TimeoutExpired
 import shlex
@@ -65,8 +66,8 @@ class ModuleInterface(ABC):
                 "Error in command %s: code: %s, stdout:\n%s \nstderr:\n%s",
                 ce.cmd,
                 ce.returncode,
-                ce.output,
-                ce.stderr,
+                max_output(ce.output),
+                max_output(ce.stderr),
             )
             err = f"""Error in command {ce.cmd}: 
             code: {ce.returncode}, stdout:
@@ -92,7 +93,7 @@ class ModuleInterface(ABC):
 
         if type(ret).__name__ == "bytes":
             ret = ret.decode("utf-8")
-        logger.debug("Output: %s", ret)
+        logger.debug("Output: %s", max_output(ret))
         if logoutput:
             try:
                 with open(logoutput, "a") as f:
