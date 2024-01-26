@@ -1,7 +1,7 @@
 from .logger import logger
 from .TestHost import TestHost
 from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
-from .config import GOBUSTER_WORDLISTS, GOBUSTER_FILE_EXT
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, WORD_LIST_LARGE_THRESHOLD
 from pathlib import Path
 import re
 
@@ -38,6 +38,15 @@ class HostTestEvaluator:
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         return tests
+
+    def is_large_list(self, list):
+        # TODO
+        return False
+
+    def get_ad_dc(self):
+        # TODO: Get AD DC (define logic)
+        # Do user enum (ldap, kerbrute, ...)
+        return []
 
     def get_tcp_services_ports(self, services: list):
         r = []
@@ -82,13 +91,14 @@ class HostTestEvaluator:
             ):  # Dont think DNS would run on sth else than 5353 but who knows
                 for p in self.hostobject.udp_service_ports[s]:
                     for d in doms:
-                        for w in GOBUSTER_WORDLISTS["dns"]:
+                        for w in WEB_WORDLISTS["dns"]:
                             file = Path(w).stem
                             jobid = f"hostscan.GoBuster_dns_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
                             tests[jobid] = {
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
+                                "longjob": self.is_large_list(w),
                                 "args": {
                                     "mode": "dns",
                                     "domain": d,
@@ -169,13 +179,14 @@ class HostTestEvaluator:
             ### Running tests against IP
             if s in self.hostobject.tcp_service_ports:
                 for p in self.hostobject.tcp_service_ports[s]:
-                    for w in GOBUSTER_WORDLISTS["files"]:
+                    for w in WEB_WORDLISTS["files"]:
                         file = Path(w).stem
                         jobid = f"hostscan.GoBuster_dirf_{self.hostobject.ip}_{s}_{p}_{file}"
                         tests[jobid] = {
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
+                            "longjob": self.is_large_list(w),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -196,6 +207,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
+                                "longjob": self.is_large_list(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -220,7 +232,7 @@ class HostTestEvaluator:
             ### Running tests against IP
             if s in self.hostobject.tcp_service_ports:
                 for p in self.hostobject.tcp_service_ports[s]:
-                    for w in GOBUSTER_WORDLISTS["dir"]:
+                    for w in WEB_WORDLISTS["dir"]:
                         file = Path(w).stem
                         jobid = (
                             f"hostscan.GoBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
@@ -229,6 +241,7 @@ class HostTestEvaluator:
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
+                            "longjob": self.is_large_list(w),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -247,6 +260,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
+                                "longjob": self.is_large_list(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -255,14 +269,15 @@ class HostTestEvaluator:
                                 },
                             }
                     ## Trying to get new VHosts
-                    for w in GOBUSTER_WORDLISTS["vhost"]:# TODO: FFUF seems better for this with -ac option
+                    for w in WEB_WORDLISTS["vhost"]:
                         for d in doms:
                             file = Path(w).stem
-                            jobid = f"hostscan.GoBuster_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
+                            jobid = f"hostscan.FFUF_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
                             tests[jobid] = {
-                                "module_name": "hostscan.GoBuster",
+                                "module_name": "hostscan.FFUF",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
+                                "longjob": self.is_large_list(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "vhost",
@@ -286,6 +301,8 @@ class HostTestEvaluator:
         if (
             "microsoft-ds" in self.hostobject.services
             or "netbios-ssn" in self.hostobject.services
+            or "rpc" in self.hostobject.services
+            or "msrpc" in self.hostobject.services
         ):
             jobid = f"hostscan.Enum4Linux_{self.hostobject.ip}"
             tests[jobid] = {

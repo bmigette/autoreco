@@ -31,24 +31,26 @@ NMAP_TCP_HOSTSCAN_OPTIONS = (
 )
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
+WORD_LIST_LARGE_THRESHOLD = 25000 # Job using a wordlist with more than this entries should be run only at the end
 
-# GOBUSTER Options
-GOBUSTER_WORDLISTS = {
+# GOBUSTER / FFUF Options
+WEB_WORDLISTS = {
     "dir": [
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/quickhits.txt",
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",        
         "/usr/share/wordlists/dirb/common.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt",
     ],
     "vhost": [
-        "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
+        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
-        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
+        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
+        "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
-    "dns": [
-        "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
+    "dns": [        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
-        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
+        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
+        "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
     "files": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt"

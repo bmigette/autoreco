@@ -29,9 +29,5 @@ class GoBuster(ModuleInterface):
         cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*3)
-        self.scan_hosts(ret)
 
-    def scan_hosts(self, output):
-        # TODO Check if we can get vhost from logs ?
-        pass
       

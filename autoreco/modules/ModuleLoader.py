@@ -19,4 +19,5 @@ class ModuleLoader(object):
             "hostscan.Enum4Linux": Enum4Linux,
             "hostscan.GoBuster": GoBuster,
             "hostscan.NetExecHostScan": NetExecHostScan,
+            "hostscan.FFUF": FFUF,
         }
