@@ -67,16 +67,19 @@ def main():
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")
     
+    testresume = False
+    
     if args.output_dir:
         autoreco.state.set_working_dir(args.output_dir)
-        
-    testresume = False
-    if args.resume:
+    elif args.resume:
         if not os.path.isdir(args.resume) or not os.path.exists(os.path.join(args.resume, "state.json")):
             raise Exception(f"state.json not found in dir {args.resume}")
         testresume = True
-        autoreco.state.set_working_dir(args.resume)
+        autoreco.state.set_working_dir(os.path.abspath(args.resume), resume=True)
         autoreco.state.load_state()
+    else:
+        autoreco.state.set_working_dir(os.getcwd())    
+   
         
     if args.verbose:
         autoreco.config.LOGLEVEL = logging.DEBUG

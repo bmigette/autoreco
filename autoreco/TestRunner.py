@@ -83,7 +83,10 @@ class TestRunner(object):
     def run(self, resume = False):
         try:
             logger.info("=" * 50)
-            logger.info("Tests Started at %s", datetime.now().isoformat())
+            if resume:
+                logger.info("Tests Resumed at %s", datetime.now().isoformat())
+            else:
+                logger.info("Tests Started at %s", datetime.now().isoformat())
             logger.info("Output Dir: %s", TEST_WORKING_DIR)
             logger.info("=" * 50)
             if not resume:

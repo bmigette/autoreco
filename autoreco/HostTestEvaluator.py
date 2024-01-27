@@ -314,6 +314,15 @@ class HostTestEvaluator:
 
     def get_generic_tests(self):
         tests = {}
+        jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_quick_tcp"
+        tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "priority": 5,
+                "args": {"protocol": "tcp", "ports": "--top-ports 150"},
+        }
+            
         for proto in ["tcp", "udp"]:
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
             tests[jobid] = {

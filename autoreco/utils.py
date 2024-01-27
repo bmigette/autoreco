@@ -39,7 +39,7 @@ def print_summary():
             "# Running / Ran %s Tests against %s hosts", total_tests, total_hosts
         )
         logger.info(
-            "# Success: %s, Failed: %s, Running:%s, Queued: %s",
+            "# Success: %s, Failed: %s, Running: %s, Queued: %s",
             success_tests,
             failed_tests,
             started_tests,

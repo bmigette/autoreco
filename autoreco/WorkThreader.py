@@ -35,7 +35,7 @@ class Watchdog:
         self.thread = Thread(target=self.watch, args=(self.stopevent,))
         self.thread.start()
 
-    def watch(self, stopevent):
+    def watch(self, stopevent) -> None:
         last_date = datetime.now()
         last_loop_date = datetime.now()
         while not stopevent.is_set():
@@ -53,11 +53,11 @@ class Watchdog:
             time.sleep(WATCHDOG_SLEEP_INTERVAL)
         self.write_state()  # Final write on exit
 
-    def stop(self):
+    def stop(self) -> None:
         logger.debug("Stopping Watchdog")
         self.stopevent.set()
 
-    def print_thread_stats(self):
+    def print_thread_stats(self) -> None:
         try:
             logger.debug("=" * 50)
             logger.debug("| Threads Status:")
@@ -88,7 +88,7 @@ class Watchdog:
         except Exception as e:
             logger.error("Error int print_thread_stats: %s", e, exc_info=True)
 
-    def write_host_summary(self):
+    def write_host_summary(self) -> None:
         """Write summary of host to disk
         """
         with statelock:
@@ -110,7 +110,7 @@ class Watchdog:
                 f.write(f"udp_ports: {udp_ports}\n")
                 f.write("="*50 + "\n")
 
-    def write_state(self):
+    def write_state(self) -> None:
         """Write current state to disk
         """
         global KNOWN_DOMAINS, TEST_WORKING_DIR, TEST_STATE
@@ -149,11 +149,11 @@ class _WorkThread:
         self.busy = False
         self.thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         logger.debug("Stopping thread %s...", self.thread_id)
         self.stopevent.set()
 
-    def process_job(self, job: dict):
+    def process_job(self, job: dict) -> None:
         """Process a queued job
 
         Args:
@@ -228,7 +228,7 @@ class WorkThreader:
     queue = PriorityQueue(QUEUE_SIZE)
     watchdog = None
 
-    def add_job(job: dict):
+    def add_job(job: dict) -> None:
         if "priority" not in job:
             logger.warn("Job %s has no priority", job)
             job["priority"] = 100
@@ -254,6 +254,7 @@ class WorkThreader:
         Args:
             complete_callback (func): Callback notification when a thread is done
         """
+        # TODO Handle CTRL+C for gracefull shutdown
         for i in range(0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(
@@ -275,7 +276,9 @@ class WorkThreader:
 
         return True
 
-    def stop_threads():
+    def stop_threads() -> None:
+        """Stop threads
+        """
         logger.info("Stopping threads...")
         WorkThreader.watchdog.stop()
         for i, inst in WorkThreader._instances.items():

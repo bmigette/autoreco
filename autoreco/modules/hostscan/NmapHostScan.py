@@ -24,13 +24,13 @@ class NmapHostScan(ModuleInterface):
             args = NMAP_UDP_HOSTSCAN_OPTIONS
             protocol = "-sU"
             if "ports" in self.args:
-                ports = "-p " + ",".join(self.args["ports"])
+                ports = self._parse_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_UDP_PORT_OPTION
         else:
             args = NMAP_TCP_HOSTSCAN_OPTIONS
             if "ports" in self.args:
-                ports = "-p " + ",".join(map(str, self.args["ports"]))
+                ports = self._parse_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
         scripts = ""
@@ -46,6 +46,17 @@ class NmapHostScan(ModuleInterface):
         with open(self.get_log_name("xml"), "w") as f:
             f.write(str(xml))
         self.update_state()
+        
+    def _parse_ports(self, ports):
+        if isinstance(ports, list):
+            return ",".join(map(str, self.args["ports"]))
+        else:
+            ports = str(ports)
+            if "--" in ports or "-p" in ports:
+                return ports
+            else:
+                return "-p " + ports
+
 
     def update_state(self):
         logger.debug("nmap scan result: \n %s", self.lastreturn)
