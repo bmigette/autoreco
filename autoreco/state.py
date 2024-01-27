@@ -3,6 +3,7 @@ import threading
 statelock = threading.Lock()
 import os
 from datetime import datetime
+import json
 """
 State module. The variables below are global to the scope of the script
 """
@@ -33,3 +34,12 @@ def set_working_dir(dir, nocreate = False):
     TEST_WORKING_DIR = os.path.join(WORKING_DIR, f"autoreco_{TEST_DATE_STR}")
     if not nocreate:
         os.makedirs(TEST_WORKING_DIR, exist_ok=True)
+        
+def load_state():
+    global TEST_STATE, KNOWN_DOMAINS
+    with statelock:
+        with open(os.path.join(TEST_WORKING_DIR, "test.json")) as f:
+            TEST_STATE = json.loads(f.read())
+    with domainlock:
+        with open(os.path.join(KNOWN_DOMAINS, "domains.json")) as f:
+            KNOWN_DOMAINS = json.loads(f.read())

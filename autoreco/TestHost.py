@@ -142,11 +142,11 @@ class TestHost:
         return self._state_field_set("tcp_ports", set(value))
 
     @property
-    def tcp_ports(self):
+    def udp_ports(self):
         return self._state_field_get("udp_ports", [])
 
-    @tcp_ports.setter
-    def tcp_ports(self, value):
+    @udp_ports.setter
+    def udp_ports(self, value):
         return self._state_field_set("udp_ports", set(value))
 
     @property

@@ -6,6 +6,8 @@ from .hostscan.Enum4Linux import Enum4Linux
 from .hostscan.GoBuster import GoBuster
 from .hostscan.FFUF import FFUF
 from .hostscan.NetExecHostScan import NetExecHostScan
+from .userenum.Kerbrute import Kerbrute
+from .userenum.NetExecRIDBrute import NetExecRIDBrute
 
 class ModuleLoader(object):
     """Load all known modules and maps it to a string"""
@@ -20,4 +22,6 @@ class ModuleLoader(object):
             "hostscan.GoBuster": GoBuster,
             "hostscan.NetExecHostScan": NetExecHostScan,
             "hostscan.FFUF": FFUF,
+            "userenum.Kerbrute": Kerbrute,
+            "userenum.NetExecRIDBrute": NetExecRIDBrute
         }

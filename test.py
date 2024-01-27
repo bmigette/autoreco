@@ -21,13 +21,13 @@ from autoreco.TestRunner import TestRunner
 #runner = TestRunner(hosts=["192.168.158.11"])
 #runner = TestRunner("192.168.199.0/24")
 #runner.run()
-w = "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt"
+w = "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt"
 job = {         
         "module_name": "hostscan.FFUF",
         "job_id": "testFFUF",
-        "target": "192.168.209.15",
+        "target": "192.168.154.11",
         "args": {
-            "url": f"http://192.168.209.15:8080",
+            "url": f"http://192.168.154.11:8080",
             "mode": "vhost",
             "domain": "test.com",
             "wordlist": w,

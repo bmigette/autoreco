@@ -1,6 +1,8 @@
 from threading import Thread
 from threading import Event
-from queue import Queue, Empty
+from queue import PriorityQueue, Empty
+from .TestHost import TestHost
+from .TestJob import TestJob
 from .logger import logger
 from .config import (
     NUM_THREADS,
@@ -72,7 +74,7 @@ class Watchdog:
                         + " / "
                         + str(inst.current_job["args"])
                     )
-                    if len(job) > 255:  # TODO: Check term size dynamicallyy ??
+                    if len(job) > 255:
                         job = job[:255]
                 extra_space = " " if inst.busy else ""
                 logger.debug(
@@ -86,7 +88,31 @@ class Watchdog:
         except Exception as e:
             logger.error("Error int print_thread_stats: %s", e, exc_info=True)
 
+    def write_host_summary(self):
+        """Write summary of host to disk
+        """
+        with statelock:
+            state = TEST_STATE.copy()
+        with open(os.path.join(TEST_WORKING_DIR, "hostsummary.txt"), "w") as f:
+            f.write("="*50 + "\n")
+            for k, v in state.items():
+                if k == "discovery":
+                    continue
+                hostobj = TestHost(k)
+                services = ",".join(hostobj.services)
+                tcp_ports = ",".join(map(str, hostobj.tcp_ports))
+                udp_ports = ",".join(map(str, hostobj.udp_ports))
+                hostnames = ",".join(hostobj.hostnames)
+                f.write(f"Hostname (s): {hostnames}\n")
+                f.write(f"Domain: {hostobj.domain}\n")
+                f.write(f"services: {services}\n")
+                f.write(f"tcp_ports: {tcp_ports}\n")
+                f.write(f"udp_ports: {udp_ports}\n")
+                f.write("="*50 + "\n")
+
     def write_state(self):
+        """Write current state to disk
+        """
         global KNOWN_DOMAINS, TEST_WORKING_DIR, TEST_STATE
         try:
             with statelock:
@@ -95,6 +121,7 @@ class Watchdog:
             with domainlock:
                 with open(os.path.join(TEST_WORKING_DIR, "domains.json"), "w") as f:
                     f.write(json.dumps(KNOWN_DOMAINS, indent=4))
+            self.write_host_summary()
         except Exception as e:
             logger.error("Error when writing state file: %s", e, exc_info=True)
 
@@ -102,7 +129,7 @@ class Watchdog:
 class _WorkThread:
     """Single thread class. This class is the one picking up jobs from the queue, and executing it with appropriate module"""
 
-    def __init__(self, thread_id: str, queue: Queue, complete_callback):
+    def __init__(self, thread_id: str, queue: PriorityQueue, complete_callback):
         """Constructor
 
         Args:
@@ -117,7 +144,8 @@ class _WorkThread:
         self.current_job_date = None
         self.modules = ModuleLoader.get_modules()
         self.stopevent = Event()
-        self.thread = Thread(target=self.thread_consumer, args=(self.stopevent,))
+        self.thread = Thread(target=self.thread_consumer,
+                             args=(self.stopevent,))
         self.busy = False
         self.thread.start()
 
@@ -168,11 +196,11 @@ class _WorkThread:
         while not stopevent.is_set():
             jobget = False
             try:
-                job = self.queue.get(timeout=QUEUE_WAIT_TIME)
+                priority, job = self.queue.get(timeout=QUEUE_WAIT_TIME)
                 jobget = True
-                logger.debug("processing job %s ...", job)
-                self.process_job(job)
-                logger.debug("processing job %s ... Done", job)
+                logger.debug("processing job %s (p: %s) ...", job.data, priority)
+                self.process_job(job.data)
+                logger.debug("processing job %s ... Done", job.data)
             except Empty:
                 # This will happen if queue is empty.
                 # We use this so that threads are not waiting infinitely on the queue
@@ -197,21 +225,28 @@ class WorkThreader:
     """Class that manages thread execution and queuing"""
 
     _instances = {}
-    queue = Queue(QUEUE_SIZE)
+    queue = PriorityQueue(QUEUE_SIZE)
     watchdog = None
 
     def add_job(job: dict):
+        if "priority" not in job:
+            logger.warn("Job %s has no priority", job)
+            job["priority"] = 100
+        job["priority"] = int(job["priority"])
+        joboj = TestJob(job["priority"], job)
         if TEST_FILTERS and len(TEST_FILTERS) > 0:
             for filter in TEST_FILTERS:
                 if fnmatch.fnmatch(filter.lower(), job["module_name"].lower()):
                     logger.debug("Adding job with data %s", job)
-                    WorkThreader.queue.put(job)
+                    WorkThreader.queue.put((job["priority"], joboj))
                     break
-            logger.info("Skipping job because does not match filter.Data:\n%s", job)
+            logger.info(
+                "Skipping job because does not match filter.Data:\n%s", job)
         else:
             logger.debug("Adding job with data %s", job)
-            WorkThreader.queue.put(job)
-        logger.debug("======== QUEUE SIZE: %s ========", WorkThreader.queue.qsize())
+            WorkThreader.queue.put((job["priority"], joboj))
+        logger.debug("======== QUEUE SIZE: %s ========",
+                     WorkThreader.queue.qsize())
 
     def start_threads(complete_callback):
         """Start the worker threads

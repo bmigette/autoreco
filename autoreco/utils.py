@@ -1,7 +1,9 @@
 from .logger import logger
 from .state import statelock, TEST_STATE
+from .config import DEFAULT_MAX_OUTPUT
 
-def max_output(thestr:str , max = 5000):
+
+def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
     if not isinstance(thestr, str):
         return thestr
     if len(thestr) > max:

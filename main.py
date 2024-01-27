@@ -9,6 +9,7 @@ __author__ = "Bastien Migette"
 import argparse
 import logging
 import os
+import sys
 from datetime import datetime
 import autoreco.state
 
@@ -55,11 +56,28 @@ def main():
         default=autoreco.config.NMAP_SPEED,
     )
 
-
+    parser.add_argument(
+        "-e",
+        "--resume",
+        help="Resume from previous working dir",
+        default=None,
+    )
 
     args = parser.parse_args()
+    if args.resume and args.output_dir:
+        raise Exception("Please use either resume or output dir")
+    
     if args.output_dir:
         autoreco.state.set_working_dir(args.output_dir)
+        
+    testresume = False
+    if args.resume:
+        if not os.path.isdir(args.resume) or not os.path.exists(os.path.join(args.resume, "state.json")):
+            raise Exception(f"state.json not found in dir {args.resume}")
+        testresume = True
+        autoreco.state.set_working_dir(args.resume)
+        autoreco.state.load_state()
+        
     if args.verbose:
         autoreco.config.LOGLEVEL = logging.DEBUG
 
@@ -71,7 +89,7 @@ def main():
     from autoreco.TestRunner import TestRunner
 
     runner = TestRunner(args.subnet, args.domain, args.host)
-    runner.run()
+    runner.run(testresume)
 
 
 if __name__ == "__main__":

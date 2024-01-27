@@ -14,7 +14,7 @@ class TestRunner(object):
     """Class responsible to run tests, stop threads, etc..."""
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
-        self.domaisn = domains
+        self.domains = domains
         self.subnet = subnet
         self.hosts = hosts
         if len(domains) > 0:
@@ -70,27 +70,35 @@ class TestRunner(object):
             raise Exception("Only IP supported as of now")
         h = TestHost(host_ip)  # Will create empty host in state
         self.complete_callback()
+        
+    def domain_discovery(self, domain):
+        # TODO: Implement
+        pass
 
     def print_state(self):
         with statelock:
             logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
             logger.info("=" * 50)
-
-
             
-    def run(self):
+    def run(self, resume = False):
         try:
             logger.info("=" * 50)
             logger.info("Tests Started at %s", datetime.now().isoformat())
             logger.info("Output Dir: %s", TEST_WORKING_DIR)
             logger.info("=" * 50)
-            if self.subnet:
-                self.host_discovery(self.subnet)
+            if not resume:
+                if self.subnet:
+                    self.host_discovery(self.subnet)
             # not used atm, host scan triggered after discovery
             if self.hosts:
                 for host in self.hosts:
                     self.host_scan(host)
-
+                    
+            if self.domains:
+                for d in self.domains:
+                    self.domain_discovery(d)
+            if resume and len(self.hosts) < 1:
+                self.complete_callback()
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
             WorkThreader.stop_threads()

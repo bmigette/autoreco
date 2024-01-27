@@ -12,7 +12,8 @@ DEFAULT_PROCESS_TIMEOUT = 600  # Default timeout for a process
 WATCHDOG_INTERVAL = 120
 WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
 TEST_FILTERS = []  # execute tests matching these filters only
-DNS_SERVER = None
+DNS_SERVER = None # Not used atm
+DEFAULT_MAX_OUTPUT = 10000 # Max len of command output
 
 ##### Modules Specific Config #####
 
@@ -53,8 +54,13 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
     "files": [
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt"
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt",
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
     ]
+}
+WEB_WORDLISTS_FILES_HASEXT = {
+    "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt" : True,
+    "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt": False
 }
 
 GOBUSTER_FILE_EXT = "pdf,csv,txt,html,php,c,exe,php5,sh,sql,xml"

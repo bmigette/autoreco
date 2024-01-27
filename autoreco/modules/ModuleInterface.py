@@ -157,18 +157,34 @@ class ModuleInterface(ABC):
 
     def is_discovery(self):
         return "discovery." in self.module_name
-
+    
+    def is_userenum(self):
+        return "userenum." in self.module_name
+    
     def get_outdir(self, folder=None):
+        """Get log out folder
+
+        Args:
+            folder (str, optional): Extra folder. Defaults to None.
+
+        Returns:
+            str: folder path
+        """
         global TEST_DATE_STR
         if self.is_discovery():
             h = ""
         else:
             h = self.target if self.target else ""  # For global modules
 
+        basedir = TEST_WORKING_DIR
+        if self.is_userenum():
+            basedir = os.path.join(basedir, "userenum")
         if folder:
-            outdir = os.path.join(TEST_WORKING_DIR, h, folder)
+            outdir = os.path.join(basedir, h, folder)
         else:
-            outdir = os.path.join(TEST_WORKING_DIR, h)
+            outdir = os.path.join(basedir, h)
+        
+
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
         return outdir

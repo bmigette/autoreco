@@ -34,19 +34,30 @@ class HostTestEvaluator:
         tests = self._safe_merge(tests, self.get_web_tests())
         tests = self._safe_merge(tests, self.get_web_file_tests())
         # TODO NFS Scan
-
+        # TODO SNMP / onesixtyone
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         return tests
 
-    def is_large_list(self, list):
-        # TODO
-        return False
+    def is_large_list(self, wordlistfile):
+        with open(wordlistfile, 'r') as fp:
+            cnt = len(fp.readlines())
+        return cnt >= WORD_LIST_LARGE_THRESHOLD
 
-    def get_ad_dc(self):
-        # TODO: Get AD DC (define logic)
-        # Do user enum (ldap, kerbrute, ...)
-        return []
+    def get_ad_dc_ips(self):
+        dcs = []
+        with statelock:
+            state = TEST_STATE.copy()
+        for k, v in state.items():
+            if k == "discovery":
+                continue
+            hostobj = TestHost(k)
+            if hostobj.os_family and "windows" not in hostobj.os_family.lower():
+                continue
+            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services: # TODO maybe needs improve
+                dcs.append(k)
+        logger.debug("Known DCs: %s", dcs)
+        return dcs
 
     def get_tcp_services_ports(self, services: list):
         r = []
@@ -73,6 +84,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NetExecHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 100,
                 "args": {"action": "shares", "spider": True},
             }
         return tests
@@ -98,7 +110,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "longjob": self.is_large_list(w),
+                                "priority": 1000 if self.is_large_list(w) else 100,
                                 "args": {
                                     "mode": "dns",
                                     "domain": d,
@@ -118,6 +130,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 10,
                 "args": {"script": "smb-enum*", "ports": ports},
             }
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
@@ -125,6 +138,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 10,
                 "args": {"script": "smb-vuln*", "ports": ports},
             }
 
@@ -135,7 +149,18 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 10,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
+            }
+        if "ldap" in self.hostobject.services:
+            ports = self.get_tcp_services_ports(["ldap"])
+            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
+            tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "priority": 10,
+                "args": {"script": "'ldap* and not brute'", "ports": ports},
             }
 
         return tests
@@ -186,7 +211,7 @@ class HostTestEvaluator:
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
-                            "longjob": self.is_large_list(w),
+                            "priority": 1000 if self.is_large_list(w) else 100,
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -207,7 +232,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "longjob": self.is_large_list(w),
+                                "priority": 1000 if self.is_large_list(w) else 100,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -241,7 +266,7 @@ class HostTestEvaluator:
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
-                            "longjob": self.is_large_list(w),
+                            "priority": 1000 if self.is_large_list(w) else 100,
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -260,7 +285,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "longjob": self.is_large_list(w),
+                                "priority": 1000 if self.is_large_list(w) else 100,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -277,7 +302,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.FFUF",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "longjob": self.is_large_list(w),
+                                "priority": 1000 if self.is_large_list(w) else 100,
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "vhost",
@@ -295,6 +320,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 10,
                 "args": {"protocol": proto},
             }
 
@@ -309,6 +335,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.Enum4Linux",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
+                "priority": 10,
                 "args": {},
             }
         return tests
