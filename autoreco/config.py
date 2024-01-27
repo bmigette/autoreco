@@ -32,7 +32,7 @@ NMAP_TCP_HOSTSCAN_OPTIONS = (
 )
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
-WORD_LIST_LARGE_THRESHOLD = 25000 # Job using a wordlist with more than this entries should be run only at the end
+WORD_LIST_LARGE_THRESHOLD = 50000 # Job using a wordlist with more than this entries should be run only at the end
 
 # GOBUSTER / FFUF Options
 WEB_WORDLISTS = {
