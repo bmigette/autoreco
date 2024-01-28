@@ -12,6 +12,9 @@ from datetime import datetime
 
 class TestRunner(object):
     """Class responsible to run tests, stop threads, etc..."""
+    
+    def stop_signal_handler(sig, frame):
+        WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
         self.domains = domains
@@ -48,10 +51,10 @@ class TestRunner(object):
         if WorkThreader.finished():
             WorkThreader.stop_threads()
             self.finish()
-            
-    def set_handler():
+
+    def set_handler(self):
         import signal
-        signal.signal(signal.SIGINT, WorkThreader.stop_threads)
+        signal.signal(signal.SIGINT, TestRunner.stop_signal_handler)
 
 
     def host_discovery(self, target):

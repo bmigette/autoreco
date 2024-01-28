@@ -57,7 +57,6 @@ WorkThreader.start_threads(None)
 #         "target": "192.168.1.252",
 #         "args": {"protocol": "tcp"}    
 #     }
-WorkThreader.add_job(job)
 print_summary()
 # with autoreco.state.statelock:
 #     logger.debug("State: %s", json.dumps(autoreco.state.TEST_STATE, indent=4))

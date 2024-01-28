@@ -52,7 +52,7 @@ def parse_gobuster_progress(lines):
     #Progress: 2903 / 220561 (1.32%)
     for line in lines.split("\n"):
         if 'Progress:' in line:
-            return line.split("Progress:")[1].split(")").strip()+")"
+            return line.split("Progress:")[1].split(")")[0].strip()+")"
     return None
 
 def parse_ffuf_progress(lines):

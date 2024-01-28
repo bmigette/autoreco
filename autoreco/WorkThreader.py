@@ -67,17 +67,17 @@ class Watchdog:
                 if inst.current_job:
                     progress = inst.get_progress()
                     if progress:
-                        progress = " / " + progress
+                        progress = " | " + progress
                     else:
                         progress = ""
                     job = (
                         inst.current_job_date.strftime("%H:%M:%S")
                         + ": "
                         + inst.current_job["module_name"]
-                        + " / "
+                        + " | "
                         + inst.current_job["target"]
                         + progress
-                        + " / "
+                        + " | "
                         + str(inst.current_job["args"])
                     )
                     if len(job) > 255:
