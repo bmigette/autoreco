@@ -22,6 +22,7 @@ class TestRunner(object):
                 KNOWN_DOMAINS = domains.copy()
                 
         WorkThreader.start_threads(self.complete_callback)
+        self.set_handler()
 
     def complete_callback(self):
         logger.debug("Entering Complete Callback")
@@ -47,6 +48,11 @@ class TestRunner(object):
         if WorkThreader.finished():
             WorkThreader.stop_threads()
             self.finish()
+            
+    def set_handler():
+        import signal
+        signal.signal(signal.SIGINT, WorkThreader.stop_threads)
+
 
     def host_discovery(self, target):
         job = {
@@ -85,6 +91,7 @@ class TestRunner(object):
             logger.info("=" * 50)
             if resume:
                 logger.info("Tests Resumed at %s", datetime.now().isoformat())
+                # TODO Retry failed tests in state ? Make it configurable ?
             else:
                 logger.info("Tests Started at %s", datetime.now().isoformat())
             logger.info("Output Dir: %s", TEST_WORKING_DIR)
@@ -102,6 +109,8 @@ class TestRunner(object):
                     self.domain_discovery(d)
             if resume and len(self.hosts) < 1:
                 self.complete_callback()
+            
+            
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
             WorkThreader.stop_threads()

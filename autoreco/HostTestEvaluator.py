@@ -39,10 +39,10 @@ class HostTestEvaluator:
 
         return tests
 
-    def is_large_list(self, wordlistfile):
+    def get_list_priority(self, wordlistfile): # TODO Make this more granular ?
         with open(wordlistfile, 'r') as fp:
             cnt = len(fp.readlines())
-        return cnt >= WORD_LIST_LARGE_THRESHOLD
+        return int(cnt/1000)
 
     def get_ad_dc_ips(self):
         dcs = []
@@ -110,7 +110,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "priority": 1000 if self.is_large_list(w) else 100,
+                                "priority": self.get_list_priority(w),
                                 "args": {
                                     "mode": "dns",
                                     "domain": d,
@@ -211,7 +211,7 @@ class HostTestEvaluator:
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
-                            "priority": 1000 if self.is_large_list(w) else 100,
+                            "priority": self.get_list_priority(w),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -232,7 +232,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "priority": 1000 if self.is_large_list(w) else 100,
+                                "priority": self.get_list_priority(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -266,7 +266,7 @@ class HostTestEvaluator:
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
-                            "priority": 1000 if self.is_large_list(w) else 100,
+                            "priority": self.get_list_priority(w),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -285,7 +285,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "priority": 1000 if self.is_large_list(w) else 100,
+                                "priority": self.get_list_priority(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",
@@ -302,7 +302,7 @@ class HostTestEvaluator:
                                 "module_name": "hostscan.FFUF",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "priority": 1000 if self.is_large_list(w) else 100,
+                                "priority": self.get_list_priority(w),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "vhost",
@@ -319,7 +319,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 5,
+                "priority": 100,
                 "args": {"protocol": "tcp", "ports": "--top-ports 150"},
         }
             
@@ -329,7 +329,7 @@ class HostTestEvaluator:
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 10,
+                "priority": 1000,
                 "args": {"protocol": proto},
             }
 

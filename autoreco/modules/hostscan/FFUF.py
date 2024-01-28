@@ -1,6 +1,7 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ...config import DEFAULT_PROCESS_TIMEOUT
+from ..common.parsers import parse_ffuf_progress
 
 from ...TestHost import TestHost
 
@@ -23,22 +24,23 @@ class FFUF(ModuleInterface):
         else:
             raise ValueError(f"Invalid FFUF mode: {mode}")
         
-        output_log = "-o " + self.get_log_name(".json")
+        output_log = self.get_log_name(".json")
+        output_log_cmd = f"-o {output_log}" 
 
         cmdlog = self.get_log_name(".cmd" )
         stdout_log = self.get_log_name(".log" )
          
         
-        cmd = f"ffuf -ac -w {w}:FUZZ {url} {vhost} {output_log}"
+        cmd = f"ffuf -ac -w {w}:FUZZ {url} {vhost} {output_log_cmd}"
         logger.debug("Executing FFUF command %s", cmd)
-        ret = self.get_system_cmd_outptut(cmd, logoutput=stdout_log, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*3)
+        ret = self.get_system_cmd_outptut(cmd, logoutput=stdout_log, logcmdline=cmdlog, realtime=True, progresscb=parse_ffuf_progress)
         hostobj = TestHost(self.target)
         self.scan_hosts(output_log, hostobj)
 
         
     def scan_hosts(self, output_log, hostobj):
         try:
-            with open(output_log, "") as f:
+            with open(output_log, "r") as f:
                 data = json.loads(f.read())
             for r in data["results"]:
                 hostobj.add_hostname(r["host"])

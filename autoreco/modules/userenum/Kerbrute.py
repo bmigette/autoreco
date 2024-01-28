@@ -1,6 +1,5 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ..common.parsers import parse_netexec_hostline
 from ...TestHost import TestHost
 
 class Kerbrute(ModuleInterface):

@@ -62,8 +62,12 @@ class NmapHostScan(ModuleInterface):
         logger.debug("nmap scan result: \n %s", self.lastreturn)
         keys = list(self.lastreturn["scan"].keys())
         if len(keys) > 1:
-            raise Exception("More than 1 IP returned ??: " + ",".join(keys))
-        ip = keys[0]
+            if self.target in keys:
+                ip = self.target
+            else:
+                raise Exception(f"More than 1 IP returned, and {self.target} not in keys: " + ",".join(keys))
+        else:
+            ip = keys[0]
         self.ip = ip
         root = self.lastreturn["scan"][keys[0]]
         hostobject = self.get_host_obj(ip)

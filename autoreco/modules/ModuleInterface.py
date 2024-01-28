@@ -1,14 +1,18 @@
 from abc import ABC, abstractmethod
-from ..logger import logger
-from ..state import TEST_WORKING_DIR, TEST_DATE, TEST_DATE_STR
-from ..config import DEFAULT_PROCESS_TIMEOUT
-from ..utils import max_output
 import os
-from subprocess import STDOUT, check_output, CalledProcessError, TimeoutExpired
+from subprocess import STDOUT, check_output, CalledProcessError, TimeoutExpired, Popen, PIPE
 import shlex
-from ..TestHost import TestHost
 import re
 from pathlib import Path
+from threading import Timer
+import time
+
+from ..logger import logger
+from ..state import TEST_WORKING_DIR, TEST_DATE, TEST_DATE_STR
+from ..config import DEFAULT_PROCESS_TIMEOUT, DEFAULT_IDLE_TIMEOUT
+from ..utils import max_output
+from ..TestHost import TestHost
+
 
 
 class ModuleInterface(ABC):
@@ -20,6 +24,7 @@ class ModuleInterface(ABC):
         self.testid = testid
         self.target = target
         self.module_name = module_name
+        self.progress = ""
         if TestHost.is_ip(target):
             self.ip = target
         else:
@@ -28,33 +33,76 @@ class ModuleInterface(ABC):
     def get_host_obj(self, ip: str) -> TestHost:
         return TestHost(ip)
 
+    def _run_cmd_stream(self, cmd, timeout_sec, callback):
+        # We mix stderr and stdout, because some processes like gobuster shows progress in stderr, and stdout will be silent
+        proc = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1,
+                     text=True, universal_newlines=True)
+        buffer = []
+        while proc.poll() is None:
+            try:
+                timer = Timer(timeout_sec, proc.kill)
+                timer.start()
+                output = proc.stdout.readline()
+                try:
+                    progress = callback(output)
+                    buffer.append(output)
+                    if progress:
+                        self.progress = progress
+                except Exception as ie:
+                    logger.error("Error in callback: %s", ie, exc_info=True)
+                finally:
+                    timer.cancel()
+                
+            except Exception as e:
+                proc.kill()
+                logger("_run_stream error with command %s: %s", cmd, e)
+                #outs, errs = proc.communicate()
+                #raise TimeoutError(f"stdout: {outs}\nstderr: {errs}")
+        if proc.returncode != 0:
+            raise CalledProcessError(proc.returncode, cmd, "\n".join(buffer))
+        return "\n".join(buffer)
+
     def get_system_cmd_outptut(
         self,
         command: str,
         timeout: int = DEFAULT_PROCESS_TIMEOUT,
         logoutput=None,
         logcmdline=None,
+        realtime=False,
+        idletimeout: int = DEFAULT_IDLE_TIMEOUT,
+        progresscb = None
     ):
         """Run a system command and get the output
 
         Args:
             command (str): command line
             timeout (int, optional): Process timeout. Defaults to DEFAULT_PROCESS_TIMEOUT.
+            logoutput (_type_, optional): _description_. Defaults to None.
+            logcmdline (str, optional): Filename to write cmd to. Defaults to None.
+            realtime (bool, optional): Use stream to read stdout realtime. Defaults to False.
+            idletimeout (int, optional): Consider process stuck if no out after this time. Defaults to DEFAULT_IDLE_TIMEOUT.
+            progresscb (function, optional): Callback to parse progress if realtime is True. Defaults to None.
 
         Returns:
             str: command output
         """
+
         if logcmdline:
             try:
                 with open(logcmdline, "a") as f:
                     f.write(command)
             except Exception as e:
-                logger.error("Could not write cmd to file %s: %s", logoutput, e)
+                logger.error(
+                    "Could not write cmd to file %s: %s", logcmdline, e)
         if not isinstance(command, list):
             command = shlex.split(command)
-        logger.debug("Executing command %s in module %s...", command, self.module_name)
+        logger.debug("Executing command %s in module %s...",
+                     command, self.module_name)
         try:
-            ret = check_output(command, stderr=STDOUT, timeout=timeout)
+            if realtime:
+                ret = self._run_cmd_stream(command, idletimeout, progresscb)
+            else:
+                ret = check_output(command, stderr=STDOUT, timeout=timeout)
         except CalledProcessError as ce:
             if type(ce.cmd).__name__ == "bytes":
                 ce.cmd = ce.cmd.decode("utf-8")
@@ -69,12 +117,12 @@ class ModuleInterface(ABC):
                 max_output(ce.output),
                 max_output(ce.stderr),
             )
-            err = f"""Error in command {ce.cmd}: 
-            code: {ce.returncode}, stdout:
-            {ce.output}
-            stderr:
-            {ce.stderr}
-            """
+            err = f"Error in command {ce.cmd}: \n"
+            err = err + "code: {ce.returncode}, stdout:\n"
+            err = err + "{ce.output}\n"
+            err = err + "stderr:\n"
+            err = err + "{ce.stderr}"
+            
             try:
                 errfile = self.get_log_name(".err")
                 if logoutput:
@@ -86,10 +134,16 @@ class ModuleInterface(ABC):
                     fe.write(err)
             except:
                 pass
-            raise # This is to show the test as failed
+            raise  # This is to show the test as failed
         except TimeoutExpired as te:
             logger.warn("Timeout expired for command %s", te.cmd)
-            ret = te.output
+            ret = f"{te.stdout=} \n{te.stderr=}"
+            self.status = "error"
+        except TimeoutError as te2:
+            logger.warn(
+                "Timeout expired for Stream command %s: %s", command, te2)
+            ret = ""
+            self.status = "error"
 
         if type(ret).__name__ == "bytes":
             ret = ret.decode("utf-8")
@@ -157,10 +211,10 @@ class ModuleInterface(ABC):
 
     def is_discovery(self):
         return "discovery." in self.module_name
-    
+
     def is_userenum(self):
         return "userenum." in self.module_name
-    
+
     def get_outdir(self, folder=None):
         """Get log out folder
 
@@ -183,7 +237,6 @@ class ModuleInterface(ABC):
             outdir = os.path.join(basedir, h, folder)
         else:
             outdir = os.path.join(basedir, h)
-        
 
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)

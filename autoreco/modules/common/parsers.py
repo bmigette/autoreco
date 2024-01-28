@@ -46,3 +46,19 @@ def parse_netexec_hostline(line, update_host = False):
             host_to_update.add_hostname(data["hostname"])
     
     return data
+
+
+def parse_gobuster_progress(lines):
+    #Progress: 2903 / 220561 (1.32%)
+    for line in lines.split("\n"):
+        if 'Progress:' in line:
+            return line.split("Progress:")[1].split(")").strip()+")"
+    return None
+
+def parse_ffuf_progress(lines):
+    #:: Progress: [958/4989] :: Job [1/1] :: 328 req/sec :: Duration: [0:00:03] :: Errors: 0 :
+    for line in lines.split("\n"):
+        if 'Progress:' in line:
+            return line.split("Progress:")[1].split("::")[0].strip()
+    return None
+

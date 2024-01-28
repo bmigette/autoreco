@@ -8,7 +8,9 @@ QUEUE_WAIT_TIME = (
     10  # Time to wait for a queue item. This is time for graceful shutdown essentially
 )
 LOGLEVEL = logging.INFO
-DEFAULT_PROCESS_TIMEOUT = 600  # Default timeout for a process
+DEFAULT_PROCESS_TIMEOUT = 900  # Default timeout for a process
+DEFAULT_IDLE_TIMEOUT = 120  # Default timeout for a idle process
+DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2  # Default timeout for a long process
 WATCHDOG_INTERVAL = 120
 WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
 TEST_FILTERS = []  # execute tests matching these filters only
@@ -32,12 +34,16 @@ NMAP_TCP_HOSTSCAN_OPTIONS = (
 )
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
-WORD_LIST_LARGE_THRESHOLD = 50000 # Job using a wordlist with more than this entries should be run only at the end
+WORD_LIST_LARGE_THRESHOLD = 100000 # Job using a wordlist with more than this entries should be run only at the end
+#┌──(babadmin㉿kakali) - 19:55:34 - [~]
+#└─$ cat /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt | wc -l
+#87664
 
 # GOBUSTER / FFUF Options
 WEB_WORDLISTS = {
     "dir": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/quickhits.txt",
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",        
         "/usr/share/wordlists/dirb/common.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt",

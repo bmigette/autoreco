@@ -1,7 +1,7 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ...config import DEFAULT_PROCESS_TIMEOUT, WEB_WORDLISTS_FILES_HASEXT
-
+from ..common.parsers import parse_gobuster_progress
 from ...TestHost import TestHost
 
 class GoBuster(ModuleInterface):
@@ -32,6 +32,7 @@ class GoBuster(ModuleInterface):
             host = "-H 'Host: " + self.args["host"] + "'"
         cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
-        ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*3)
+        # TODO Make timeout higher for big lists
+        ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, realtime=True, progresscb=parse_gobuster_progress) 
 
       
