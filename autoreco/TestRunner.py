@@ -42,9 +42,14 @@ class TestRunner(object):
                     pass
                 else:
                     logger.info(
-                        "Adding new job for host %s: \n %s",
+                        "Adding new job for host %s with module %s on target %s",
                         host,
-                        json.dumps(payload, indent=4),
+                        payload["module_name"],
+                        payload["target"]
+                    )
+                    logger.debug(
+                        "Job Payload: \n %s",
+                        json.dumps(payload, indent=4)
                     )
                     host.set_test_state(testid, "queued")
                     WorkThreader.add_job(payload)
@@ -84,17 +89,32 @@ class TestRunner(object):
         # TODO: Implement
         pass
 
+    def resume_failed(self):
+        """Resume failed test
+        """
+        with statelock:
+            state = TEST_STATE.copy()
+        for k, v in state.items():
+            if k == "discovery":
+                continue
+            for testname, testdata in state[k]["tests_state"].items():
+                if testdata["state"] != "done":
+                    del TEST_STATE[k]["tests_state"][testname]
+                    #Deleting will force test suggestor to resume
+                    
+                    
     def print_state(self):
         with statelock:
             logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
             logger.info("=" * 50)
             
-    def run(self, resume = False):
+    def run(self, resume = False, resume_failed = True):
         try:
             logger.info("=" * 50)
             if resume:
                 logger.info("Tests Resumed at %s", datetime.now().isoformat())
-                # TODO Retry failed tests in state ? Make it configurable ?
+                if resume_failed:
+                    self.resume_failed()
             else:
                 logger.info("Tests Started at %s", datetime.now().isoformat())
             logger.info("Output Dir: %s", TEST_WORKING_DIR)

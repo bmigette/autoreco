@@ -69,4 +69,4 @@ WEB_WORDLISTS_FILES_HASEXT = {
     "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt": False
 }
 
-GOBUSTER_FILE_EXT = "pdf,csv,txt,html,php,c,exe,php5,sh,sql,xml"
+GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,c,exe,php5,sh,sql,xml,asp,aspx"

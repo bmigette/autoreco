@@ -49,7 +49,7 @@ class NmapHostScan(ModuleInterface):
         
     def _parse_ports(self, ports):
         if isinstance(ports, list):
-            return ",".join(map(str, self.args["ports"]))
+            return "-p " + ",".join(map(str, self.args["ports"]))
         else:
             ports = str(ports)
             if "--" in ports or "-p" in ports:

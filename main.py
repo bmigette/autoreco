@@ -63,11 +63,24 @@ def main():
         default=None,
     )
 
+    parser.add_argument(
+        "-rf",
+        "--resume-failed",
+        help="Resume failed jobs",
+        default=True,
+        action="store_true"
+    )
+        
     args = parser.parse_args()
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")
     
     testresume = False
+    
+    if not args.subnet and not args.domain and not args.host and not args.resume:
+        parser.print_help()
+        sys.exit(-1)
+        
     
     if args.output_dir:
         autoreco.state.set_working_dir(args.output_dir)
@@ -92,7 +105,7 @@ def main():
     from autoreco.TestRunner import TestRunner
 
     runner = TestRunner(args.subnet, args.domain, args.host)
-    runner.run(testresume)
+    runner.run(testresume, args.resume_failed)
 
 
 if __name__ == "__main__":

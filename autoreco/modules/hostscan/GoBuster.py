@@ -32,7 +32,6 @@ class GoBuster(ModuleInterface):
             host = "-H 'Host: " + self.args["host"] + "'"
         cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
-        # TODO Make timeout higher for big lists
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, realtime=True, progresscb=parse_gobuster_progress) 
 
       

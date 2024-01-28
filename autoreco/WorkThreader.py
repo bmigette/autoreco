@@ -83,14 +83,14 @@ class Watchdog:
                     if len(job) > 255:
                         job = job[:255]
                 extra_space = " " if inst.busy else ""
-                logger.debug(
+                logger.info(
                     "| Thread %s | Busy %s  %s| %s",
                     inst.thread_id,
                     inst.busy,
                     extra_space,
                     job,
                 )
-            logger.debug("=" * 50)
+            logger.info("=" * 50)
         except Exception as e:
             logger.error("Error int print_thread_stats: %s", e, exc_info=True)
 
@@ -149,6 +149,7 @@ class _WorkThread:
         self.current_job = None
         self.current_job_date = None
         self.current_module_obj = None
+        self.is_stopping = False
         self.modules = ModuleLoader.get_modules()
         self.stopevent = Event()
         self.thread = Thread(target=self.thread_consumer,
@@ -159,6 +160,7 @@ class _WorkThread:
     def stop(self) -> None:
         logger.debug("Stopping thread %s...", self.thread_id)
         self.stopevent.set()
+        self.is_stopping = True
 
     def process_job(self, job: dict) -> None:
         """Process a queued job
@@ -183,6 +185,14 @@ class _WorkThread:
             self.current_module_obj = module_object
             module_object.start()
         finally:
+            if self.is_stopping:
+                if self.current_job:
+                    try:
+                        hostobj = TestHost(job["target"])
+                        hostobj.set_test_state(job["job_id"], "stopped")
+                    except Exception as ie:
+                        logger.error(
+                        "Error in thread close: %s", ie)
             self.busy = False
             self.current_job = None
             self.current_job_date = None

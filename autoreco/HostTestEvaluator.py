@@ -1,7 +1,7 @@
 from .logger import logger
 from .TestHost import TestHost
 from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, WORD_LIST_LARGE_THRESHOLD
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS
 from pathlib import Path
 import re
 
@@ -33,13 +33,16 @@ class HostTestEvaluator:
         tests = self._safe_merge(tests, self.get_file_tests())
         tests = self._safe_merge(tests, self.get_web_tests())
         tests = self._safe_merge(tests, self.get_web_file_tests())
+
+        # AD / Users tests
+        tests = self._safe_merge(tests, self.get_ad_users_tests())
         # TODO NFS Scan
         # TODO SNMP / onesixtyone
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         return tests
 
-    def get_list_priority(self, wordlistfile): # TODO Make this more granular ?
+    def get_list_priority(self, wordlistfile):
         with open(wordlistfile, 'r') as fp:
             cnt = len(fp.readlines())
         return int(cnt/1000)
@@ -54,7 +57,7 @@ class HostTestEvaluator:
             hostobj = TestHost(k)
             if hostobj.os_family and "windows" not in hostobj.os_family.lower():
                 continue
-            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services: # TODO maybe needs improve
+            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services:  # TODO maybe needs improvement
                 dcs.append(k)
         logger.debug("Known DCs: %s", dcs)
         return dcs
@@ -73,11 +76,28 @@ class HostTestEvaluator:
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
+    def get_ad_users_tests(self):
+        tests = {}
+        doms = self.get_known_domains()
+        for dc in self.get_ad_dc_ips():
+            for d in doms:
+                for w in USERENUM_LISTS:
+                    file = Path(w).stem
+                    jobid = f"userenum.Kerbrute_{dc}_kerbrute_users_{file}_{d}"
+                    tests[jobid] = {
+                        "module_name": "userenum.Kerbrute",
+                        "job_id": jobid,
+                        "target": dc,
+                        "priority": self.get_list_priority(w),
+                        "args": {"domain": "d", "wordlist": w},
+                    }
+                    # TODO Add RID Brute here
+        return tests
+
     def get_file_tests(self):
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
-            or "netbios-ssn" in self.hostobject.services
         ):
             jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smbshares_spider"
             tests[jobid] = {
@@ -122,9 +142,8 @@ class HostTestEvaluator:
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
-            or "netbios-ssn" in self.hostobject.services
         ):
-            ports = self.get_tcp_services_ports(["microsoft-ds", "netbios-ssn"])
+            ports = self.get_tcp_services_ports(["microsoft-ds"])
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbenum_{ports}"
             tests[jobid] = {
                 "module_name": "hostscan.NmapHostScan",
@@ -201,7 +220,7 @@ class HostTestEvaluator:
         """
         tests = {}
         for s in ["http", "https"]:
-            ### Running tests against IP
+            # Running tests against IP
             if s in self.hostobject.tcp_service_ports:
                 for p in self.hostobject.tcp_service_ports[s]:
                     for w in WEB_WORDLISTS["files"]:
@@ -254,7 +273,7 @@ class HostTestEvaluator:
         tests = {}
         doms = self.get_known_domains()
         for s in ["http", "https"]:
-            ### Running tests against IP
+            # Running tests against IP
             if s in self.hostobject.tcp_service_ports:
                 for p in self.hostobject.tcp_service_ports[s]:
                     for w in WEB_WORDLISTS["dir"]:
@@ -274,7 +293,7 @@ class HostTestEvaluator:
                             },
                         }
 
-                        for h in self.hostobject.hostnames: 
+                        for h in self.hostobject.hostnames:
                             if "." not in h:
                                 if self.hostobject.domain:
                                     h = f"{h}.{self.hostobject.domain}"
@@ -293,7 +312,7 @@ class HostTestEvaluator:
                                     "wordlist": w,
                                 },
                             }
-                    ## Trying to get new VHosts
+                    # Trying to get new VHosts
                     for w in WEB_WORDLISTS["vhost"]:
                         for d in doms:
                             file = Path(w).stem
@@ -316,13 +335,13 @@ class HostTestEvaluator:
         tests = {}
         jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_quick_tcp"
         tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 100,
-                "args": {"protocol": "tcp", "ports": "--top-ports 150"},
+            "module_name": "hostscan.NmapHostScan",
+            "job_id": jobid,
+            "target": self.hostobject.ip,
+            "priority": 100,
+            "args": {"protocol": "tcp", "ports": "--top-ports 150"},
         }
-            
+
         for proto in ["tcp", "udp"]:
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
             tests[jobid] = {

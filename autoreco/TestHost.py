@@ -338,7 +338,7 @@ class TestHost:
         testid: str,
         state: str,
         module_name: str = None,
-        target: str = None,
+        target: str = None,        
         args: list = None,
     ):
         """Set test state. Omitted values won't override what's in state

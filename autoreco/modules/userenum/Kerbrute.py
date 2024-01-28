@@ -12,12 +12,10 @@ class Kerbrute(ModuleInterface):
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
 
-        user = "anonymous"
-        passw = "''"
-        if "user" in self.args:
-            user = "'" + self.args["user"] + "'"
-        if "password" in self.args:
-            passw = "'" + self.args["password"] + "'"
-        # TODO Implement Kerbrute
-        self.command = f"netexec smb {self.target} -u {user} -p {passw} --rid-brute 10000 --log {logfile}"
+        domain = self.args["domain"]
+        w = self.args["wordlist"]
+        
+        # `kerbrute userenum -d manager.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt --dc 10.10.11.236`
+        self.command = f"kerbrute userenum -d {domain} {w} --dc {self.target} -o {logfile}"
+        # TODO Implement Kerbrute output parsing, and make it a realtime output
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
