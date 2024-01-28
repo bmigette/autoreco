@@ -79,8 +79,18 @@ class HostTestEvaluator(TestEvaluatorBase):
         if not self.is_dc():
             return tests
                 
+        # Domain detected automatically
+        jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{file}_{d}"
+        tests[jobid] = {
+            "module_name": "userenum.NetExecRIDBrute",
+            "job_id": jobid,
+            "target": self.hostobject.ip,
+            "priority": 1000,
+            "args": {},
+        }
         
-        doms = self.get_known_domains()        
+        doms = self.get_known_domains()   
+                             
         for d in doms:
             for w in USERENUM_LISTS:
                 file = Path(w).stem
@@ -92,7 +102,8 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": self.get_list_priority(w),
                     "args": {"domain": "d", "wordlist": w},
                 }
-                    # TODO Add RID Brute here
+           
+
         return tests
 
 
