@@ -2,11 +2,13 @@ from .logger import logger
 from .TestHost import TestHost
 from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
 from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS
+from .TestEvaluatorBase import TestEvaluatorBase
+
 from pathlib import Path
 import re
 
 
-class HostTestEvaluator:
+class HostTestEvaluator(TestEvaluatorBase):
     """
     This class scans known hosts in state, and suggest additional tests to run
     It will always return all possible tests for this host, then the TestRunner will only run tests not run previously
@@ -16,13 +18,7 @@ class HostTestEvaluator:
     def __init__(self, hostobject: TestHost):
         self.hostobject = hostobject
 
-    def _safe_merge(self, d1, d2):
-        tempd = d1.copy()
-        for k, v in d2.items():
-            if k in tempd:
-                raise Exception(f"{k} is already in dict")
-            tempd[k] = v
-        return tempd
+
 
     def get_tests(self):
         logger.debug("Evaluating tests for host %s ...", self.hostobject)
@@ -33,34 +29,17 @@ class HostTestEvaluator:
         tests = self._safe_merge(tests, self.get_file_tests())
         tests = self._safe_merge(tests, self.get_web_tests())
         tests = self._safe_merge(tests, self.get_web_file_tests())
-
-        # AD / Users tests
-        tests = self._safe_merge(tests, self.get_ad_users_tests())
+        
         # TODO NFS Scan
         # TODO SNMP / onesixtyone
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
-
+        
+        # AD / Users tests
+        tests = self._safe_merge(tests, self.get_ad_users_tests())
+        
         return tests
 
-    def get_list_priority(self, wordlistfile):
-        with open(wordlistfile, 'r') as fp:
-            cnt = len(fp.readlines())
-        return int(cnt/1000)
 
-    def get_ad_dc_ips(self):
-        dcs = []
-        with statelock:
-            state = TEST_STATE.copy()
-        for k, v in state.items():
-            if k == "discovery":
-                continue
-            hostobj = TestHost(k)
-            if hostobj.os_family and "windows" not in hostobj.os_family.lower():
-                continue
-            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services:  # TODO maybe needs improvement
-                dcs.append(k)
-        logger.debug("Known DCs: %s", dcs)
-        return dcs
 
     def get_tcp_services_ports(self, services: list):
         r = []
@@ -76,23 +55,47 @@ class HostTestEvaluator:
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
-    def get_ad_users_tests(self):
+    
+    def get_ad_dc_ips(self):
+        dcs = []
+        with statelock:
+            state = TEST_STATE.copy()
+        for k, v in state.items():
+            if k == "discovery":
+                continue
+            hostobj = TestHost(k)
+            if hostobj.os_family and "windows" not in hostobj.os_family.lower():
+                continue
+            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services:  # TODO maybe needs improvement
+                dcs.append(k)
+        logger.debug("Known DCs: %s", dcs)
+        return dcs
+
+    def is_dc(self):
+        return self.hostobject.ip in self.get_ad_dc_ips()
+    
+    def get_ad_users_tests(self): # TODO: Move outside of HostTestEvaluator, and make a separate class for AD / User related tests
         tests = {}
-        doms = self.get_known_domains()
-        for dc in self.get_ad_dc_ips():
-            for d in doms:
-                for w in USERENUM_LISTS:
-                    file = Path(w).stem
-                    jobid = f"userenum.Kerbrute_{dc}_kerbrute_users_{file}_{d}"
-                    tests[jobid] = {
-                        "module_name": "userenum.Kerbrute",
-                        "job_id": jobid,
-                        "target": dc,
-                        "priority": self.get_list_priority(w),
-                        "args": {"domain": "d", "wordlist": w},
-                    }
+        if not self.is_dc():
+            return tests
+                
+        
+        doms = self.get_known_domains()        
+        for d in doms:
+            for w in USERENUM_LISTS:
+                file = Path(w).stem
+                jobid = f"userenum.Kerbrute_{self.hostobject.ip}_kerbrute_users_{file}_{d}"
+                tests[jobid] = {
+                    "module_name": "userenum.Kerbrute",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": self.get_list_priority(w),
+                    "args": {"domain": "d", "wordlist": w},
+                }
                     # TODO Add RID Brute here
         return tests
+
+
 
     def get_file_tests(self):
         tests = {}

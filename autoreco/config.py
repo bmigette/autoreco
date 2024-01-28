@@ -64,9 +64,18 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
     ]
 }
+
+
 WEB_WORDLISTS_FILES_HASEXT = {
     "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt" : True,
     "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt": False
 }
 
 GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,c,exe,php5,sh,sql,xml,asp,aspx"
+
+
+# UserEnum
+USERENUM_LISTS = [
+    "/usr/share/statistically-likely-usernames/jsmith.txt",
+    "/usr/share/seclists/Usernames/xato-net-10-million-usernames-dup.txt"
+]

@@ -1,5 +1,6 @@
 from .WorkThreader import WorkThreader
 from .HostTestEvaluator import HostTestEvaluator
+
 from .TestHost import TestHost
 from .logger import logger
 from .utils import print_summary
@@ -53,6 +54,8 @@ class TestRunner(object):
                     )
                     host.set_test_state(testid, "queued")
                     WorkThreader.add_job(payload)
+        
+        
         if WorkThreader.finished():
             WorkThreader.stop_threads()
             self.finish()
