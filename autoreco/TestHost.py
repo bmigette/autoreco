@@ -185,6 +185,9 @@ class TestHost:
             service (str): service name, example http
             port (int): port number
         """
+        if not service:
+            logger.warn("Skipping empty tcp service with port %s", port)
+            return
         service = service.lower()
         global TEST_STATE
         with statelock:
@@ -218,6 +221,9 @@ class TestHost:
             product (str): product
             version (str): version
         """
+        if not service:
+            logger.warn("Skipping empty service version with port %s", port)
+            return
         service = service.lower()
         global TEST_STATE
         with statelock:
@@ -246,6 +252,9 @@ class TestHost:
             service (str): service name, example http
             port (int): port number
         """
+        if not service:
+            logger.warn("Skipping empty udp service with port %s", port)
+            return
         service = service.lower()
         global TEST_STATE
         with statelock:
@@ -296,6 +305,8 @@ class TestHost:
         Args:
             service (str): service name, example http
         """
+        if not service:
+            return
         global TEST_STATE
         service = service.lower()
         with statelock:

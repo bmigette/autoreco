@@ -57,7 +57,7 @@ def main():
     )
 
     parser.add_argument(
-        "-e",
+        "-r",
         "--resume",
         help="Resume from previous working dir",
         default=None,

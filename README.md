@@ -32,7 +32,7 @@ pip install -r requirements.txt
 ```
 
 # Configuration
-There's a few hardcoded path in the config.py that matches default path for a Kali Linux installation. Might need to be adjusted for your system
+There's a few hardcoded path in the config.py that matches default path for a Kali Linux installation. This need to be adjusted for your system.
 Other options can also be fine tuned in this file.
 
 # Usage
@@ -57,8 +57,21 @@ options:
                         Executes only tests that matches filters, example: *nmap*. fnmatch Format
   -ns NMAP_SPEED, --nmap-speed NMAP_SPEED
                         nmap speed (1-5)
-  -e RESUME, --resume RESUME
+  -r RESUME, --resume RESUME
                         Resume from previous working dir
+  -rf, --resume-failed  Resume failed jobs
+```
+
+# Examples
+```
+python main.py --subnet 192.168.1.0/24
+python main.py --host 192.168.1.1 --domain test.com
+```
+
+## Resuming a test
+The following command will attempt to resume a scan. The resume-failed option allows to retry all tests that are not successful (Error, Stopped, ...)
+```
+python main.py --resume /path/to/autoreco_2024_xxxx --resume-failed
 ```
 
 # Notes

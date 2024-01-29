@@ -118,10 +118,10 @@ class ModuleInterface(ABC):
                 max_output(ce.stderr),
             )
             err = f"Error in command {ce.cmd}: \n"
-            err = err + "code: {ce.returncode}, stdout:\n"
-            err = err + "{ce.output}\n"
+            err = err + f"code: {ce.returncode}, stdout:\n"
+            err = err + f"{ce.output}\n"
             err = err + "stderr:\n"
-            err = err + "{ce.stderr}"
+            err = err + f"{ce.stderr}"
             
             try:
                 errfile = self.get_log_name(".err")
@@ -262,7 +262,7 @@ class ModuleInterface(ABC):
                 if os.path.isfile(v):
                     v = Path(v).stem
                 v.replace(",", "+")
-            args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "", v))
+            args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
         return "-".join(args)
 
     def get_log_name(self, ext="out", argusekey=[], folder=None):

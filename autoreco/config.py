@@ -27,7 +27,7 @@ NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"
 NMAP_DEFAULT_UDP_PORT_OPTION = "--top-ports 150"
 NMAP_SPEED = 4
 NMAP_MAX_HOST_TIME = (
-    "15m"  # Max time per host for NMAP, see https://nmap.org/book/man-performance.html
+    "20m"  # Max time per host for NMAP, see https://nmap.org/book/man-performance.html
 )
 NMAP_TCP_HOSTSCAN_OPTIONS = (
     f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
@@ -46,7 +46,7 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",        
         "/usr/share/wordlists/dirb/common.txt",
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt",
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/combined_directories.txt",
     ],
     "vhost": [
         

@@ -40,10 +40,14 @@ class FFUF(ModuleInterface):
         
     def scan_hosts(self, output_log, hostobj):
         try:
+            domain = self.args["domain"]
             with open(output_log, "r") as f:
                 data = json.loads(f.read())
             for r in data["results"]:
-                hostobj.add_hostname(r["host"])
+                host = r["host"]
+                if domain not in host:
+                    host = f"{host}.{domain}"
+                hostobj.add_hostname(host) 
         except Exception as e:
             logger.error("Error when parsing FFUF output file %s: %s", output_log, e, exc_info=True)
       
