@@ -11,9 +11,9 @@ import logging
 import os
 import sys
 from datetime import datetime
-import autoreco.state
+import autoreco.State
 
-autoreco.state.set_working_dir(os.getcwd(), True)
+autoreco.State.State().set_working_dir(os.getcwd(), True)
 
 import autoreco.config
 
@@ -87,6 +87,12 @@ def main():
         default=autoreco.config.MAX_LIST_SIZE,
     )
 
+    parser.add_argument(
+        "-rs",
+        "--run-scans",
+        help="Scans to run, default all. Example: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp",
+        default=autoreco.config.RUN_SCANS,
+    )
         
     args = parser.parse_args()
     if args.resume and args.output_dir:
@@ -100,15 +106,15 @@ def main():
         
     
     if args.output_dir:
-        autoreco.state.set_working_dir(args.output_dir)
+        autoreco.State.State().set_working_dir(args.output_dir)
     elif args.resume:
         if not os.path.isdir(args.resume) or not os.path.exists(os.path.join(args.resume, "state.json")):
             raise Exception(f"state.json not found in dir {args.resume}")
         testresume = True
-        autoreco.state.set_working_dir(os.path.abspath(args.resume), resume=True)
-        autoreco.state.load_state()
+        autoreco.State.State().set_working_dir(os.path.abspath(args.resume), resume=True)
+        autoreco.State.State().load_state()
     else:
-        autoreco.state.set_working_dir(os.getcwd())    
+        autoreco.State.State().set_working_dir(os.getcwd())    
    
         
     if args.verbose:
@@ -118,6 +124,11 @@ def main():
     autoreco.config.NMAP_SPEED = args.nmap_speed
     autoreco.config.TEST_FILTERS = args.test_filter
     autoreco.config.MAX_LIST_SIZE = args.max_list_size
+    autoreco.config.RUN_SCANS = args.run_scans
+
+    if args.credentials and not os.path.exists(args.credentials):
+        raise Exception(f"File doesn't exist: {args.credentials}")
+    autoreco.config.CREDENTIALS_FILE = args.credentials
     #autoreco.config.DNS_SERVER = args.dns_server
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner

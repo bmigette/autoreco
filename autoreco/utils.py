@@ -1,5 +1,5 @@
 from .logger import logger
-from .state import statelock, TEST_STATE
+from .State import State
 from .config import DEFAULT_MAX_OUTPUT
 
 
@@ -17,21 +17,20 @@ def print_summary():
     success_tests = 0
     failed_tests = 0
     started_tests = 0
-    with statelock:
-        for host, data in TEST_STATE.items():
-            total_hosts += 1
-            if "tests_state" in data:
-                for testid, testdata in data["tests_state"].items():
-                    total_tests += 1
-                    if testdata["state"] == "done":
-                        success_tests += 1
-                    elif testdata["state"] == "error":
-                        failed_tests += 1
-                    elif testdata["state"] == "started":
-                        started_tests += 1
-                    else:
-                        pass
-                        # logger.warn("Test %s state: %s", testid, testdata["state"])
+    for host, data in State().TEST_STATE.items():
+        total_hosts += 1
+        if "tests_state" in data:
+            for testid, testdata in data["tests_state"].items():
+                total_tests += 1
+                if testdata["state"] == "done":
+                    success_tests += 1
+                elif testdata["state"] == "error":
+                    failed_tests += 1
+                elif testdata["state"] == "started":
+                    started_tests += 1
+                else:
+                    pass
+                    # logger.warn("Test %s state: %s", testid, testdata["state"])
         from .WorkThreader import WorkThreader
 
         logger.info("=" * 50)

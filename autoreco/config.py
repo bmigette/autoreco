@@ -16,6 +16,7 @@ WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
 TEST_FILTERS = []  # execute tests matching these filters only
 DNS_SERVER = None # Not used atm
 DEFAULT_MAX_OUTPUT = 10000 # Max len of command output
+RUN_SCANS = "all" #dns,webfiles,webdiscovery,userenum
 
 ##### Modules Specific Config #####
 
@@ -81,3 +82,6 @@ USERENUM_LISTS = [
     "/usr/share/statistically-likely-usernames/jsmith.txt",
     "/usr/share/seclists/Usernames/xato-net-10-million-usernames-dup.txt"
 ]
+
+
+CREDENTIALS_FILE = None

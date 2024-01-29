@@ -1,11 +1,12 @@
 from .logger import logger
 from .TestHost import TestHost
-from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS
+from .State import State
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, CREDENTIALS_FILE, RUN_SCANS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
 import re
+import os
 
 
 class HostTestEvaluator(TestEvaluatorBase):
@@ -18,28 +19,45 @@ class HostTestEvaluator(TestEvaluatorBase):
     def __init__(self, hostobject: TestHost):
         self.hostobject = hostobject
 
-
-
     def get_tests(self):
+        global RUN_SCANS
         logger.debug("Evaluating tests for host %s ...", self.hostobject)
         tests = {}
+        # Always running generic tests for service discovery
         tests = self._safe_merge(tests, self.get_generic_tests())
-        tests = self._safe_merge(tests, self.get_nmap_specific_tests())
-        tests = self._safe_merge(tests, self.get_dns_tests())
-        tests = self._safe_merge(tests, self.get_file_tests())
-        tests = self._safe_merge(tests, self.get_web_tests())
-        tests = self._safe_merge(tests, self.get_web_file_tests())
-        
+
+        if "all" in RUN_SCANS or "nmapscan" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_nmap_specific_tests())
+        if "all" in RUN_SCANS or "dns" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_dns_tests())
+        if "all" in RUN_SCANS or "file" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_file_tests())
+        if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_web_tests())
+        if "all" in RUN_SCANS or "webfiles" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_web_file_tests())
+
         # TODO NFS Scan
         # TODO SNMP / onesixtyone
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
-        
+
         # AD / Users tests
-        tests = self._safe_merge(tests, self.get_ad_users_tests())
-        
+        if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_ad_users_tests())
+
         return tests
 
-
+    def get_known_credentials(self):
+        global CREDENTIALS_FILE
+        creds = []
+        if not CREDENTIALS_FILE or not os.path.exists(CREDENTIALS_FILE):
+            if os.path.exists(os.path.join(State().TEST_WORKING_DIR, "creds.txt")):
+                CREDENTIALS_FILE = os.path.join(State().TEST_WORKING_DIR, "creds.txt")
+            else:
+                return creds
+        with open(CREDENTIALS_FILE, "r") as f:
+            creds = [x.split(":") for x in f.readlines()]
+        return creds
 
     def get_tcp_services_ports(self, services: list):
         r = []
@@ -55,11 +73,10 @@ class HostTestEvaluator(TestEvaluatorBase):
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
-    
     def get_ad_dc_ips(self):
         dcs = []
-        with statelock:
-            state = TEST_STATE.copy()
+
+        state = State().TEST_STATE.copy()
         for k, v in state.items():
             if k == "discovery":
                 continue
@@ -73,12 +90,13 @@ class HostTestEvaluator(TestEvaluatorBase):
 
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
-    
-    def get_ad_users_tests(self): # TODO: Add support for credentialed enums
+
+    def get_ad_users_tests(self): 
+        global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
             return tests
-                
+
         # Domain detected automatically
         jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{file}_{d}"
         tests[jobid] = {
@@ -88,9 +106,9 @@ class HostTestEvaluator(TestEvaluatorBase):
             "priority": 500,
             "args": {},
         }
-        
-        doms = self.get_known_domains()   
-                             
+
+        doms = self.get_known_domains()
+
         for d in doms:
             for w in USERENUM_LISTS:
                 file = Path(w).stem
@@ -102,11 +120,20 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": self.get_list_priority(w),
                     "args": {"domain": "d", "wordlist": w},
                 }
-           
+        #### netexec credentialed enum
+        for action in ["loggedon-users", "groups", "users"]:
+            for p in ["smb", "winrm"]:
+                for creds in self.get_known_credentials():
+                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{creds[0]}"
+                    tests[jobid] = {
+                        "module_name": "userenum.NetExecUserEnum",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 100,
+                        "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
+                    }
 
         return tests
-
-
 
     def get_file_tests(self):
         tests = {}
@@ -121,6 +148,16 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "priority": 100,
                 "args": {"action": "shares", "spider": True},
             }
+            # Credentialed SMB Share Listing
+            for creds in self.get_known_credentials():
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smbshares_spider_{creds[0]}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NetExecHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {"action": "shares", "spider": True, "user": creds[0], "password": creds[1]},
+                }
         return tests
 
     def get_dns_tests(self):
@@ -129,6 +166,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
+        global WEB_WORDLISTS
         tests = {}
         doms = self.get_known_domains()
         for s in ["domain"]:
@@ -148,6 +186,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "args": {
                                     "mode": "dns",
                                     "domain": d,
+                                    "wordlist": w,
                                 },
                             }
         return tests
@@ -199,11 +238,9 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_known_domains(self):
-        global KNOWN_DOMAINS, TEST_STATE
-        with domainlock:
-            doms = KNOWN_DOMAINS.copy()
-        with statelock:
-            state = TEST_STATE.copy()
+
+        doms = State().KNOWN_DOMAINS.copy()
+        state = State().TEST_STATE.copy()
         for k, v in state.items():
             if k == "discovery":
                 continue
@@ -221,8 +258,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             if d:
                 doms2.append(d)
         doms = list(set(doms2))
-        with domainlock:
-            KNOWN_DOMAINS = doms.copy()
+        State().KNOWN_DOMAINS = doms # .copy() # Statewrapper always copy
         logger.debug("Known Domains: %s", doms)
         return doms
 
@@ -232,6 +268,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
+        global WEB_WORDLISTS, GOBUSTER_FILE_EXT
         tests = {}
         for s in ["http", "https"]:
             # Running tests against IP
@@ -278,12 +315,13 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-    def get_web_tests(self): # TODO ADD NIKTO (nikto -host http://xxxx)
+    def get_web_tests(self):  # TODO ADD NIKTO (nikto -host http://xxxx)
         """Create GoBuster jobs
 
         Returns:
             dict: jobs
         """
+        global WEB_WORDLISTS
         tests = {}
         doms = self.get_known_domains()
         for s in ["http", "https"]:

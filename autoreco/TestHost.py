@@ -1,4 +1,4 @@
-from .state import statelock, TEST_STATE
+from .State import State
 from .logger import logger
 import re
 import json
@@ -72,23 +72,19 @@ class TestHost:
         """
         if not "discovery" in hostip and not TestHost.is_ip(hostip):
             raise ValueError(f"{hostip} is not an IP or discovery")
-        with statelock:
-            if hostip not in TEST_STATE:
-                TEST_STATE[hostip] = {}
+        if hostip not in State().TEST_STATE:
+            State().TEST_STATE[hostip] = {}
 
     def _state_field_get(self, fieldname, default_value = None):
-        with statelock:
-            if self.ip not in TEST_STATE or fieldname not in TEST_STATE[self.ip]:
-                return default_value
-            return TEST_STATE[self.ip][fieldname]
+        if self.ip not in State().TEST_STATE or fieldname not in State().TEST_STATE[self.ip]:
+            return default_value
+        return State().TEST_STATE[self.ip][fieldname]
 
     def _state_field_set(self, fieldname, value):
-        with statelock:
-            TEST_STATE[self.ip][fieldname] = value
+        State().TEST_STATE[self.ip][fieldname] = value
 
     def _state_field_exists(self, fieldname):
-        with statelock:
-            return fieldname in TEST_STATE[self.ip]
+        return fieldname in State().TEST_STATE[self.ip]
 
     @property
     def hostnames(self):
@@ -189,15 +185,15 @@ class TestHost:
             logger.warn("Skipping empty tcp service with port %s", port)
             return
         service = service.lower()
-        global TEST_STATE
-        with statelock:
-            if "tcp_service_ports" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["tcp_service_ports"] = {service: [int(port)]}
+        
+        with State().statelock:
+            if "tcp_service_ports" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["tcp_service_ports"] = {service: [int(port)]}
             else:
-                if service not in TEST_STATE[self.ip]["tcp_service_ports"]:
-                    TEST_STATE[self.ip]["tcp_service_ports"][service] = []
-                if int(port) not in TEST_STATE[self.ip]["tcp_service_ports"][service]:
-                    TEST_STATE[self.ip]["tcp_service_ports"][service].append(int(port))
+                if service not in State().TEST_STATE[self.ip]["tcp_service_ports"]:
+                    State().TEST_STATE[self.ip]["tcp_service_ports"][service] = []
+                if int(port) not in State().TEST_STATE[self.ip]["tcp_service_ports"][service]:
+                    State().TEST_STATE[self.ip]["tcp_service_ports"][service].append(int(port))
 
     def _has_product_version(self, slist, product, version):
         """Checks if a product / version already exists in state
@@ -225,23 +221,23 @@ class TestHost:
             logger.warn("Skipping empty service version with port %s", port)
             return
         service = service.lower()
-        global TEST_STATE
-        with statelock:
-            if "service_versions" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["service_versions"] = {
+        
+        with State().statelock:
+            if "service_versions" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["service_versions"] = {
                     service: {int(port): [{"product": product, "version": version}]}
                 }
             else:
-                if service not in TEST_STATE[self.ip]["service_versions"]:
-                    TEST_STATE[self.ip]["service_versions"][service] = {}
-                if int(port) not in TEST_STATE[self.ip]["service_versions"][service]:
-                    TEST_STATE[self.ip]["service_versions"][service][int(port)] = []
+                if service not in State().TEST_STATE[self.ip]["service_versions"]:
+                    State().TEST_STATE[self.ip]["service_versions"][service] = {}
+                if int(port) not in State().TEST_STATE[self.ip]["service_versions"][service]:
+                    State().TEST_STATE[self.ip]["service_versions"][service][int(port)] = []
                 if self._has_product_version(
-                    TEST_STATE[self.ip]["service_versions"][service][int(port)],
+                    State().TEST_STATE[self.ip]["service_versions"][service][int(port)],
                     product,
                     version,
                 ):
-                    TEST_STATE[self.ip]["service_versions"][service][int(port)].append(
+                    State().TEST_STATE[self.ip]["service_versions"][service][int(port)].append(
                         {"product": product, "version": version}
                     )
 
@@ -256,15 +252,15 @@ class TestHost:
             logger.warn("Skipping empty udp service with port %s", port)
             return
         service = service.lower()
-        global TEST_STATE
-        with statelock:
-            if "udp_service_port" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["udp_service_port"] = {service: [int(port)]}
+        
+        with State().statelock:
+            if "udp_service_ports" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["udp_service_ports"] = {service: [int(port)]}
             else:
-                if service not in TEST_STATE[self.ip]["udp_service_port"]:
-                    TEST_STATE[self.ip]["udp_service_port"][service] = []
-                if int(port) not in TEST_STATE[self.ip]["udp_service_port"][service]:
-                    TEST_STATE[self.ip]["udp_service_port"][service].append(int(port))
+                if service not in State().TEST_STATE[self.ip]["udp_service_ports"]:
+                    State().TEST_STATE[self.ip]["udp_service_ports"][service] = []
+                if int(port) not in State().TEST_STATE[self.ip]["udp_service_ports"][service]:
+                    State().TEST_STATE[self.ip]["udp_service_ports"][service].append(int(port))
 
     def add_os_version(self, os_version: str):
         """Add a os_version
@@ -272,13 +268,13 @@ class TestHost:
         Args:
             os_version (str): os_version name, example Windows 10 x64
         """
-        global TEST_STATE
-        with statelock:
-            if "os_version" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["os_version"] = [os_version]
+        
+        with State().statelock:
+            if "os_version" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["os_version"] = [os_version]
             else:
-                if os_version not in TEST_STATE[self.ip]["os_version"]:
-                    TEST_STATE[self.ip]["os_version"].append(os_version)
+                if os_version not in State().TEST_STATE[self.ip]["os_version"]:
+                    State().TEST_STATE[self.ip]["os_version"].append(os_version)
 
     def add_hostname(self, hostname: str):
         # Also what is this stupid none
@@ -291,13 +287,13 @@ class TestHost:
         """
         if not hostname or len(hostname) < 1:
             return
-        global TEST_STATE
-        with statelock:
-            if "hostnames" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["hostnames"] = [hostname]
+        
+        with State().statelock:
+            if "hostnames" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["hostnames"] = [hostname]
             else:
-                if hostname not in TEST_STATE[self.ip]["hostnames"]:
-                    TEST_STATE[self.ip]["hostnames"].append(hostname)
+                if hostname not in State().TEST_STATE[self.ip]["hostnames"]:
+                    State().TEST_STATE[self.ip]["hostnames"].append(hostname)
 
     def add_service(self, service: str):
         """Add a Service
@@ -307,14 +303,14 @@ class TestHost:
         """
         if not service:
             return
-        global TEST_STATE
+        
         service = service.lower()
-        with statelock:
-            if "services" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["services"] = [service]
+        with State().statelock:
+            if "services" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["services"] = [service]
             else:
-                if service not in TEST_STATE[self.ip]["services"]:
-                    TEST_STATE[self.ip]["services"].append(service)
+                if service not in State().TEST_STATE[self.ip]["services"]:
+                    State().TEST_STATE[self.ip]["services"].append(service)
 
     def add_tcp_port(self, port):
         """Add a TCP port
@@ -322,13 +318,13 @@ class TestHost:
         Args:
             port (int): service port, example 80
         """
-        global TEST_STATE
-        with statelock:
-            if "tcp_ports" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["tcp_ports"] = [int(port)]
+        
+        with State().statelock:
+            if "tcp_ports" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["tcp_ports"] = [int(port)]
             else:
-                if int(port) not in TEST_STATE[self.ip]["tcp_ports"]:
-                    TEST_STATE[self.ip]["tcp_ports"].append(int(port))
+                if int(port) not in State().TEST_STATE[self.ip]["tcp_ports"]:
+                    State().TEST_STATE[self.ip]["tcp_ports"].append(int(port))
 
     def add_udp_port(self, port):
         """Add a UDP Port
@@ -336,13 +332,13 @@ class TestHost:
         Args:
             port (int): service port, example 53
         """
-        global TEST_STATE
-        with statelock:
-            if "udp_ports" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["udp_ports"] = [int(port)]
+        
+        with State().statelock:
+            if "udp_ports" not in State().TEST_STATE[self.ip]:
+                State().TEST_STATE[self.ip]["udp_ports"] = [int(port)]
             else:
-                if int(port) not in TEST_STATE[self.ip]["udp_ports"]:
-                    TEST_STATE[self.ip]["udp_ports"].append(int(port))
+                if int(port) not in State().TEST_STATE[self.ip]["udp_ports"]:
+                    State().TEST_STATE[self.ip]["udp_ports"].append(int(port))
 
     def set_test_state(
         self,
@@ -361,26 +357,23 @@ class TestHost:
             target (str, optional): target . Defaults to None.
             args (list, optional): args. Defaults to None.
         """
-        global TEST_STATE
-        with statelock:
-            if "tests_state" not in TEST_STATE[self.ip]:
-                TEST_STATE[self.ip]["tests_state"] = {}
-            if testid not in TEST_STATE[self.ip]["tests_state"]:
-                TEST_STATE[self.ip]["tests_state"][testid] = {"state": state}
-            else:
-                TEST_STATE[self.ip]["tests_state"][testid]["state"] = state
-            if module_name is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["module"] = module_name
-            if target is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["target"] = target
-            if args is not None:
-                TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
+        if "tests_state" not in State().TEST_STATE[self.ip]:
+            State().TEST_STATE[self.ip]["tests_state"] = {}
+        if testid not in State().TEST_STATE[self.ip]["tests_state"]:
+            State().TEST_STATE[self.ip]["tests_state"][testid] = {"state": state}
+        else:
+            State().TEST_STATE[self.ip]["tests_state"][testid]["state"] = state
+        if module_name is not None:
+            State().TEST_STATE[self.ip]["tests_state"][testid]["module"] = module_name
+        if target is not None:
+            State().TEST_STATE[self.ip]["tests_state"][testid]["target"] = target
+        if args is not None:
+            State().TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
 
     def __repr__(self):
         return f"{self.ip} - {self.hostnames} - {self.os_family} - {self.os_version}"
 
     def dump(self):
-        with statelock:
-            logger.debug(
-                "Dump of %s: \n %s", self.ip, json.dumps(TEST_STATE[self.ip], indent=4)
-            )
+        logger.debug(
+            "Dump of %s: \n %s", self.ip, json.dumps(State().TEST_STATE[self.ip], indent=4)
+        )

@@ -1,4 +1,4 @@
-from .state import TEST_WORKING_DIR
+from .State import State
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -24,7 +24,7 @@ if STDOUT_LOGGING:
 if FILE_LOGGING:
         
     handlerfile = RotatingFileHandler(
-        os.path.join(TEST_WORKING_DIR,  "autoreco.log"), maxBytes=(1024*1024*10), backupCount=7
+        os.path.join(State().TEST_WORKING_DIR,  "autoreco.log"), maxBytes=(1024*1024*10), backupCount=7
     )
     handlerfile.setFormatter(formatter)
     handlerfile.setLevel(LOGLEVEL)

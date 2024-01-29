@@ -6,7 +6,7 @@ from .logger import logger
 from .utils import print_summary
 import json
 import os
-from .state import statelock, domainlock, KNOWN_DOMAINS, TEST_STATE, TEST_WORKING_DIR
+from .State import State
 from .config import NETEXEC_DISCOVERY_PROTOCOLS
 from datetime import datetime
 
@@ -24,12 +24,12 @@ class TestRunner(object):
         WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
+        logger.debug("Starting TestRunner with args: %s, %s, %s", subnet, domains, hosts)
         self.domains = domains
         self.subnet = subnet
         self.hosts = hosts
         if len(domains) > 0:
-            with domainlock:
-                KNOWN_DOMAINS = domains.copy()
+            State().KNOWN_DOMAINS = domains # Copy is handled by state file
                 
         WorkThreader.start_threads(self.complete_callback)
         self.set_handler()
@@ -38,8 +38,7 @@ class TestRunner(object):
         """Callback function when a job is complete, will check if additional jobs needs to be scheduled
         """
         logger.debug("Entering Complete Callback")
-        with statelock:
-            state = TEST_STATE.copy()
+        state = State().TEST_STATE
         for k, v in state.items():
             if k == "discovery":
                 continue
@@ -81,6 +80,7 @@ class TestRunner(object):
         Args:
             target (str): Subnet, exemple: 192.168.1.0/24
         """
+        global NETEXEC_DISCOVERY_PROTOCOLS
         job = {
             "module_name": "discovery.NmapSubnetPing",
             "job_id": f"discovery.NmapSubnetPing_{target}",
@@ -118,23 +118,22 @@ class TestRunner(object):
     def resume_failed(self):
         """Resume failed test
         """
-        with statelock:
-            state = TEST_STATE.copy()
-        for k, v in state.items():
+        state = State().TEST_STATE
+        for k, v in State().TEST_STATE.items():
             if k == "discovery":
                 continue
             for testname, testdata in state[k]["tests_state"].items():
                 if testdata["state"] != "done":
-                    del TEST_STATE[k]["tests_state"][testname]
+                    del state[k]["tests_state"][testname]
                     #Deleting will force test suggestor to resume
-                    
+        State().TEST_DATE = state
                     
     def print_state(self):
         """Display test state
         """
-        with statelock:
-            logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
-            logger.info("=" * 50)
+
+        logger.debug("State: %s", json.dumps(State().TEST_STATE, indent=4))
+        logger.info("=" * 50)
             
     def run(self, resume = False, resume_failed = True):
         """Run the tets
@@ -151,7 +150,7 @@ class TestRunner(object):
                     self.resume_failed()
             else:
                 logger.info("Tests Started at %s", datetime.now().isoformat())
-            logger.info("Output Dir: %s", TEST_WORKING_DIR)
+            logger.info("Output Dir: %s", State().TEST_WORKING_DIR)
             logger.info("=" * 50)
             if not resume:
                 if self.subnet:
@@ -176,7 +175,7 @@ class TestRunner(object):
         """Move empty log files + files associated to empty_logs folder
         """
         import glob, shutil
-        for folder in os.walk(TEST_WORKING_DIR):
+        for folder in os.walk(State().TEST_WORKING_DIR):
             folder = folder[0]
             if "empty_logs" in folder:
                 continue

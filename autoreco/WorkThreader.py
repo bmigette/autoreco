@@ -13,7 +13,7 @@ from .config import (
     WATCHDOG_SLEEP_INTERVAL,
 )
 from .modules.ModuleLoader import ModuleLoader
-from .state import statelock, TEST_STATE, TEST_WORKING_DIR, domainlock, KNOWN_DOMAINS
+from .State import State
 from .utils import print_summary
 from datetime import datetime
 import fnmatch
@@ -97,9 +97,8 @@ class Watchdog:
     def write_host_summary(self) -> None:
         """Write summary of host to disk
         """
-        with statelock:
-            state = TEST_STATE.copy()
-        with open(os.path.join(TEST_WORKING_DIR, "hostsummary.txt"), "w") as f:
+        state = State().TEST_STATE.copy()
+        with open(os.path.join(State().TEST_WORKING_DIR, "hostsummary.txt"), "w") as f:
             f.write("="*50 + "\n")
             for k, v in state.items():
                 if k == "discovery":
@@ -119,14 +118,11 @@ class Watchdog:
     def write_state(self) -> None:
         """Write current state to disk
         """
-        global KNOWN_DOMAINS, TEST_WORKING_DIR, TEST_STATE
         try:
-            with statelock:
-                with open(os.path.join(TEST_WORKING_DIR, "state.json"), "w") as f:
-                    f.write(json.dumps(TEST_STATE, indent=4))
-            with domainlock:
-                with open(os.path.join(TEST_WORKING_DIR, "domains.json"), "w") as f:
-                    f.write(json.dumps(KNOWN_DOMAINS, indent=4))
+            with open(os.path.join(State().TEST_WORKING_DIR, "state.json"), "w") as f:
+                f.write(json.dumps(State().TEST_STATE, indent=4))
+            with open(os.path.join(State().TEST_WORKING_DIR, "domains.json"), "w") as f:
+                f.write(json.dumps(State().KNOWN_DOMAINS, indent=4))
             self.write_host_summary()
         except Exception as e:
             logger.error("Error when writing state file: %s", e, exc_info=True)

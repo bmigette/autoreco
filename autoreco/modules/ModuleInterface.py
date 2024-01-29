@@ -8,7 +8,7 @@ from threading import Timer
 import time
 
 from ..logger import logger
-from ..state import TEST_WORKING_DIR, TEST_DATE, TEST_DATE_STR
+from ..State import State
 from ..config import DEFAULT_PROCESS_TIMEOUT, DEFAULT_IDLE_TIMEOUT
 from ..utils import max_output
 from ..TestHost import TestHost
@@ -224,13 +224,12 @@ class ModuleInterface(ABC):
         Returns:
             str: folder path
         """
-        global TEST_DATE_STR
         if self.is_discovery():
             h = ""
         else:
             h = self.target if self.target else ""  # For global modules
 
-        basedir = TEST_WORKING_DIR
+        basedir = State().TEST_WORKING_DIR
         if self.is_userenum():
             basedir = os.path.join(basedir, "userenum")
         if folder:

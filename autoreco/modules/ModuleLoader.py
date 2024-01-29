@@ -8,6 +8,7 @@ from .hostscan.FFUF import FFUF
 from .hostscan.NetExecHostScan import NetExecHostScan
 from .userenum.Kerbrute import Kerbrute
 from .userenum.NetExecRIDBrute import NetExecRIDBrute
+from .userenum.NetExecUserEnum import NetExecUserEnum
 
 class ModuleLoader(object):
     """Load all known modules and maps it to a string"""
@@ -23,5 +24,7 @@ class ModuleLoader(object):
             "hostscan.NetExecHostScan": NetExecHostScan,
             "hostscan.FFUF": FFUF,
             "userenum.Kerbrute": Kerbrute,
-            "userenum.NetExecRIDBrute": NetExecRIDBrute
+            "userenum.NetExecRIDBrute": NetExecRIDBrute,
+            "userenum.NetExecUserEnum": NetExecUserEnum,
+            
         }

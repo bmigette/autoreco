@@ -1,5 +1,5 @@
 import os
-import autoreco.state
+import autoreco.State
 import autoreco.config
 import logging
 from datetime import datetime
@@ -9,7 +9,7 @@ autoreco.config.LOGLEVEL = logging.DEBUG
 autoreco.config.WATCHDOG_INTERVAL = 30
 autoreco.config.NMAP_DEFAULT_TCP_PORT_OPTION = "--top-ports 10"
 
-autoreco.state.set_working_dir("/tmp/autoreco")
+autoreco.State.State().set_working_dir("/tmp/autoreco")
 from autoreco.logger import logger
 from autoreco.utils import print_summary
 
@@ -19,9 +19,9 @@ from autoreco.WorkThreader import WorkThreader
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
 
-#runner = TestRunner(hosts=["192.168.158.11"])
+runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
 #runner = TestRunner("192.168.199.0/24")
-# #runner.run()
+runner.run()
 # w = "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
 # job = {         
 #         "module_name": "hostscan.FFUF",
@@ -58,9 +58,9 @@ from autoreco.TestRunner import TestRunner
 #         "args": {"protocol": "tcp"}    
 #     }
 print_summary()
-# with autoreco.state.statelock:
-#     logger.debug("State: %s", json.dumps(autoreco.state.TEST_STATE, indent=4))
+
+#     logger.debug("State: %s", json.dumps(autoreco.State.State().TEST_STATE, indent=4))
 #     logger.info("="*50)
-#     with open(os.path.join(autoreco.state.TEST_WORKING_DIR, "state.json"), "w") as f:
-#         f.write(json.dumps(autoreco.state.TEST_STATE, indent=4))
+#     with open(os.path.join(autoreco.State.State().TEST_WORKING_DIR, "state.json"), "w") as f:
+#         f.write(json.dumps(autoreco.State.State().TEST_STATE, indent=4))
 

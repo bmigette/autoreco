@@ -1,6 +1,6 @@
 # Intro
 This tool will iteratively run various discovery/enumeration tools in a pentesting scenario.
-It will start with scanning open tcp / udp ports with NMAP, then it will start specific tests based on discovered open ports.
+It will start with scanning open tcp / udp ports with NMAP, then it will start specific discovery/enumeration jobs based on discovered open ports.
 For example:
 - Web server will be scanned with GoBuster and FFUF to discover files, folders, and vhosts
 - AD DCs will trigger a kerbrute / rid brute with netexec
@@ -8,7 +8,7 @@ For example:
 - DNS Servers will trigger dnsenum / sublist3r #TODO fix
 - ...
 
-The process is iterative, meaning if a new vhost is discovered for example, we will ran another set of GoBuster / FFUF tests against this new vhost.
+The process is iterative, meaning if a new vhost is discovered for example, we will ran another set of GoBuster / FFUF scan against this new vhost.
 If a new domain is discovered, we will generate vhosts based on the known hostnames of a webserver and attempt to scan again.
 etc...
 
@@ -63,8 +63,13 @@ options:
   -c CREDENTIALS, --credentials CREDENTIALS
                         Valid Credentials File. Format: user:password
   -mls MAX_LIST_SIZE, --max-list-size MAX_LIST_SIZE
-                        Do not run tests with list size above this value.  
+                        Do not run tests with list size above this value. 
+  -rs RUN_SCANS, --run-scans RUN_SCANS
+                        Scans to run, default all. Example: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp                         
 ```
+
+## Domain Discovery
+To use domain discovery, the script needs to detect a working DNS Server. You can add one with --host. For this to work, nmap needs to be able to detect dns service running.
 
 # Examples
 ```
@@ -72,19 +77,21 @@ python main.py --subnet 192.168.1.0/24
 python main.py --host 192.168.1.1 --domain test.com
 ```
 
-## Resuming a test
-The following command will attempt to resume a scan. The resume-failed option allows to retry all tests that are not successful (Error, Stopped, ...)
+## Resuming a scan
+The following command will attempt to resume a scan. The resume-failed option allows to retry all jobs that are not successful (Error, Stopped, ...)
 ```
 python main.py --resume /path/to/autoreco_2024_xxxx --resume-failed
 python main.py --resume /path/to/autoreco_2024_xxxx --resume-failed
 ```
 
-## Run additional tests once you have valid credentials
+## Run additional jobs once you have valid credentials
 creds.txt file format:
 >user:password
 ```
 python main.py --resume /path/to/autoreco_2024_xxxx --credentials /path/to/creds.txt
 ```
+
+Note that by default, the tool will look into creds.txt file in the working dir (/path/to/autoreco_2024_xxxx) and if it exists, use this credentials, meaning you can add credentials to a running scan.
 
 # Notes
 This is absolutely not stealth. Before scanning any system, make sure you are authorized to do it.

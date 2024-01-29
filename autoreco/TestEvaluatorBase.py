@@ -1,5 +1,4 @@
 from abc import abstractmethod, ABC
-from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
 from .config import MAX_LIST_SIZE
 from .logger import logger
 
