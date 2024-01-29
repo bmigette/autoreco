@@ -3,7 +3,7 @@ from ...logger import logger
 from ...config import DEFAULT_PROCESS_TIMEOUT, WEB_WORDLISTS_FILES_HASEXT
 from ..common.parsers import parse_gobuster_progress
 from ...TestHost import TestHost
-from ...utils import is_ip_state_subnets
+from ...utils import is_ip_state_subnets, is_ip
 
 class GoBuster(ModuleInterface):
     """Class to run GoBuster against a single host"""
@@ -56,6 +56,8 @@ class GoBuster(ModuleInterface):
                 hostname = line_parts[1]
                 ips = line_parts[2].replace("[", "").replace("]", "").split(",")
                 for ip in ips:
+                    if not is_ip(ip): #IPv6
+                        continue
                     if is_ip_state_subnets(ip):
                         hostobject = TestHost(ip)
                         hostobject.domain = self.args["domain"]

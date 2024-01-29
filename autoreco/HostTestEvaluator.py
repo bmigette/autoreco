@@ -33,12 +33,13 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "file" in RUN_SCANS:
             tests = self._safe_merge(tests, self.get_file_tests())
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_web_tests())
+            tests = self._safe_merge(tests, self.get_gobuster_web_tests())
         if "all" in RUN_SCANS or "webfiles" in RUN_SCANS:
             tests = self._safe_merge(tests, self.get_web_file_tests())
+        if "all" in RUN_SCANS or "snmp" in RUN_SCANS:
+            tests = self._safe_merge(tests, self.get_snmp_tests())
 
-        # TODO NFS Scan
-        # TODO SNMP / onesixtyone
+        
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         # AD / Users tests
@@ -52,7 +53,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         creds = []
         if not CREDENTIALS_FILE or not os.path.exists(CREDENTIALS_FILE):
             if os.path.exists(os.path.join(State().TEST_WORKING_DIR, "creds.txt")):
-                CREDENTIALS_FILE = os.path.join(State().TEST_WORKING_DIR, "creds.txt")
+                CREDENTIALS_FILE = os.path.join(
+                    State().TEST_WORKING_DIR, "creds.txt")
             else:
                 return creds
         with open(CREDENTIALS_FILE, "r") as f:
@@ -91,7 +93,7 @@ class HostTestEvaluator(TestEvaluatorBase):
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
-    def get_ad_users_tests(self): 
+    def get_ad_users_tests(self):
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
@@ -120,7 +122,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": self.get_list_priority(w),
                     "args": {"domain": "d", "wordlist": w},
                 }
-        #### netexec credentialed enum
+        # netexec credentialed enum
         for action in ["loggedon-users", "groups", "users"]:
             for p in ["smb", "winrm"]:
                 for creds in self.get_known_credentials():
@@ -160,6 +162,18 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         return tests
 
+
+
+    def get_snmp_tests(self):
+        """Create snmp jobs
+
+        Returns:
+            dict: jobs
+        """
+        global WEB_WORDLISTS
+        tests = {}
+        # TODO SNMP / onesixtyone
+        return tests
     def get_dns_tests(self):
         """Create dns jobs
 
@@ -224,6 +238,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "priority": 100,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
             }
+            
         if "ldap" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["ldap"])
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
@@ -233,6 +248,19 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "target": self.hostobject.ip,
                 "priority": 100,
                 "args": {"script": "'ldap* and not brute'", "ports": ports},
+            }
+
+        if ("nfs" in self.hostobject.services or
+            "rpcbind" in self.hostobject.services
+            ):
+            ports = self.get_tcp_services_ports(["nfs", "rpcbind"])
+            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_nfsscript_{ports}"
+            tests[jobid] = {
+                "module_name": "hostscan.NmapHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "priority": 100,
+                "args": {"script": "nfs-*", "ports": ports},
             }
 
         return tests
@@ -258,7 +286,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             if d:
                 doms2.append(d)
         doms = list(set(doms2))
-        State().KNOWN_DOMAINS = doms # .copy() # Statewrapper always copy
+        State().KNOWN_DOMAINS = doms  # .copy() # Statewrapper always copy
         logger.debug("Known Domains: %s", doms)
         return doms
 
@@ -315,7 +343,7 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-    def get_web_tests(self):  # TODO ADD NIKTO (nikto -host http://xxxx)
+    def get_gobuster_web_tests(self):  # TODO ADD NIKTO (nikto -host http://xxxx)
         """Create GoBuster jobs
 
         Returns:
