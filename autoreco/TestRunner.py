@@ -149,5 +149,6 @@ class TestRunner(object):
         self.print_state()
 
         print_summary()
+        # TODO: Clean empty log files (move it into empty folder)
 
     

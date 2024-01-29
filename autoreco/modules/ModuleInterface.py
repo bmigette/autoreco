@@ -254,7 +254,7 @@ class ModuleInterface(ABC):
         args = []
         for k, v in self.args.items():
             if k in argusekey:
-                v = k
+                v = k+str(len(v))
             else:
                 if isinstance(v, list):
                     v = "+".join(map(str, v))
@@ -278,10 +278,12 @@ class ModuleInterface(ABC):
         outdir = self.get_outdir(folder)
 
         args = self._get_flatten_args(argusekey)
+        if args:
+            args = f"_{args}"
         the_ext = ext
         if the_ext and not the_ext[0] == ".":
             the_ext = "." + the_ext
-        filename = f"{self.__class__.__name__}_{args}{the_ext}".replace(
+        filename = f"{self.__class__.__name__}{args}{the_ext}".replace(
             "/", "-"
         ).replace(",", "-")
         return os.path.join(outdir, filename)

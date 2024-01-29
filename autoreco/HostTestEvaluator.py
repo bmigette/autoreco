@@ -85,7 +85,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "module_name": "userenum.NetExecRIDBrute",
             "job_id": jobid,
             "target": self.hostobject.ip,
-            "priority": 1000,
+            "priority": 500,
             "args": {},
         }
         
@@ -163,7 +163,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 10,
+                "priority": 100,
                 "args": {"script": "smb-enum*", "ports": ports},
             }
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
@@ -171,7 +171,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 10,
+                "priority": 100,
                 "args": {"script": "smb-vuln*", "ports": ports},
             }
 
@@ -182,7 +182,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 10,
+                "priority": 100,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
             }
         if "ldap" in self.hostobject.services:
@@ -192,7 +192,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 10,
+                "priority": 100,
                 "args": {"script": "'ldap* and not brute'", "ports": ports},
             }
 
@@ -362,7 +362,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 1000,
+                "priority": 200,
                 "args": {"protocol": proto},
             }
 

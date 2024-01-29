@@ -70,6 +70,8 @@ def main():
         default=True,
         action="store_true"
     )
+
+    # TODO: Add option to ignore wordlist above X entries. Use the get wordlist priority to return -1 and filter at add job ?
         
     args = parser.parse_args()
     if args.resume and args.output_dir:
