@@ -15,7 +15,6 @@ class NmapHostScan(ModuleInterface):
     """Class to run TCP/UDP scan against a single host"""
 
     def run(self):
-        # TODO: add support for custom DNS server ?
         nm = nmap.PortScanner()
         outname = self.get_log_name("log")
 
@@ -71,7 +70,7 @@ class NmapHostScan(ModuleInterface):
         self.ip = ip
         root = self.lastreturn["scan"][keys[0]]
         hostobject = self.get_host_obj(ip)
-        if "hostnames" in root and len(root["hostnames"]) > 0: # TODO: Parse SMB Plugins for hostname here ?
+        if "hostnames" in root and len(root["hostnames"]) > 0:
             for hostname in root["hostnames"]:
                 hostobject.add_hostname(hostname["name"])
         if "tcp" in root:

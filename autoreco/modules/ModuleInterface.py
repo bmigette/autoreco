@@ -10,7 +10,7 @@ import time
 from ..logger import logger
 from ..State import State
 from ..config import DEFAULT_PROCESS_TIMEOUT, DEFAULT_IDLE_TIMEOUT
-from ..utils import max_output
+from ..utils import max_output, is_ip
 from ..TestHost import TestHost
 
 
@@ -25,7 +25,7 @@ class ModuleInterface(ABC):
         self.target = target
         self.module_name = module_name
         self.progress = ""
-        if TestHost.is_ip(target):
+        if is_ip(target):
             self.ip = target
         else:
             self.ip = None

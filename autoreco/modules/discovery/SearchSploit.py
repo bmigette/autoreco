@@ -4,8 +4,8 @@ from ...logger import logger
 from ...TestHost import TestHost
 
 #TODO Automate SearchSploit based on service_versions of hosts
-class Enum4Linux(ModuleInterface):
-    """Class to run enum4linux against a single host"""
+class SearchSploit(ModuleInterface):
+    """Class to run SearchSploit against a single host"""
 
     def run(self):
         logfile = self.get_log_name("")

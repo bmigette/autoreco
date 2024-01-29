@@ -3,7 +3,7 @@ from .HostTestEvaluator import HostTestEvaluator
 
 from .TestHost import TestHost
 from .logger import logger
-from .utils import print_summary
+from .utils import print_summary, is_ip
 import json
 import os
 from .State import State
@@ -106,14 +106,12 @@ class TestRunner(object):
         Raises:
             Exception: Invalid host_ip
         """
-        if not TestHost.is_ip(host_ip):
+        if not is_ip(host_ip):
             raise Exception("Only IP supported as of now")
         h = TestHost(host_ip)  # Will create empty host in state
         self.complete_callback()
         
-    def domain_discovery(self, domain):
-        # TODO: Implement
-        pass
+
 
     def resume_failed(self):
         """Resume failed test
@@ -160,9 +158,6 @@ class TestRunner(object):
                 for host in self.hosts:
                     self.host_scan(host)
                     
-            if self.domains:
-                for d in self.domains:
-                    self.domain_discovery(d)
             if resume and len(self.hosts) < 1:
                 self.complete_callback()
             

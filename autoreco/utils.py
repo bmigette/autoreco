@@ -1,7 +1,7 @@
 from .logger import logger
 from .State import State
 from .config import DEFAULT_MAX_OUTPUT
-
+import re
 
 def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
     if not isinstance(thestr, str):
@@ -45,3 +45,39 @@ def print_summary():
             WorkThreader.queue.qsize(),
         )
         logger.info("=" * 50)
+
+
+def is_ip(ip: str):
+    """Check if a string is an IP
+
+    Args:
+        ip (str): IP Address
+
+    Returns:
+        bool: yes or no
+    """
+    match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
+    return bool(match)
+
+def is_ip_state_subnets(ip: str):
+    """Checks if an IP is in same subnets that hosts in state to avoid scanning the internet :D
+
+    Args:
+        ip (str): The IP ADdress
+    """
+    # Yes, this could be improved
+    subnets = []
+    state = State().TEST_STATE.copy()
+    for k, v in state.items():
+        if k == "discovery":
+            continue
+        ip_parts = k.split(".")
+        ip_parts[-1] = "0"
+        subnet = ".".join(ip_parts)
+        if subnet not in subnets:
+            subnets.append(subnet)
+    logger.debug("Known subnets: %s", subnets)
+    ip_parts = ip.split(".")
+    ip_parts[-1] = "0"
+    subnet = ".".join(ip_parts)
+    return subnet in subnets

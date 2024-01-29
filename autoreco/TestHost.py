@@ -1,5 +1,6 @@
 from .State import State
 from .logger import logger
+from .utils import is_ip
 import re
 import json
 
@@ -49,17 +50,7 @@ class TestHost:
         self.ip = ip
         self.check_host(ip)
 
-    def is_ip(ip: str):
-        """Check if a string is an IP
 
-        Args:
-            ip (str): IP Address
-
-        Returns:
-            bool: yes or no
-        """
-        match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
-        return bool(match)
 
     def check_host(self, hostip: str):
         """Check if a host is already in state
@@ -70,7 +61,7 @@ class TestHost:
         Raises:
             ValueError: invalid ip
         """
-        if not "discovery" in hostip and not TestHost.is_ip(hostip):
+        if not "discovery" in hostip and not is_ip(hostip):
             raise ValueError(f"{hostip} is not an IP or discovery")
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}

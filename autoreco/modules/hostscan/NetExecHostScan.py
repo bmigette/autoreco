@@ -2,12 +2,13 @@ from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_netexec_hostline
 from ...TestHost import TestHost
+from ...utils import is_ip
 
 class NetExecHostScan(ModuleInterface):
     """Class to run NetExec against a single host"""
 
     def run(self):
-        if not TestHost.is_ip(self.target):
+        if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
         
         protocol = "smb"

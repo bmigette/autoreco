@@ -5,7 +5,7 @@ For example:
 - Web server will be scanned with GoBuster and FFUF to discover files, folders, and vhosts
 - AD DCs will trigger a kerbrute / rid brute with netexec
 - SMB Servers will trigger nmap smb scripts + spider_plus plugin of netexec
-- DNS Servers will trigger dnsenum / sublist3r #TODO fix
+- DNS Servers will trigger GoBuster dns scan
 - ...
 
 The process is iterative, meaning if a new vhost is discovered for example, we will ran another set of GoBuster / FFUF scan against this new vhost.
