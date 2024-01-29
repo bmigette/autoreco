@@ -15,6 +15,12 @@ class TestRunner(object):
     """Class responsible to run tests, stop threads, etc..."""
     
     def stop_signal_handler(sig, frame):
+        """CTRL+C Signal Handler
+
+        Args:
+            sig (_type_): _description_
+            frame (_type_): _description_
+        """
         WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
@@ -29,6 +35,8 @@ class TestRunner(object):
         self.set_handler()
 
     def complete_callback(self):
+        """Callback function when a job is complete, will check if additional jobs needs to be scheduled
+        """
         logger.debug("Entering Complete Callback")
         with statelock:
             state = TEST_STATE.copy()
@@ -61,11 +69,18 @@ class TestRunner(object):
             self.finish()
 
     def set_handler(self):
+        """Sets CTRL+C Handler
+        """
         import signal
         signal.signal(signal.SIGINT, TestRunner.stop_signal_handler)
 
 
     def host_discovery(self, target):
+        """Start host discovery process against a subnet
+
+        Args:
+            target (str): Subnet, exemple: 192.168.1.0/24
+        """
         job = {
             "module_name": "discovery.NmapSubnetPing",
             "job_id": f"discovery.NmapSubnetPing_{target}",
@@ -83,6 +98,14 @@ class TestRunner(object):
             WorkThreader.add_job(job)
 
     def host_scan(self, host_ip):
+        """Initiate a single host scan
+
+        Args:
+            host_ip (str): IP address
+
+        Raises:
+            Exception: Invalid host_ip
+        """
         if not TestHost.is_ip(host_ip):
             raise Exception("Only IP supported as of now")
         h = TestHost(host_ip)  # Will create empty host in state
@@ -107,11 +130,19 @@ class TestRunner(object):
                     
                     
     def print_state(self):
+        """Display test state
+        """
         with statelock:
             logger.debug("State: %s", json.dumps(TEST_STATE, indent=4))
             logger.info("=" * 50)
             
     def run(self, resume = False, resume_failed = True):
+        """Run the tets
+
+        Args:
+            resume (bool, optional): Whether we resume an existing tests. Defaults to False.
+            resume_failed (bool, optional): Whether we should retry failed/stopped tests in resume. Defaults to True.
+        """
         try:
             logger.info("=" * 50)
             if resume:
@@ -140,6 +171,27 @@ class TestRunner(object):
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
             WorkThreader.stop_threads()
+    
+    def move_empty_log_files(self):
+        """Move empty log files + files associated to empty_logs folder
+        """
+        import glob, shutil
+        for folder in os.walk(TEST_WORKING_DIR):
+            folder = folder[0]
+            if "empty_logs" in folder:
+                continue
+            outdir = os.path.join(folder, "empty_logs")
+            for file in glob.glob(os.path.join(folder, "*.log")):
+                file_stats = os.stat(file)
+                if file_stats.st_size == 0:
+                    try:
+                        if not os.path.isdir(outdir):
+                            os.makedirs(outdir, exist_ok=True)
+                        for file_to_move in glob.glob(file.replace(".log", ".*")):
+                            logger.debug("Moving empty file %s", file_to_move)
+                            shutil.move(file_to_move, outdir)
+                    except Exception as e:
+                        logger.error("Error when moving file %s: %s", file , e)
 
     def finish(self):
         logger.info("=" * 50)
@@ -149,6 +201,6 @@ class TestRunner(object):
         self.print_state()
 
         print_summary()
-        # TODO: Clean empty log files (move it into empty folder)
+        self.move_empty_log_files()
 
     
