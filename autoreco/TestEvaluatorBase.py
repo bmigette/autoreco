@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from .state import domainlock, KNOWN_DOMAINS, statelock, TEST_STATE
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS
+from .config import MAX_LIST_SIZE
 from .logger import logger
 
 import re
@@ -24,4 +24,6 @@ class TestEvaluatorBase(ABC):
     def get_list_priority(self, wordlistfile):
         with open(wordlistfile, 'r') as fp:
             cnt = len(fp.readlines())
+        if MAX_LIST_SIZE and cnt >= MAX_LIST_SIZE:
+            return -1
         return int(cnt/1000)

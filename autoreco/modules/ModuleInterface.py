@@ -242,17 +242,20 @@ class ModuleInterface(ABC):
             os.makedirs(outdir, exist_ok=True)
         return outdir
 
-    def _get_flatten_args(self, argusekey):
+    def _get_flatten_args(self, argusekey = [], ignorekeys = ["password", "pass"]):
         """strip bad chars and flatten args to make unique log file names
 
         Args:
             argusekey (list, optional): Will use the arg key instead of values for all keys in this list. Defaults to [].
+            ignorekeys (list, optional): Ignore all keys in this list. Defaults to [].
 
         Returns:
             str: flattened args
         """
         args = []
         for k, v in self.args.items():
+            if k.lower() in [x.lower() for x in ignorekeys]:
+                continue
             if k in argusekey:
                 v = k+str(len(v))
             else:
@@ -265,19 +268,20 @@ class ModuleInterface(ABC):
             args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
         return "-".join(args)
 
-    def get_log_name(self, ext="out", argusekey=[], folder=None):
+    def get_log_name(self, ext="out", argusekey=[], folder=None, ignorekeys = ["password", "pass"]):
         """Get log file name to output from a module
 
         Args:
             ext (str, optional): Extention. Defaults to "out".
             argusekey (list, optional): Will use the arg key instead of values for all keys in this list. Defaults to [].
+            ignorekeys (list, optional): Ignore all keys in this list. Defaults to [].
 
         Returns:
             _type_: _description_
         """
         outdir = self.get_outdir(folder)
 
-        args = self._get_flatten_args(argusekey)
+        args = self._get_flatten_args(argusekey, ignorekeys)
         if args:
             args = f"_{args}"
         the_ext = ext

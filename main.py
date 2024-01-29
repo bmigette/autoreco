@@ -71,7 +71,22 @@ def main():
         action="store_true"
     )
 
-    # TODO: Add option to ignore wordlist above X entries. Use the get wordlist priority to return -1 and filter at add job ?
+    parser.add_argument(
+        "-c",
+        "--credentials",
+        help="Valid Credentials File. Format: user:password",
+        default=None,
+    )
+
+
+    parser.add_argument(
+        "-mls",
+        "--max-list-size",
+        type=int,
+        help="Do not run tests with list size above this value.",
+        default=autoreco.config.MAX_LIST_SIZE,
+    )
+
         
     args = parser.parse_args()
     if args.resume and args.output_dir:
@@ -102,6 +117,7 @@ def main():
     autoreco.config.NUM_THREADS = args.threads
     autoreco.config.NMAP_SPEED = args.nmap_speed
     autoreco.config.TEST_FILTERS = args.test_filter
+    autoreco.config.MAX_LIST_SIZE = args.max_list_size
     #autoreco.config.DNS_SERVER = args.dns_server
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner

@@ -74,7 +74,7 @@ class HostTestEvaluator(TestEvaluatorBase):
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
     
-    def get_ad_users_tests(self): # TODO: Move outside of HostTestEvaluator, and make a separate class for AD / User related tests
+    def get_ad_users_tests(self): # TODO: Add support for credentialed enums
         tests = {}
         if not self.is_dc():
             return tests

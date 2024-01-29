@@ -257,6 +257,10 @@ class WorkThreader:
         if "priority" not in job:
             logger.warn("Job %s has no priority", job)
             job["priority"] = 1000
+        if int(job["priority"]) < 0:
+            logger.info("Skipping job %s because priority is %s (probably ignored because of list size)", job["job_id"], job["priority"])
+            return
+
         job["priority"] = int(job["priority"])
         joboj = TestJob(job["priority"], job)
         if TEST_FILTERS and len(TEST_FILTERS) > 0:

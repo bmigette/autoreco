@@ -39,6 +39,8 @@ WORD_LIST_LARGE_THRESHOLD = 100000 # Job using a wordlist with more than this en
 #└─$ cat /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt | wc -l
 #87664
 
+MAX_LIST_SIZE = None
+
 # GOBUSTER / FFUF Options
 WEB_WORDLISTS = {
     "dir": [
