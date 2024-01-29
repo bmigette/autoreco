@@ -23,7 +23,8 @@ class GoBuster(ModuleInterface):
                     ext = "-x " + self.args["extensions"]
             else:
                 logger.warn("file %s is not in WEB_WORDLISTS_FILES_HASEXT", w)
-        output = "-o " + self.get_log_name(".log", ["extensions"])
+        outputfile = self.get_log_name(".log", ["extensions"])
+        output = "-o " + outputfile
         cmdlog = self.get_log_name(".cmd", ["extensions"])
         url = ""
         if "url" in self.args: # DNS mode does not use urls
@@ -39,7 +40,7 @@ class GoBuster(ModuleInterface):
         logger.debug("Executing GoBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, realtime=True, progresscb=parse_gobuster_progress) 
         if mode == "dns":
-            self.parse_dns_hosts(output)
+            self.parse_dns_hosts(outputfile)
 
     def parse_dns_hosts(self, outputfile):
         """Parses DNS Hosts and add them into state
@@ -59,6 +60,8 @@ class GoBuster(ModuleInterface):
                         hostobject = TestHost(ip)
                         hostobject.domain = self.args["domain"]
                         hostobject.add_hostname(hostname)
+                    else:
+                        logger.debug("Skipping host %s with ip %s because not in same subnet range", hostname, ip)
     
 """
 Found: mail.google.com [2a00:1450:4007:806::2005,142.250.179.69]

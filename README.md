@@ -1,6 +1,7 @@
 # Intro
 This tool will iteratively run various discovery/enumeration tools in a pentesting scenario.
-It will start with scanning open tcp / udp ports with NMAP, then it will start specific discovery/enumeration jobs based on discovered open ports.
+It will start with subnet scan using netexec smb / nmap ping (if you specified --subnet argment)
+Then for each host that is up, it will start scanning open tcp / udp ports with NMAP, then it will start specific discovery/enumeration jobs based on discovered open ports.
 For example:
 - Web server will be scanned with GoBuster and FFUF to discover files, folders, and vhosts
 - AD DCs will trigger a kerbrute / rid brute with netexec
@@ -8,9 +9,11 @@ For example:
 - DNS Servers will trigger GoBuster dns scan
 - ...
 
-The process is iterative, meaning if a new vhost is discovered for example, we will ran another set of GoBuster / FFUF scan against this new vhost.
-If a new domain is discovered, we will generate vhosts based on the known hostnames of a webserver and attempt to scan again.
+The process is iterative, meaning if a new host or vhost is discovered for example (by FFUF Vhost / GoBuster DNS), we will ran another set of GoBuster / FFUF scan against this new vhost.
+If a new domain is discovered, it will try vhosts based on the known hostnames of a webserver and attempt to scan again with this new domain
 etc...
+
+Note: known domains can be specified manually with --domain, or learnt automatically by netexec
 
 # Requirements
 NMAP will be run as sudo. You user should be able to do "sudo nmap" without being prompted (add it in your sudoers file)

@@ -76,7 +76,6 @@ def is_ip_state_subnets(ip: str):
         subnet = ".".join(ip_parts)
         if subnet not in subnets:
             subnets.append(subnet)
-    logger.debug("Known subnets: %s", subnets)
     ip_parts = ip.split(".")
     ip_parts[-1] = "0"
     subnet = ".".join(ip_parts)
