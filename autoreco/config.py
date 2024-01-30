@@ -9,7 +9,7 @@ QUEUE_WAIT_TIME = (
 )
 LOGLEVEL = logging.INFO
 DEFAULT_PROCESS_TIMEOUT = 900  # Default timeout for a process
-DEFAULT_IDLE_TIMEOUT = 120  # Default timeout for a idle process
+DEFAULT_IDLE_TIMEOUT = 180  # Default timeout for a idle process
 DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2  # Default timeout for a long process
 WATCHDOG_INTERVAL = 120
 WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
@@ -76,6 +76,7 @@ WEB_WORDLISTS_FILES_HASEXT = {
 
 GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,c,exe,php5,sh,sql,xml,asp,aspx"
 
+FFUF_MAX_VHOST = 50 # If more than this vhost found, ignoring, could a site responding to all vhosts
 
 # UserEnum
 USERENUM_LISTS = [

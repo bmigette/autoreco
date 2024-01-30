@@ -17,7 +17,10 @@ def print_summary():
     success_tests = 0
     failed_tests = 0
     started_tests = 0
-    for host, data in State().TEST_STATE.items():
+    from .WorkThreader import WorkThreader
+
+    state = State().TEST_STATE.copy()
+    for host, data in state.items():
         total_hosts += 1
         if "tests_state" in data:
             for testid, testdata in data["tests_state"].items():
@@ -31,20 +34,19 @@ def print_summary():
                 else:
                     pass
                     # logger.warn("Test %s state: %s", testid, testdata["state"])
-        from .WorkThreader import WorkThreader
 
-        logger.info("=" * 50)
-        logger.info(
-            "# Running / Ran %s Tests against %s hosts", total_tests, total_hosts
-        )
-        logger.info(
-            "# Success: %s, Failed: %s, Running: %s, Queued: %s",
-            success_tests,
-            failed_tests,
-            started_tests,
-            WorkThreader.queue.qsize(),
-        )
-        logger.info("=" * 50)
+    logger.info("=" * 50)
+    logger.info(
+        "# Running / Ran %s Tests against %s hosts", total_tests, total_hosts
+    )
+    logger.info(
+        "# Success: %s, Failed: %s, Running: %s, Queued: %s",
+        success_tests,
+        failed_tests,
+        started_tests,
+        WorkThreader.queue.qsize(),
+    )
+    logger.info("=" * 50)
 
 
 def is_ip(ip: str):
@@ -59,7 +61,7 @@ def is_ip(ip: str):
     match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
     return bool(match)
 
-def is_ip_state_subnets(ip: str):
+def is_ip_state_subnets(ip: str): # TODO Optimize
     """Checks if an IP is in same subnets that hosts in state to avoid scanning the internet :D
 
     Args:

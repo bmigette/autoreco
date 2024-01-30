@@ -85,6 +85,7 @@ class TestRunner(object):
             "module_name": "discovery.NmapSubnetPing",
             "job_id": f"discovery.NmapSubnetPing_{target}",
             "target": target,
+            "priority": 10,
             "args": {},
         }
         WorkThreader.add_job(job)
@@ -93,6 +94,7 @@ class TestRunner(object):
                 "module_name": "discovery.NetExecDiscovery",
                 "job_id": f"discovery.NetExecDiscovery_{target}_{proto}",
                 "target": target,
+                "priority": 10,
                 "args": {"protocol": proto},
             }
             WorkThreader.add_job(job)
@@ -179,6 +181,9 @@ class TestRunner(object):
                 file_stats = os.stat(file)
                 if file_stats.st_size == 0:
                     try:
+                        if os.path.exists(file.replace(".log", ".cmd.err")):
+                            logger.debug("Not Moving empty file because .cmd.err exits: %s", file)
+                            continue
                         if not os.path.isdir(outdir):
                             os.makedirs(outdir, exist_ok=True)
                         for file_to_move in glob.glob(file.replace(".log", ".*")):

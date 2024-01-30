@@ -362,7 +362,7 @@ class TestHost:
             State().TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
 
     def __repr__(self):
-        return f"{self.ip} - {self.hostnames} - {self.os_family} - {self.os_version}"
+        return f"{self.ip} - {self.hostnames} - {self.os_family}"
 
     def dump(self):
         logger.debug(
