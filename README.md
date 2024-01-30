@@ -13,6 +13,8 @@ The process is iterative, meaning if a new host or vhost is discovered for examp
 If a new domain is discovered, it will try vhosts based on the known hostnames of a webserver and attempt to scan again with this new domain
 etc...
 
+The script uses Multiple Threads (configurable) with a PriorityQueue, allowing smaller/faster Jobs to be executed first (to avoid blocking progress with lot of large wordlists)
+
 Note: known domains can be specified manually with --domain, or learnt automatically by netexec
 
 # Requirements

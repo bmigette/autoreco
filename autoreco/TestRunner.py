@@ -38,7 +38,7 @@ class TestRunner(object):
         """Callback function when a job is complete, will check if additional jobs needs to be scheduled
         """
         logger.debug("Entering Complete Callback")
-        state = State().TEST_STATE
+        state = State().TEST_STATE.copy()
         for k, v in state.items():
             if k == "discovery":
                 continue
@@ -118,15 +118,18 @@ class TestRunner(object):
     def resume_failed(self):
         """Resume failed test
         """
-        state = State().TEST_STATE
-        for k, v in State().TEST_STATE.items():
-            if k == "discovery":
-                continue
-            for testname, testdata in state[k]["tests_state"].items():
-                if testdata["state"] != "done":
-                    del state[k]["tests_state"][testname]
-                    #Deleting will force test suggestor to resume
-        State().TEST_DATE = state
+        state = State().TEST_STATE.copy() # Use Lock and double state
+        from copy import deepcopy
+        targetstate = deepcopy(state)
+        with State().statelock:
+            for k in state.keys():
+                if k == "discovery":
+                    continue
+                for testname, testdata in state[k]["tests_state"].items():
+                    if testdata["state"] != "done":
+                        targetstate[k]["tests_state"].pop(testname)
+                        #Deleting will force test suggestor to resume
+        State().TEST_DATE = targetstate
                     
     def print_state(self):
         """Display test state

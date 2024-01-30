@@ -108,6 +108,7 @@ class Watchdog:
                 tcp_ports = ",".join(map(str, hostobj.tcp_ports))
                 udp_ports = ",".join(map(str, hostobj.udp_ports))
                 hostnames = ",".join(hostobj.hostnames)
+                f.write(f"IP: {k}\n")
                 f.write(f"Hostname (s): {hostnames}\n")
                 f.write(f"Domain: {hostobj.domain}\n")
                 f.write(f"services: {services}\n")

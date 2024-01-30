@@ -66,7 +66,7 @@ def main():
     parser.add_argument(
         "-rf",
         "--resume-failed",
-        help="Resume failed jobs",
+        help="Resume failed jobs. Default True",
         default=True,
         action="store_true"
     )
