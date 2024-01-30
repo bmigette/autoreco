@@ -120,7 +120,7 @@ class TestRunner(object):
         """
         state = State().TEST_STATE.copy() # Use Lock and double state
         from copy import deepcopy
-        targetstate = deepcopy(state)
+        targetstate = deepcopy(state) # Can't modify a dict in a loop it seems ...
         with State().statelock:
             for k in state.keys():
                 if k == "discovery":
@@ -129,7 +129,7 @@ class TestRunner(object):
                     if testdata["state"] != "done":
                         targetstate[k]["tests_state"].pop(testname)
                         #Deleting will force test suggestor to resume
-        State().TEST_DATE = targetstate
+        State().TEST_STATE = targetstate
                     
     def print_state(self):
         """Display test state
