@@ -37,7 +37,7 @@ class GoBuster(ModuleInterface):
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"
         if mode == "dir":
-            extra += " --no-tls-validation"
+            extra += " --no-tls-validation -b 401,404"
         cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {extra} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, realtime=True, progresscb=parse_gobuster_progress) 

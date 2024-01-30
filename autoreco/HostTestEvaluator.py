@@ -186,7 +186,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         for s in ["domain"]:
             if (
                 s in self.hostobject.udp_service_ports
-            ):  # Dont think DNS would run on sth else than 5353 but who knows
+            ):  # Dont think DNS would run on sth else than 53 but who knows
                 for p in self.hostobject.udp_service_ports[s]:
                     for d in doms:
                         for w in WEB_WORDLISTS["dns"]:
