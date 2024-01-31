@@ -51,6 +51,14 @@ class NmapHostScan(ModuleInterface):
         self.update_state()
         
     def _parse_ports(self, ports):
+        """Parse Ports arguments
+
+        Args:
+            ports (any): ports, either an int list, or nmap arg format
+
+        Returns:
+            str: nmap ports args
+        """
         if isinstance(ports, list):
             return "-p " + ",".join(map(str, self.args["ports"]))
         else:
@@ -62,6 +70,11 @@ class NmapHostScan(ModuleInterface):
 
 
     def update_state(self):
+        """Update state after nmap scan
+
+        Raises:
+            Exception: Parsing error
+        """
         logger.debug("nmap scan result: \n %s", self.lastreturn)
         keys = list(self.lastreturn["scan"].keys())
         if len(keys) > 1:
@@ -101,6 +114,11 @@ class NmapHostScan(ModuleInterface):
         hostobject.dump()
         
     def _parse_ssl_output(self, output):
+        """Parses the output of ssl-cert plugin
+
+        Args:
+            output (str): ssl-cert plugin output
+        """
         #'Subject: commonName=perdu.com\nSubject Alternative Name: DNS:perdu.com, DNS:*.perdu.com\nNot valid before: 2024-01-02T09:48:34\nNot valid after:  2024-04-01T09:48:33'
 
         logger.debug("SSL Output for host %s: %s", self.target, output)
@@ -120,6 +138,12 @@ class NmapHostScan(ModuleInterface):
         #TODO Do a lookup and verify IPs here
     
     def _update_tcp_state(self, root, hostobject: TestHost):
+        """Update State with info from TCP scan
+
+        Args:
+            root (dict): TCP scan result root
+            hostobject (TestHost): object to update
+        """
         for port, data in root["tcp"].items():
             if data["state"] != "open":
                 continue
@@ -136,6 +160,12 @@ class NmapHostScan(ModuleInterface):
                 )
 
     def _update_udp_state(self, root, hostobject: TestHost):
+        """Update State with info from UDP scan
+
+        Args:
+            root (dict): UDP scan result root
+            hostobject (TestHost): object to update
+        """
         for port, data in root["udp"].items():
             if "open" not in data["state"] or not data["name"]: 
                 continue
