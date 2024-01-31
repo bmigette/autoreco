@@ -52,8 +52,7 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/dirb/common.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/combined_directories.txt",
     ],
-    "vhost": [
-        
+    "vhost": [        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
@@ -64,18 +63,19 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
     "files": [
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt",
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-files.txt",
+        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt"
     ]
 }
 
 
 WEB_WORDLISTS_FILES_HASEXT = {
-    "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-files.txt" : True,
-    "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt": False
+    "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-files.txt" : True,
+    "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt": False
 }
-
-GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,c,exe,php5,sh,sql,xml,asp,aspx"
+# See https://gist.github.com/Anon-Exploiter/be23b48bc2ec8dd16b5fd8cdcc3e4188
+#GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,c,exe,php5,sh,sql,xml,asp,aspx"
+GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 
 FFUF_MAX_VHOST = 50 # If more than this vhost found, ignoring, could a site responding to all vhosts
 
