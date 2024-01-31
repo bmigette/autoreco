@@ -37,6 +37,7 @@ pip install -r requirements.txt
 ```
 
 # Configuration
+
 There's a few hardcoded path in the config.py that matches default path for a Kali Linux installation. This need to be adjusted for your system.
 Other options can also be fine tuned in this file.
 
@@ -97,6 +98,8 @@ python main.py --resume /path/to/autoreco_2024_xxxx --credentials /path/to/creds
 ```
 
 Note that by default, the tool will look into creds.txt file in the working dir (/path/to/autoreco_2024_xxxx) and if it exists, use this credentials, meaning you can add credentials to a running scan.
+
+You can also put a NTLM Hash as password, it will be used where supported & applicable
 
 # Notes
 This is absolutely not stealth. Before scanning any system, make sure you are authorized to do it.

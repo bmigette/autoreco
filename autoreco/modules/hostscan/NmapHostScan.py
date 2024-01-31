@@ -10,6 +10,7 @@ from ...config import (
 )
 from ...TestHost import TestHost
 
+#TODO: Can we get the SAN from cert ? If so, parse vhosts here too
 
 class NmapHostScan(ModuleInterface):
     """Class to run TCP/UDP scan against a single host"""

@@ -343,7 +343,7 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-    def get_gobuster_web_tests(self):  # TODO ADD NIKTO (nikto -host http://xxxx)
+    def get_gobuster_web_tests(self):  
         """Create GoBuster jobs
 
         Returns:

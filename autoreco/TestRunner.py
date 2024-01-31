@@ -21,6 +21,7 @@ class TestRunner(object):
             sig (_type_): _description_
             frame (_type_): _description_
         """
+        # TODO Kill processes ?
         WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):

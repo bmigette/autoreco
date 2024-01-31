@@ -61,23 +61,43 @@ def is_ip(ip: str):
     match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
     return bool(match)
 
-def is_ip_state_subnets(ip: str): # TODO Optimize
+def is_ntlm_hash(passw: str):
+    """Check if a given string is a NTLM Hash
+
+    Args:
+        passw (str): Password / Hash
+
+    Returns:
+        bool: True if matches NTLM Hash Format
+    """
+    match = re.match(r"[a-fA-F0-9]{32}", passw)
+    return bool(match)
+
+#TODO: Implement DNS Lookup function, with custom DNS server arg
+#https://www.dnspython.org/examples.html
+
+def get_state_subnets():
+    subnets = []
+    state = State().TEST_STATE.copy()
+    for k, v in state.items():
+        if k == "discovery":
+            for testname, testdata in v:
+                subnets.append(testdata["target"].split("/")[0])
+        ip_parts = k.split(".")
+        ip_parts[-1] = "0"
+        subnet = ".".join(ip_parts)
+        if subnet not in subnets:
+            subnets.append(subnet)
+
+def is_ip_state_subnets(ip: str, subnets = None): 
     """Checks if an IP is in same subnets that hosts in state to avoid scanning the internet :D
 
     Args:
         ip (str): The IP ADdress
     """
     # Yes, this could be improved
-    subnets = []
-    state = State().TEST_STATE.copy()
-    for k, v in state.items():
-        if k == "discovery":
-            continue
-        ip_parts = k.split(".")
-        ip_parts[-1] = "0"
-        subnet = ".".join(ip_parts)
-        if subnet not in subnets:
-            subnets.append(subnet)
+    if not subnets:
+        subnets = get_state_subnets()
     ip_parts = ip.split(".")
     ip_parts[-1] = "0"
     subnet = ".".join(ip_parts)

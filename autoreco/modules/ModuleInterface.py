@@ -37,6 +37,7 @@ class ModuleInterface(ABC):
         # We mix stderr and stdout, because some processes like gobuster shows progress in stderr, and stdout will be silent
         proc = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1,
                      text=True, universal_newlines=True)
+        self._proc = proc
         buffer = []
         while proc.poll() is None:
             try:
@@ -102,7 +103,7 @@ class ModuleInterface(ABC):
             if realtime:
                 ret = self._run_cmd_stream(command, idletimeout, progresscb)
             else:
-                ret = check_output(command, stderr=STDOUT, timeout=timeout)
+                ret = check_output(command, stderr=STDOUT, timeout=timeout) # TODO: Store PID for killing ?
         except CalledProcessError as ce:
             if type(ce.cmd).__name__ == "bytes":
                 ce.cmd = ce.cmd.decode("utf-8")

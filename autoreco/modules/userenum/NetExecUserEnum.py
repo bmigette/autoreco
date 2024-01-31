@@ -5,7 +5,8 @@ from ...utils import is_ip
 
 class NetExecUserEnum(ModuleInterface):
     """Class to run NetExec against a single host"""
-
+    
+     #TODO Support NTLM Pass The Hash
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
