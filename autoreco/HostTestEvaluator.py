@@ -51,8 +51,13 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
     
     def nmap_scans_complete(self):
-        # TODO Implement
-        return False
+        state = State().TEST_STATE.copy()
+        for host, data in state.items():
+            if "tests_state" in data:
+                for testid, testdata in data["tests_state"].items():
+                    if "nmap" in testdata["module"].lower() and testdata["state"] == "done":
+                        return False
+        return True
 
     
     def get_known_credentials(self):
