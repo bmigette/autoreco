@@ -44,7 +44,14 @@ class NmapHostScan(ModuleInterface):
         xml = nm.get_nmap_last_output()
         if type(xml).__name__ == "bytes":
             xml = xml.decode("utf-8")
+        # Bit ugly but ...
+        xml = xml.replace('\n',"\n")
+        if xml[0]=="'":
+            xml = xml[1:]
+        if xml[-1]=="'":
+            xml = xml[:-1]
             
+              
         logger.debug("XML Output: \n %s", xml)
         with open(self.get_log_name("xml"), "w") as f:
             f.write(str(xml))

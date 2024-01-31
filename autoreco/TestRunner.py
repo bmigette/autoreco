@@ -29,6 +29,7 @@ class TestRunner(object):
         self.domains = domains
         self.subnet = subnet
         self.hosts = hosts
+        self.finishing = False
         if len(domains) > 0:
             State().KNOWN_DOMAINS = domains # Copy is handled by state file
                 
@@ -197,6 +198,9 @@ class TestRunner(object):
                         logger.error("Error when moving file %s: %s", file , e)
 
     def finish(self):
+        if self.finishing:
+            return
+        self.finishing = True
         logger.info("=" * 50)
         logger.info("Tests Complete at %s", datetime.now().isoformat())
         logger.info("=" * 50)

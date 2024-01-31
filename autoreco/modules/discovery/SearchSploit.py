@@ -3,7 +3,8 @@ from ...logger import logger
 
 from ...TestHost import TestHost
 
-#TODO Automate SearchSploit based on service_versions of hosts
+#TODO Automate SearchSploit based on service_versions of hosts. Should run once when all nmap discovery done
+# use searchsploit --nmap /path/to/xml
 class SearchSploit(ModuleInterface):
     """Class to run SearchSploit against a single host"""
 

@@ -45,9 +45,16 @@ class HostTestEvaluator(TestEvaluatorBase):
         # AD / Users tests
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             tests = self._safe_merge(tests, self.get_ad_users_tests())
+            
+        tests = self._safe_merge(tests, self.searchsploit_test())
 
         return tests
+    
+    def nmap_scans_complete(self):
+        # TODO Implement
+        return False
 
+    
     def get_known_credentials(self):
         global CREDENTIALS_FILE
         creds = []
@@ -137,6 +144,17 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
+
+
+    def searchsploit_test(self):
+        tests = {}
+        if not self.nmap_scans_complete():
+            return tests
+        # TODO Implement
+        
+        return tests
+    
+    
     def get_file_tests(self):
         tests = {}
         if (
