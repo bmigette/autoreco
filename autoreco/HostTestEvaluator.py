@@ -447,7 +447,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "job_id": jobid,
                 "target": self.hostobject.ip,
                 "priority": 200,
-                "args": {"protocol": proto},
+                "args": {"protocol": proto, "script": "default,vuln"},
             }
 
         if (
