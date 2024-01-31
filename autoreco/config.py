@@ -18,7 +18,6 @@ DNS_SERVER = None # Not used atm
 DEFAULT_MAX_OUTPUT = 10000 # Max len of command output
 RUN_SCANS = "all" #dns,webfiles,webdiscovery,userenum
 
-# TODO Add support for proxy / pivot ?
 
 ##### Modules Specific Config #####
 

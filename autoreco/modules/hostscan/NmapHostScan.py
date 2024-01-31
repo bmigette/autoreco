@@ -42,6 +42,9 @@ class NmapHostScan(ModuleInterface):
         self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
+        if type(xml).__name__ == "bytes":
+            xml = xml.decode("utf-8")
+            
         logger.debug("XML Output: \n %s", xml)
         with open(self.get_log_name("xml"), "w") as f:
             f.write(str(xml))
@@ -93,16 +96,37 @@ class NmapHostScan(ModuleInterface):
                 for match in root["osmatch"]:
                     hostobject.add_os_version(
                         match["name"]
-                    )  # TODO Add certainty here ?
+                    )  
 
         hostobject.dump()
+        
+    def _parse_ssl_output(self, output):
+        #'Subject: commonName=perdu.com\nSubject Alternative Name: DNS:perdu.com, DNS:*.perdu.com\nNot valid before: 2024-01-02T09:48:34\nNot valid after:  2024-04-01T09:48:33'
 
+        logger.debug("SSL Output for host %s: %s", self.target, output)
+        hostname = None
+        sans = []
+        for line in output.split("\n"):
+            if "Subject:" in line:
+                hostname = line.replace("Subject:", "").strip()
+            elif "Subject Alternative Name:" in line:
+                for san in line.replace("Subject Alternative Name:", "").strip().split(","):
+                    if "DNS:" in san:
+                        host = san.replace("DNS:","").strip()
+                        if "*" in host:
+                            continue # Ignore Wildcard
+                        sans.append(host)
+        logger.info("Hosts from certs on target %s: %s %s", self.target, hostname, sans)
+        #TODO Do a lookup and verify IPs here
+    
     def _update_tcp_state(self, root, hostobject: TestHost):
         for port, data in root["tcp"].items():
             if data["state"] != "open":
                 continue
-            if int(port) == 443 or (data["name"] == "http" and "ssl-cert" in str(data)):
+            if int(port) == 443 or (data["name"] == "http" and "script" in data and "ssl-cert" in data["script"]):
                 data["name"] = "https"
+                self._parse_ssl_output(data["script"]["ssl-cert"])
+                
             hostobject.add_service(data["name"])
             hostobject.add_tcp_port(port)
             hostobject.add_tcp_service_port(data["name"], port)

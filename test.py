@@ -19,10 +19,8 @@ from autoreco.WorkThreader import WorkThreader
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
 
-#runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
-autoreco.State.State().set_working_dir(os.path.abspath("/home/babadmin/offsec/challenges/challenge2_relia/autoreco_2024_01_30__12_24_35"), resume=True)
-autoreco.State.State().load_state()
-runner = TestRunner()
+runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
+
 #runner = TestRunner("192.168.199.0/24")
 runner.run(resume=True)
 # w = "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"

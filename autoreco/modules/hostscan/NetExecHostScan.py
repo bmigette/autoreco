@@ -2,12 +2,11 @@ from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_netexec_hostline
 from ...TestHost import TestHost
-from ...utils import is_ip
+from ...utils import is_ip, is_ntlm_hash
 
 class NetExecHostScan(ModuleInterface):
     """Class to run NetExec against a single host"""
 
-    #TODO Support NTLM Pass The Hash
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
@@ -24,12 +23,16 @@ class NetExecHostScan(ModuleInterface):
         passw = "''"
         if "user" in self.args:
             user = "'" + self.args["user"] + "'"
+        
+        pflag = "-p"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"
+            if is_ntlm_hash(self.args["password"]):
+                pflag = "-H"
         action = ""
         if "action" in self.args:
             action = "--" + self.args["action"]
-        self.command = f"netexec {protocol} {self.target} -u {user} -p {passw} {spider} {action} --log {logfile}"
+        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {action} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output()
 

@@ -67,7 +67,6 @@ class GoBuster(ModuleInterface):
                         hostobject.add_hostname(hostname)
                     else:
                         logger.debug("Skipping host %s with ip %s because not in same subnet range", hostname, ip)
-# TODO Error: the server returns a status code that matches the provided options for non existing urls. http://192.168.188.191:80/8f96252b-5951-4e85-a850-c4468882d102 => 401 (Length: 1293). To continue please exclude the status code or the length
 """
 Found: mail.google.com [2a00:1450:4007:806::2005,142.250.179.69]
 Found: www.google.com [2a00:1450:4007:819::2004,142.250.179.100]
