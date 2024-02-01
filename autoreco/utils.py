@@ -17,6 +17,7 @@ def print_summary():
     success_tests = 0
     failed_tests = 0
     started_tests = 0
+    ignored = 0
     from .WorkThreader import WorkThreader
 
     state = State().TEST_STATE.copy()
@@ -31,6 +32,9 @@ def print_summary():
                     failed_tests += 1
                 elif testdata["state"] == "started":
                     started_tests += 1
+                elif testdata["state"] == "ignored":
+                    ignored += 1
+                    
                 else:
                     pass
                     # logger.warn("Test %s state: %s", testid, testdata["state"])
@@ -39,12 +43,14 @@ def print_summary():
     logger.info(
         "# Running / Ran %s Tests against %s hosts", total_tests, total_hosts
     )
+    # TODO Add ignored (prioriy < )
     logger.info(
-        "# Success: %s, Failed: %s, Running: %s, Queued: %s",
+        "# Success: %s, Failed: %s, Running: %s, Queued: %s, Ignored: %s",
         success_tests,
         failed_tests,
         started_tests,
         WorkThreader.queue.qsize(),
+        ignored
     )
     logger.info("=" * 50)
 

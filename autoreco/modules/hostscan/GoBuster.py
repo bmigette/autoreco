@@ -32,7 +32,7 @@ class GoBuster(ModuleInterface):
         extra = ""
         if mode == "dns":
             url = f"-r {self.target}" 
-            extra = "-i" # TO print IP with DNS Discovery
+            extra = "-i --wildcard" # -i is TO print IP with DNS Discovery
         host = ""
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"

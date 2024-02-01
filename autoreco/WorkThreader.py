@@ -269,6 +269,8 @@ class WorkThreader:
             job["priority"] = 1000
         if int(job["priority"]) < 0:
             logger.info("Skipping job %s because priority is %s (probably ignored because of list size)", job["job_id"], job["priority"])
+            hostobj = TestHost(job["target"])
+            hostobj.set_test_state(job["job_id"], "ignored")
             return
 
         job["priority"] = int(job["priority"])

@@ -90,7 +90,7 @@ def main():
     parser.add_argument(
         "-rs",
         "--run-scans",
-        help="Scans to run, default all. Example: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp",
+        help="Scans to run, default all. Supported Values: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp,exploits",
         default=autoreco.config.RUN_SCANS,
     )
         

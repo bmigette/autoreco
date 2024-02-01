@@ -135,7 +135,7 @@ class TestRunner(object):
                 if k == "discovery":
                     continue
                 for testname, testdata in state[k]["tests_state"].items():
-                    if testdata["state"] != "done":
+                    if testdata["state"] not in  ["done", "ignored"]:
                         targetstate[k]["tests_state"].pop(testname)
                         # Deleting will force test suggestor to resume
         State().TEST_STATE = targetstate
