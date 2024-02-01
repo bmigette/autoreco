@@ -89,8 +89,12 @@ class NmapHostScan(ModuleInterface):
                 ip = self.target
             else:
                 raise Exception(f"More than 1 IP returned, and {self.target} not in keys: " + ",".join(keys))
+        elif len(keys)<1:
+            logger.error("No Output in NMAP, either host down or test misconfigured: %s", self.lastreturn)
+            self.status="error"
+            return
         else:
-            ip = keys[0]
+            ip = keys[0] 
         self.ip = ip
         root = self.lastreturn["scan"][keys[0]]
         hostobject = self.get_host_obj(ip)

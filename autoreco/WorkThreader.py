@@ -195,7 +195,9 @@ class _WorkThread:
                 if self.current_job:
                     try:
                         hostobj = TestHost(job["target"])
-                        hostobj.set_test_state(job["job_id"], "stopped")
+                        if job["job_id"] in hostobj.tests_state and hostobj.tests_state[job["job_id"]]["state"] != "done":
+                            logger.debug("Setting test to stopped: %s", hostobj.tests_state[job["job_id"]])
+                            hostobj.set_test_state(job["job_id"], "stopped")
                     except Exception as ie:
                         logger.error(
                         "Error in thread close: %s", ie)

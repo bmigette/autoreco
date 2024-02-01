@@ -72,11 +72,12 @@ class HostTestEvaluator(TestEvaluatorBase):
             except Exception as e:
                 logger.error("Error when getting ad user tests: ",
                              e, exc_info=True)
-        try:
-            tests = self._safe_merge(tests, self.searchsploit_test())
-        except Exception as e:
-            logger.error(
-                "Error when getting searchsploit tests: ", e, exc_info=True)
+        if "all" in RUN_SCANS or "exploits" in RUN_SCANS:
+            try:
+                tests = self._safe_merge(tests, self.searchsploit_test())
+            except Exception as e:
+                logger.error(
+                    "Error when getting searchsploit tests: ", e, exc_info=True)
 
         return tests
 
@@ -84,7 +85,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         state = State().TEST_STATE.copy()
         if "discovery" in state and "tests_state" in state["discovery"]:
             for testid, testdata in state["discovery"]["tests_state"].items():
-                if "nmap" in testdata["module_name"].lower() and testdata["state"] != "done":
+                if "nmap" in testdata["module_name"].lower() and testdata["state"] in ["notstarted", "started", "queued"]:
                     logger.debug(
                         "nmap_scans_complete discovery not complete because test %s", self.hostobject.ip, testid)
                     return False
@@ -93,10 +94,11 @@ class HostTestEvaluator(TestEvaluatorBase):
                 return False  # not started
         for testid, testdata in self.hostobject.tests_state.items():
             logger.debug("testid, testdata: %s / %s", testid, testdata)
-            if "nmap" in testdata["module_name"].lower() and testdata["state"] != "done":
+            if "nmap" in testdata["module_name"].lower() and testdata["state"] in ["notstarted", "started", "queued"]:
                 logger.debug(
                     "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
                 return False
+        logger.debug("NMAP Tests complete on host %s", self.hostobject.ip)
         return True
 
     def get_known_credentials(self):
@@ -318,15 +320,25 @@ class HostTestEvaluator(TestEvaluatorBase):
             "rpcbind" in self.hostobject.services
             ):
             ports = self.get_tcp_services_ports(["nfs", "rpcbind"])
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_nfsscript_{ports}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 100,
-                "args": {"script": "nfs-*", "ports": ports},
-            }
-
+            if len(ports) > 0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_nfsscript_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {"script": "nfs-*", "ports": ports},
+                }
+            ports = self.get_udp_services_ports(["nfs", "rpcbind"])
+            if len(ports) > 0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_nfsscript_udp_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {"script": "nfs-*", "ports": ports, "protocol": "udp"},
+                }
         return tests
 
     def get_known_domains(self):

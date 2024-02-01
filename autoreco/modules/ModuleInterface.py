@@ -14,7 +14,6 @@ from ..utils import max_output, is_ip
 from ..TestHost import TestHost
 
 
-
 class ModuleInterface(ABC):
     """Generic modules functions"""
 
@@ -46,19 +45,20 @@ class ModuleInterface(ABC):
                 output = proc.stdout.readline()
                 try:
                     progress = callback(output)
-                    buffer.append(output)
                     if progress:
                         self.progress = progress
+                    else:
+                        buffer.append(output)
                 except Exception as ie:
                     logger.error("Error in callback: %s", ie, exc_info=True)
                 finally:
                     timer.cancel()
-                
+
             except Exception as e:
                 proc.kill()
                 logger("_run_stream error with command %s: %s", cmd, e)
-                #outs, errs = proc.communicate()
-                #raise TimeoutError(f"stdout: {outs}\nstderr: {errs}")
+                # outs, errs = proc.communicate()
+                # raise TimeoutError(f"stdout: {outs}\nstderr: {errs}")
         if proc.returncode != 0:
             raise CalledProcessError(proc.returncode, cmd, "\n".join(buffer))
         return "\n".join(buffer)
@@ -71,7 +71,8 @@ class ModuleInterface(ABC):
         logcmdline=None,
         realtime=False,
         idletimeout: int = DEFAULT_IDLE_TIMEOUT,
-        progresscb = None
+        progresscb=None,
+        logcmdinoutput=False
     ):
         """Run a system command and get the output
 
@@ -83,7 +84,7 @@ class ModuleInterface(ABC):
             realtime (bool, optional): Use stream to read stdout realtime. Defaults to False.
             idletimeout (int, optional): Consider process stuck if no out after this time. Defaults to DEFAULT_IDLE_TIMEOUT.
             progresscb (function, optional): Callback to parse progress if realtime is True. Defaults to None.
-
+            logcmdinoutput (bool, optional): Will write the command line in logoutput file if True. Defaults to False.
         Returns:
             str: command output
         """
@@ -103,7 +104,8 @@ class ModuleInterface(ABC):
             if realtime:
                 ret = self._run_cmd_stream(command, idletimeout, progresscb)
             else:
-                ret = check_output(command, stderr=STDOUT, timeout=timeout) # TODO: Store PID for killing ?
+                # TODO: Store PID for killing ?
+                ret = check_output(command, stderr=STDOUT, timeout=timeout)
         except CalledProcessError as ce:
             if type(ce.cmd).__name__ == "bytes":
                 ce.cmd = ce.cmd.decode("utf-8")
@@ -123,7 +125,7 @@ class ModuleInterface(ABC):
             err = err + f"{ce.output}\n"
             err = err + "stderr:\n"
             err = err + f"{ce.stderr}"
-            
+
             try:
                 errfile = self.get_log_name(".err")
                 if logoutput:
@@ -152,6 +154,13 @@ class ModuleInterface(ABC):
         if logoutput:
             try:
                 with open(logoutput, "a") as f:
+                    if logcmdinoutput:
+                        cmd = command
+                        if isinstance(cmd, list):
+                            cmd = " ".join(cmd)
+                        f.write("\n" + "="*50 + "\n")
+                        f.write(cmd)
+                        f.write("\n" + "="*50 + "\n")
                     f.write(ret)
             except Exception as e:
                 logger.error("Could not write to file %s: %s", logoutput, e)
@@ -242,7 +251,7 @@ class ModuleInterface(ABC):
             os.makedirs(outdir, exist_ok=True)
         return outdir
 
-    def _get_flatten_args(self, argusekey = [], ignorekeys = ["password", "pass"]):
+    def _get_flatten_args(self, argusekey=[], ignorekeys=["password", "pass"]):
         """strip bad chars and flatten args to make unique log file names
 
         Args:
@@ -268,7 +277,7 @@ class ModuleInterface(ABC):
             args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
         return "-".join(args)
 
-    def get_log_name(self, ext="out", argusekey=[], folder=None, ignorekeys = ["password", "pass"]):
+    def get_log_name(self, ext="out", argusekey=[], folder=None, ignorekeys=["password", "pass"]):
         """Get log file name to output from a module
 
         Args:
