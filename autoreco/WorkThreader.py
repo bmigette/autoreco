@@ -45,9 +45,12 @@ class Watchdog:
                     (last_date - last_loop_date).total_seconds() > WATCHDOG_INTERVAL
                 ):
                     last_loop_date = last_date
-                    self.print_thread_stats()
+                    onebusy = self.print_thread_stats()
                     print_summary()
                     self.write_state()
+                    if not onebusy:
+                        if WorkThreader._callback:
+                            WorkThreader._callback()
             except Exception as e:
                 logger.error("Error in watchdog: %s", e, exc_info=True)
             time.sleep(WATCHDOG_SLEEP_INTERVAL)
@@ -58,11 +61,15 @@ class Watchdog:
         self.stopevent.set()
 
     def print_thread_stats(self) -> None:
+        onebusy = False
         try:
             logger.info("=" * 50)
             logger.info("| Threads Status:")
             logger.info("-" * 50)
+            
             for i, inst in WorkThreader._instances.items():
+                if inst.busy:
+                    onebusy = True
                 job = ""
                 if inst.current_job:
                     progress = inst.get_progress()
@@ -93,6 +100,8 @@ class Watchdog:
             logger.info("=" * 50)
         except Exception as e:
             logger.error("Error int print_thread_stats: %s", e, exc_info=True)
+        finally:
+            return onebusy
 
     def write_host_summary(self) -> None:
         """Write summary of host to disk
@@ -247,8 +256,10 @@ class WorkThreader:
     """Class that manages thread execution and queuing"""
 
     _instances = {}
+    _callback = None
     queue = PriorityQueue(QUEUE_SIZE)
     watchdog = None
+    
 
     def add_job(job: dict) -> None:
         if "priority" not in job:
@@ -282,6 +293,7 @@ class WorkThreader:
         """
         if not complete_callback:
             complete_callback = WorkThreader.stop_if_finish()
+        WorkThreader._callback = complete_callback
         for i in range(0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(

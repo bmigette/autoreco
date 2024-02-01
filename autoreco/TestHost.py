@@ -31,7 +31,7 @@ Format is {
         }
         tests_state : {
             "xxxx" : {
-                "module": "moduleName",
+                "module_name": "moduleName",
                 "args": "",
                 "state": "done"
             }
@@ -121,6 +121,14 @@ class TestHost:
         return self._state_field_set("services", set(value))
 
     @property
+    def service_versions(self):
+        return self._state_field_get("service_versions", {})
+
+    @service_versions.setter
+    def service_versions(self, value):
+        return self._state_field_set("service_versions", set(value))
+    
+    @property
     def tcp_ports(self):
         return self._state_field_get("tcp_ports", [])
 
@@ -154,7 +162,7 @@ class TestHost:
 
     @property
     def tests_state(self):
-        return self._state_field_get("tests_state", [])
+        return self._state_field_get("tests_state", {})
 
     @tests_state.setter
     def tests_state(self, value):
@@ -208,7 +216,7 @@ class TestHost:
             product (str): product
             version (str): version
         """
-        if not service:
+        if not service or not product:
             logger.warn("Skipping empty service version with port %s", port)
             return
         service = service.lower()
@@ -355,7 +363,7 @@ class TestHost:
         else:
             State().TEST_STATE[self.ip]["tests_state"][testid]["state"] = state
         if module_name is not None:
-            State().TEST_STATE[self.ip]["tests_state"][testid]["module"] = module_name
+            State().TEST_STATE[self.ip]["tests_state"][testid]["module_name"] = module_name
         if target is not None:
             State().TEST_STATE[self.ip]["tests_state"][testid]["target"] = target
         if args is not None:

@@ -27,39 +27,78 @@ class HostTestEvaluator(TestEvaluatorBase):
         tests = self._safe_merge(tests, self.get_generic_tests())
 
         if "all" in RUN_SCANS or "nmapscan" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_nmap_specific_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_nmap_specific_tests())
+            except Exception as e:
+                logger.error("Error when getting nmap tests: ",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "dns" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_dns_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_dns_tests())
+            except Exception as e:
+                logger.error("Error when getting dns tests: ",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "file" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_file_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_file_tests())
+            except Exception as e:
+                logger.error("Error when getting file tests: ",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_gobuster_web_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_scan_web_tests())
+            except Exception as e:
+                logger.error("Error when getting scan web tests: ",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "webfiles" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_web_file_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_web_file_tests())
+            except Exception as e:
+                logger.error("Error when getting web file tests: ",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "snmp" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_snmp_tests())
+            try:
+                tests = self._safe_merge(tests, self.get_snmp_tests())
+            except Exception as e:
+                logger.error("Error when getting snmp tests: ",
+                             e, exc_info=True)
 
-        
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         # AD / Users tests
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
-            tests = self._safe_merge(tests, self.get_ad_users_tests())
-            
-        tests = self._safe_merge(tests, self.searchsploit_test())
+            try:
+                tests = self._safe_merge(tests, self.get_ad_users_tests())
+            except Exception as e:
+                logger.error("Error when getting ad user tests: ",
+                             e, exc_info=True)
+        try:
+            tests = self._safe_merge(tests, self.searchsploit_test())
+        except Exception as e:
+            logger.error(
+                "Error when getting searchsploit tests: ", e, exc_info=True)
 
         return tests
-    
+
     def nmap_scans_complete(self):
         state = State().TEST_STATE.copy()
-        for host, data in state.items():
-            if "tests_state" in data:
-                for testid, testdata in data["tests_state"].items():
-                    if "nmap" in testdata["module"].lower() and testdata["state"] == "done":
-                        return False
+        if "discovery" in state and "tests_state" in state["discovery"]:
+            for testid, testdata in state["discovery"]["tests_state"].items():
+                if "nmap" in testdata["module_name"].lower() and testdata["state"] != "done":
+                    logger.debug(
+                        "nmap_scans_complete discovery not complete because test %s", self.hostobject.ip, testid)
+                    return False
+        else:
+            if len(self.hostobject.tests_state.keys()) < 1:
+                return False  # not started
+        for testid, testdata in self.hostobject.tests_state.items():
+            logger.debug("testid, testdata: %s / %s", testid, testdata)
+            if "nmap" in testdata["module_name"].lower() and testdata["state"] != "done":
+                logger.debug(
+                    "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
+                return False
         return True
 
-    
     def get_known_credentials(self):
         global CREDENTIALS_FILE
         creds = []
@@ -149,17 +188,19 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-
-
     def searchsploit_test(self):
         tests = {}
         if not self.nmap_scans_complete():
             return tests
-        # TODO Implement
-        
+        jobid = f"hostscan.SearchSploit_{self.hostobject.ip}_searchsploit"
+        tests[jobid] = {
+            "module_name": "hostscan.SearchSploit",
+            "target": self.hostobject.ip,
+            "priority": 50,
+            "args": {},
+        }
         return tests
-    
-    
+
     def get_file_tests(self):
         tests = {}
         if (
@@ -185,8 +226,6 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         return tests
 
-
-
     def get_snmp_tests(self):
         """Create snmp jobs
 
@@ -197,6 +236,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         tests = {}
         # TODO SNMP / onesixtyone
         return tests
+
     def get_dns_tests(self):
         """Create dns jobs
 
@@ -261,7 +301,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "priority": 100,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
             }
-            
+
         if "ldap" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["ldap"])
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
@@ -366,7 +406,7 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-    def get_gobuster_web_tests(self):  
+    def get_scan_web_tests(self):
         """Create GoBuster jobs
 
         Returns:

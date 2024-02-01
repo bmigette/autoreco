@@ -61,7 +61,8 @@ class TestRunner(object):
                         "Job Payload: \n %s",
                         json.dumps(payload, indent=4)
                     )
-                    host.set_test_state(testid, "queued")
+                    args = payload["args"] if "args" in payload else {}
+                    host.set_test_state(testid, "queued", payload["module_name"], payload["target"], args)
                     WorkThreader.add_job(payload)
         
         
@@ -138,7 +139,7 @@ class TestRunner(object):
         """
 
         logger.debug("State: %s", json.dumps(State().TEST_STATE, indent=4))
-        logger.info("=" * 50)
+        logger.debug("=" * 50)
             
     def run(self, resume = False, resume_failed = True):
         """Run the tets
