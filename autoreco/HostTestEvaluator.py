@@ -386,7 +386,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
                             "target": self.hostobject.ip,
-                            "priority": self.get_list_priority(w),
+                            "priority": self.get_list_priority(w, GOBUSTER_FILE_EXT),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
@@ -407,7 +407,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "module_name": "hostscan.GoBuster",
                                 "job_id": jobid,
                                 "target": self.hostobject.ip,
-                                "priority": self.get_list_priority(w),
+                                "priority": self.get_list_priority(w, GOBUSTER_FILE_EXT),
                                 "args": {
                                     "url": f"{s}://{self.hostobject.ip}:{p}",
                                     "mode": "dir",

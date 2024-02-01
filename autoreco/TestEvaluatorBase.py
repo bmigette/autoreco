@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from .config import MAX_LIST_SIZE
+from .config import MAX_LIST_SIZE, WEB_WORDLISTS_FILES_HASEXT
 from .logger import logger
 
 import re
@@ -20,9 +20,15 @@ class TestEvaluatorBase(ABC):
         return tempd
 
 
-    def get_list_priority(self, wordlistfile):
+    def get_list_priority(self, wordlistfile, extensions = None):
         with open(wordlistfile, 'r') as fp:
             cnt = len(fp.readlines())
         if MAX_LIST_SIZE and cnt >= MAX_LIST_SIZE:
             return -1
+        if extensions:
+            extcnt = len(extensions.split(","))
+            if wordlistfile in WEB_WORDLISTS_FILES_HASEXT and not WEB_WORDLISTS_FILES_HASEXT[wordlistfile]:
+                logger.debug("Counting lines in file %s times extensions %s", wordlistfile, extcnt)
+                cnt *= extcnt
+            
         return int(cnt/1000)
