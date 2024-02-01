@@ -43,7 +43,6 @@ def print_summary():
     logger.info(
         "# Running / Ran %s Tests against %s hosts", total_tests, total_hosts
     )
-    # TODO Add ignored (prioriy < )
     logger.info(
         "# Success: %s, Failed: %s, Running: %s, Queued: %s, Ignored: %s",
         success_tests,

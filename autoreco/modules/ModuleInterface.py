@@ -48,7 +48,9 @@ class ModuleInterface(ABC):
                     if progress:
                         self.progress = progress
                     else:
-                        buffer.append(output)
+                        o = output.strip()
+                        if o:
+                            buffer.append(o)
                 except Exception as ie:
                     logger.error("Error in callback: %s", ie, exc_info=True)
                 finally:

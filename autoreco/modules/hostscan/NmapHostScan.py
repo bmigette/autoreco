@@ -10,7 +10,6 @@ from ...config import (
 )
 from ...TestHost import TestHost
 
-#TODO: Can we get the SAN from cert ? If so, parse vhosts here too
 
 class NmapHostScan(ModuleInterface):
     """Class to run TCP/UDP scan against a single host"""
@@ -36,10 +35,10 @@ class NmapHostScan(ModuleInterface):
         scripts = ""
         if "script" in self.args:
             scripts = "--script=" + self.args["script"]
-        nmargs = f"{args} {protocol} {ports} {scripts} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}"
+        nmargs = f"{args} {protocol} {ports} {scripts} -oN {outname} --host-timeout {NMAP_MAX_HOST_TIME}m"
 
         logger.debug("Starting nmap with args %s", nmargs)
-        self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True)
+        self.lastreturn = nm.scan(self.target, None, nmargs, sudo=True, timeout=(NMAP_MAX_HOST_TIME+1)*60)
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
         if type(xml).__name__ == "bytes":
@@ -146,7 +145,7 @@ class NmapHostScan(ModuleInterface):
                             continue # Ignore Wildcard
                         sans.append(host)
         logger.info("Hosts from certs on target %s: %s %s", self.target, hostname, sans)
-        #TODO Do a lookup and verify IPs here
+        #TODO Do a lookup and verify IPs here, and add vhosts if necessary
     
     def _update_tcp_state(self, root, hostobject: TestHost):
         """Update State with info from TCP scan

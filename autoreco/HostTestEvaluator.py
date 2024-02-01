@@ -238,6 +238,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         global WEB_WORDLISTS
         tests = {}
         # TODO SNMP / onesixtyone
+        # Should assume snmptrap/162 does SNMP ?
         return tests
 
     def get_dns_tests(self):
