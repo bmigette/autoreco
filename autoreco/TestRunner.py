@@ -13,7 +13,7 @@ from datetime import datetime
 
 class TestRunner(object):
     """Class responsible to run tests, stop threads, etc..."""
-    
+
     def stop_signal_handler(sig, frame):
         """CTRL+C Signal Handler
 
@@ -25,14 +25,15 @@ class TestRunner(object):
         WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
-        logger.debug("Starting TestRunner with args: %s, %s, %s", subnet, domains, hosts)
+        logger.debug("Starting TestRunner with args: %s, %s, %s",
+                     subnet, domains, hosts)
         self.domains = domains
         self.subnet = subnet
         self.hosts = hosts
         self.finishing = False
         if len(domains) > 0:
-            State().KNOWN_DOMAINS = domains # Copy is handled by state file
-                
+            State().KNOWN_DOMAINS = domains  # Copy is handled by state file
+
         WorkThreader.start_threads(self.complete_callback)
         self.set_handler()
 
@@ -40,42 +41,48 @@ class TestRunner(object):
         """Callback function when a job is complete, will check if additional jobs needs to be scheduled
         """
         logger.debug("Entering Complete Callback")
-        state = State().TEST_STATE.copy()
-        for k, v in state.items():
-            if k == "discovery":
-                continue
-            host = TestHost(k)
-            evaluator = HostTestEvaluator(host)
-            tests = evaluator.get_tests()
-            for testid, payload in tests.items():
-                if host.has_test(testid):
-                    pass
-                else:
-                    logger.info(
-                        "Adding new job for host %s with module %s on target %s",
-                        host,
-                        payload["module_name"],
-                        payload["target"]
-                    )
-                    logger.debug(
-                        "Job Payload: \n %s",
-                        json.dumps(payload, indent=4)
-                    )
-                    args = payload["args"] if "args" in payload else {}
-                    host.set_test_state(testid, "queued", payload["module_name"], payload["target"], args)
-                    WorkThreader.add_job(payload)
-        
-        
-        if WorkThreader.finished():
-            WorkThreader.stop_threads()
-            self.finish()
+        try:
+            state = State().TEST_STATE.copy()
+            for k, v in state.items():
+                if k == "discovery":
+                    continue
+                host = TestHost(k)
+                evaluator = HostTestEvaluator(host)
+                tests = evaluator.get_tests()
+                for testid, payload in tests.items():
+                    if host.has_test(testid):
+                        pass
+                    else:
+                        if "job_id" not in payload:  # Should not happen unless there's an Error in HostTestEvaluator
+                            logger.warn("No job_id in payload %s", payload)
+                            payload["job_id"] = testid
+                        logger.info(
+                            "Adding new job for host %s with module %s on target %s",
+                            host,
+                            payload["module_name"],
+                            payload["target"]
+                        )
+                        logger.debug(
+                            "Job Payload: \n %s",
+                            json.dumps(payload, indent=4)
+                        )
+                        args = payload["args"] if "args" in payload else {}
+                        host.set_test_state(
+                            testid, "queued", payload["module_name"], payload["target"], args)
+                        WorkThreader.add_job(payload)
+        except Exception as e:
+            logger.error("Exception in Complete Callback: %s",
+                         e, exc_info=True)
+        finally:
+            if WorkThreader.finished():
+                WorkThreader.stop_threads()
+                self.finish()
 
     def set_handler(self):
         """Sets CTRL+C Handler
         """
         import signal
         signal.signal(signal.SIGINT, TestRunner.stop_signal_handler)
-
 
     def host_discovery(self, target):
         """Start host discovery process against a subnet
@@ -115,15 +122,14 @@ class TestRunner(object):
             raise Exception("Only IP supported as of now")
         h = TestHost(host_ip)  # Will create empty host in state
         self.complete_callback()
-        
-
 
     def resume_failed(self):
         """Resume failed test
         """
-        state = State().TEST_STATE.copy() # Use Lock and double state
+        state = State().TEST_STATE.copy()  #  Use Lock and double state
         from copy import deepcopy
-        targetstate = deepcopy(state) # Can't modify a dict in a loop it seems ...
+        # Can't modify a dict in a loop it seems ...
+        targetstate = deepcopy(state)
         with State().statelock:
             for k in state.keys():
                 if k == "discovery":
@@ -131,17 +137,17 @@ class TestRunner(object):
                 for testname, testdata in state[k]["tests_state"].items():
                     if testdata["state"] != "done":
                         targetstate[k]["tests_state"].pop(testname)
-                        #Deleting will force test suggestor to resume
+                        # Deleting will force test suggestor to resume
         State().TEST_STATE = targetstate
-                    
+
     def print_state(self):
         """Display test state
         """
 
         logger.debug("State: %s", json.dumps(State().TEST_STATE, indent=4))
         logger.debug("=" * 50)
-            
-    def run(self, resume = False, resume_failed = True):
+
+    def run(self, resume=False, resume_failed=True):
         """Run the tets
 
         Args:
@@ -165,19 +171,19 @@ class TestRunner(object):
             if self.hosts:
                 for host in self.hosts:
                     self.host_scan(host)
-                    
+
             if resume and len(self.hosts) < 1:
                 self.complete_callback()
-            
-            
+
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
             WorkThreader.stop_threads()
-    
+
     def move_empty_log_files(self):
         """Move empty log files + files associated to empty_logs folder
         """
-        import glob, shutil
+        import glob
+        import shutil
         for folder in os.walk(State().TEST_WORKING_DIR):
             folder = folder[0]
             if "empty_logs" in folder:
@@ -188,7 +194,8 @@ class TestRunner(object):
                 if file_stats.st_size == 0:
                     try:
                         if os.path.exists(file.replace(".log", ".cmd.err")):
-                            logger.debug("Not Moving empty file because .cmd.err exits: %s", file)
+                            logger.debug(
+                                "Not Moving empty file because .cmd.err exits: %s", file)
                             continue
                         if not os.path.isdir(outdir):
                             os.makedirs(outdir, exist_ok=True)
@@ -196,7 +203,7 @@ class TestRunner(object):
                             logger.debug("Moving empty file %s", file_to_move)
                             shutil.move(file_to_move, outdir)
                     except Exception as e:
-                        logger.error("Error when moving file %s: %s", file , e)
+                        logger.error("Error when moving file %s: %s", file, e)
 
     def finish(self):
         if self.finishing:
@@ -210,5 +217,3 @@ class TestRunner(object):
 
         print_summary()
         self.move_empty_log_files()
-
-    

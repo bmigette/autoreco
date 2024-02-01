@@ -195,6 +195,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         jobid = f"hostscan.SearchSploit_{self.hostobject.ip}_searchsploit"
         tests[jobid] = {
             "module_name": "hostscan.SearchSploit",
+            "job_id": jobid,
             "target": self.hostobject.ip,
             "priority": 50,
             "args": {},

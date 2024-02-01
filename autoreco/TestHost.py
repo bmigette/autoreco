@@ -231,7 +231,7 @@ class TestHost:
                     State().TEST_STATE[self.ip]["service_versions"][service] = {}
                 if int(port) not in State().TEST_STATE[self.ip]["service_versions"][service]:
                     State().TEST_STATE[self.ip]["service_versions"][service][int(port)] = []
-                if self._has_product_version(
+                if not self._has_product_version(
                     State().TEST_STATE[self.ip]["service_versions"][service][int(port)],
                     product,
                     version,
