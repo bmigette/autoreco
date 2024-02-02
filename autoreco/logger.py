@@ -29,5 +29,12 @@ if FILE_LOGGING:
     handlerfile.setFormatter(formatter)
     handlerfile.setLevel(LOGLEVEL)
     logger.addHandler(handlerfile)
+    
+    handlerfileerr = RotatingFileHandler(
+        os.path.join(State().TEST_WORKING_DIR,  "autoreco.error.log"), maxBytes=(1024*1024*10), backupCount=7
+    )
+    handlerfileerr.setFormatter(formatter)
+    handlerfileerr.setLevel(logging.ERROR)
+    logger.addHandler(handlerfileerr)
 
 

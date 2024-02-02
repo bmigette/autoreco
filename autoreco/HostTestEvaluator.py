@@ -63,7 +63,6 @@ class HostTestEvaluator(TestEvaluatorBase):
                 logger.error("Error when getting snmp tests: ",
                              e, exc_info=True)
 
-        # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
 
         # AD / Users tests
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
@@ -78,7 +77,8 @@ class HostTestEvaluator(TestEvaluatorBase):
             except Exception as e:
                 logger.error(
                     "Error when getting searchsploit tests: ", e, exc_info=True)
-
+                
+        # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
         return tests
 
     def nmap_scans_complete(self):
@@ -93,7 +93,6 @@ class HostTestEvaluator(TestEvaluatorBase):
             if len(self.hostobject.tests_state.keys()) < 1:
                 return False  # not started
         for testid, testdata in self.hostobject.tests_state.items():
-            logger.debug("testid, testdata: %s / %s", testid, testdata)
             if "nmap" in testdata["module_name"].lower() and testdata["state"] in ["notstarted", "started", "queued"]:
                 logger.debug(
                     "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
