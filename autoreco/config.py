@@ -29,7 +29,7 @@ NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"
 NMAP_DEFAULT_UDP_PORT_OPTION = "--top-ports 150"
 NMAP_SPEED = 4
 NMAP_MAX_HOST_TIME = (
-    "20"  # Max time per host for NMAP (in minutes), see https://nmap.org/book/man-performance.html
+    20  # Max time per host for NMAP (in minutes), see https://nmap.org/book/man-performance.html
 )
 NMAP_TCP_HOSTSCAN_OPTIONS = (
     f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"

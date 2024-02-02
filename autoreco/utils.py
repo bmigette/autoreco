@@ -2,6 +2,7 @@ from .logger import logger
 from .State import State
 from .config import DEFAULT_MAX_OUTPUT
 import re
+import dns.resolver
 
 def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
     if not isinstance(thestr, str):
@@ -78,9 +79,20 @@ def is_ntlm_hash(passw: str):
     match = re.match(r"[a-fA-F0-9]{32}", passw)
     return bool(match)
 
-#TODO: Implement DNS Lookup function, with custom DNS server arg
 #https://www.dnspython.org/examples.html
 
+def resolve_domain(domain: str, dnserver: str = None):
+    try:
+        if dnserver:
+            answer = dns.resolver.resolve_at(dnserver, domain, "A")
+        else:
+            answer = dns.resolver.resolve(domain, "A")
+    except Exception as e:
+        logger.error("Error in DNS Resolution for domain %s: %s", domain, e)
+        return []
+    
+    return [x.to_text() for x in answer]
+        
 def get_state_subnets():
     subnets = []
     state = State().TEST_STATE.copy()
@@ -93,6 +105,20 @@ def get_state_subnets():
         subnet = ".".join(ip_parts)
         if subnet not in subnets:
             subnets.append(subnet)
+    return subnets
+
+def get_state_dns_servers():
+    from .TestHost import TestHost
+    dns = []
+    state = State().TEST_STATE.copy()
+    for k, v in state.items():
+        if k == "discovery":
+            continue
+        hostobj = TestHost(k)
+        if "domain" in hostobj.services:  
+            dns.append(k)
+    logger.debug("Known DNS servers: %s", dns)
+    return dns
 
 def is_ip_state_subnets(ip: str, subnets = None): 
     """Checks if an IP is in same subnets that hosts in state to avoid scanning the internet :D
