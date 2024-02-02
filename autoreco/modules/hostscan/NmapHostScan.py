@@ -134,7 +134,6 @@ class NmapHostScan(ModuleInterface):
         """
         # 'Subject: commonName=perdu.com\nSubject Alternative Name: DNS:perdu.com, DNS:*.perdu.com\nNot valid before: 2024-01-02T09:48:34\nNot valid after:  2024-04-01T09:48:33'
         # Subject: commonName=seppuku/organizationName=LiteSpeedCommunity/stateOrProvinceName=NJ/countryName=US
-        # TODO Need to test this, maybe does not work
         logger.debug("SSL Output for host %s: %s", self.target, output)
         hostname = None
         sans = []

@@ -1,7 +1,7 @@
 from .logger import logger
 from .TestHost import TestHost
 from .State import State
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, CREDENTIALS_FILE, RUN_SCANS
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS, CREDENTIALS_FILE, RUN_SCANS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -235,10 +235,21 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
-        global WEB_WORDLISTS
+        global SNMP_WORDLISTS
         tests = {}
-        # TODO SNMP / onesixtyone
-        # Should assume snmptrap/162 does SNMP ?
+        if "snmp" in self.hostobject.services:
+            ports = self.get_udp_services_ports(["snmp"])
+            for p in ports:
+                for w in SNMP_WORDLISTS:
+                    file = Path(w).stem
+                    jobid = f"hostscan.OneSixtyOneHostScan_{self.hostobject.ip}_{p}_{file}"
+                    tests[jobid] = {
+                        "module_name": "hostscan.OneSixtyOneHostScan",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": self.get_list_priority(w),
+                        "args": {"port": p, "wordlist": w},
+                    }
         return tests
 
     def get_dns_tests(self):

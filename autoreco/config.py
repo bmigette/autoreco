@@ -85,5 +85,9 @@ USERENUM_LISTS = [
     "/usr/share/seclists/Usernames/xato-net-10-million-usernames-dup.txt"
 ]
 
+# SNMP
+SNMP_WORDLISTS = [
+    "/usr/share/wordlists/seclists/Discovery/SNMP/snmp-onesixtyone.txt"
+]
 
 CREDENTIALS_FILE = None
