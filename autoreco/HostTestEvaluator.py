@@ -20,6 +20,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         self.hostobject = hostobject
 
     def get_tests(self):
+        """Get all host tests, according to RUN_SCANS 
+
+        Returns:
+            dict: jobs
+        """
         global RUN_SCANS
         logger.debug("Evaluating tests for host %s ...", self.hostobject)
         tests = {}
@@ -82,6 +87,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def nmap_scans_complete(self):
+        """Checks if NMAP scans are complete for current host
+
+        Returns:
+            bool: True if complete, else False
+        """
         state = State().TEST_STATE.copy()
         if "discovery" in state and "tests_state" in state["discovery"]:
             for testid, testdata in state["discovery"]["tests_state"].items():
@@ -110,6 +120,11 @@ class HostTestEvaluator(TestEvaluatorBase):
 
 
     def get_known_credentials(self):
+        """Get knowns credentials, for credentialed enum
+
+        Returns:
+            list(tuple): list [(user, password)]
+        """
         global CREDENTIALS_FILE
         creds = []
         if not CREDENTIALS_FILE or not os.path.exists(CREDENTIALS_FILE):
@@ -123,6 +138,14 @@ class HostTestEvaluator(TestEvaluatorBase):
         return creds
 
     def get_tcp_services_ports(self, services: list):
+        """Gets all TCP Ports for given services
+
+        Args:
+            services (list): List of services to get ports
+
+        Returns:
+            list(int): TCP Ports
+        """
         r = []
         for s in services:
             if s in self.hostobject.tcp_service_ports:
@@ -130,6 +153,14 @@ class HostTestEvaluator(TestEvaluatorBase):
         return list(set(r))
 
     def get_udp_services_ports(self, services: list):
+        """Gets all UDP Ports for given services
+
+        Args:
+            services (list): List of services to get ports
+
+        Returns:
+            list(int): UDP Ports
+        """
         r = []
         for s in services:
             if s in self.hostobject.udp_service_ports:
@@ -137,6 +168,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return list(set(r))
 
     def get_ad_dc_ips(self):
+        """Returns all DCs known in state. Host is considered a DC if kerberos and ldap ports opened
+
+        Returns:
+            list: list of DCs
+        """
         dcs = []
 
         state = State().TEST_STATE.copy()
@@ -155,6 +191,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
     def get_ad_users_tests(self):
+        """Create AD Users Discovery jobs
+
+        Returns:
+            dict: jobs
+        """
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
@@ -199,6 +240,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_searchsploit_test(self):
+        """Create Searchsploit jobs
+
+        Returns:
+            dict: jobs
+        """
         tests = {}
         if not self.nmap_scans_complete():
             return tests
@@ -213,6 +259,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_file_tests(self):
+        """Create SMB Scan jobs
+
+        Returns:
+            dict: jobs
+        """
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
@@ -292,6 +343,10 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_nmap_specific_tests(self):
+        """Create Nmap service specific tests
+        Returns:
+            dict: jobs
+        """
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
@@ -362,7 +417,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_known_domains(self):
+        """Gets the list of all domains known in state
 
+        Returns:
+            list: Domain list
+        """
         doms = State().KNOWN_DOMAINS.copy()
         state = State().TEST_STATE.copy()
         for k, v in state.items():
@@ -499,6 +558,11 @@ class HostTestEvaluator(TestEvaluatorBase):
         return tests
 
     def get_generic_tests(self):
+        """Get Nmap basic host tests
+
+        Returns:
+            dict: jobs
+        """
         tests = {}
         jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_quick_tcp"
         tests[jobid] = {
