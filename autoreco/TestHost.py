@@ -299,6 +299,7 @@ class TestHost:
         if not hostname or len(hostname) < 1:
             return
         
+        logger.debug("Adding hostname %s for host %s", hostname, self.ip)
         with State().statelock:
             if "hostnames" not in State().TEST_STATE[self.ip]:
                 State().TEST_STATE[self.ip]["hostnames"] = [hostname]
@@ -364,18 +365,24 @@ class TestHost:
         Returns:
             List: list of FQDN + default domain
         """
-        doms_and_hosts = self.hostnames
+        doms_and_hosts =[]
         domain = self.domain
-        if domain and domain not in doms_and_hosts and "." in domain:
-            doms_and_hosts.append(domain) # Trying domain only
-        for h in doms_and_hosts:
+
+        for h in  self.hostnames:
             if "." not in h:
                 if domain:
                     h = f"{h}.{domain}"
-                else:
-                    continue
+                    doms_and_hosts.append(h)
+            else:
+                if not only_fqdn:
+                    doms_and_hosts.append(h)
+                    
+        if domain and domain not in doms_and_hosts and "." in domain:
+            doms_and_hosts.append(domain) # Trying domain only
+            
         if only_fqdn:
             doms_and_hosts = [x for x in doms_and_hosts if "." in x]
+        logger.debug("get_hostnames_and_domain output for host %s: %s", self.ip, doms_and_hosts)
         return list(set(doms_and_hosts))
 
     def set_test_state(

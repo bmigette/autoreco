@@ -49,18 +49,18 @@ WEB_WORDLISTS = {
     "dir": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/quickhits.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt",
-        "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",        
+        #"/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",        
         "/usr/share/wordlists/dirb/common.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/combined_directories.txt",
     ],
     "vhost": [        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
-        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
+        #"/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
     "dns": [        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
-        "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
+        #"/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
     ],
     "files": [

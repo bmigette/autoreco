@@ -14,5 +14,6 @@ class OneSixtyOneHostScan(ModuleInterface):
         logger.debug("Starting SNMP Scan with command %s", self.command)
         #TODO: use realtime scan ? wordlist is small though
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
+        self.check_file_empty_and_move(logfile)
 
    
