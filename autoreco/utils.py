@@ -98,8 +98,11 @@ def get_state_subnets():
     state = State().TEST_STATE.copy()
     for k, v in state.items():
         if k == "discovery":
-            for testname, testdata in v.items():
-                subnets.append(testdata["target"].split("/")[0])
+            for testname, testdata in v["tests_sate"].items():
+                if "target" not in testdata:
+                    logger.error("No target in %s / %s", testname, testdata)
+                else:
+                    subnets.append(testdata["target"].split("/")[0])
         ip_parts = k.split(".")
         ip_parts[-1] = "0"
         subnet = ".".join(ip_parts)
