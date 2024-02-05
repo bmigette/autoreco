@@ -385,8 +385,8 @@ class TestHost:
         module_name: str = None,
         target: str = None,        
         args: list = None,
+        priority: int = None
     ):
-        # TODO Include priority
         """Set test state. Omitted values won't override what's in state
 
         Args:
@@ -395,6 +395,7 @@ class TestHost:
             module_name (str, optional): Module Name. Defaults to None.
             target (str, optional): target . Defaults to None.
             args (list, optional): args. Defaults to None.
+            priority (int, optional): priority. Defaults to None.
         """
         if "tests_state" not in State().TEST_STATE[self.ip]:
             State().TEST_STATE[self.ip]["tests_state"] = {}
@@ -408,6 +409,8 @@ class TestHost:
             State().TEST_STATE[self.ip]["tests_state"][testid]["target"] = target
         if args is not None:
             State().TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
+        if priority is not None:
+            State().TEST_STATE[self.ip]["tests_state"][testid]["priority"] = int(priority)
 
     def __repr__(self):
         return f"{self.ip} - {self.hostnames} / d:{self.domain} - {self.os_family}"

@@ -14,7 +14,7 @@ class SearchSploit(ModuleInterface):
         logfile = self.get_log_name("txt")
         searchdone = {}
         for service_name, service_data in hostobject.service_versions.items():
-            logger.debug("Processing %s", hostobject.service_versions.items())
+            logger.debug("SearchSploit Processing %s", hostobject.service_versions.items())
             for port, data in service_data.items():
                 for pdata in data:
                     name = pdata["product"]

@@ -66,8 +66,9 @@ class TestRunner(object):
                             json.dumps(payload, indent=4)
                         )
                         args = payload["args"] if "args" in payload else {}
+                        priority =  payload["priority"] if "priority" in payload else None
                         host.set_test_state(
-                            testid, "queued", payload["module_name"], payload["target"], args)
+                            testid, "queued", payload["module_name"], payload["target"], args, priority)
                         WorkThreader.add_job(payload)
         except Exception as e:
             logger.error("Exception in Complete Callback: %s",
