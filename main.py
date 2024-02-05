@@ -118,7 +118,7 @@ def main():
    
         
     if args.verbose:
-        autoreco.config.LOGLEVEL = logging.DEBUG
+        autoreco.config.STDOUT_LOGLEVEL = logging.DEBUG
 
     autoreco.config.NUM_THREADS = args.threads
     autoreco.config.NMAP_SPEED = args.nmap_speed

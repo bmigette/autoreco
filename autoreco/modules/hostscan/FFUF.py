@@ -59,6 +59,7 @@ class FFUF(ModuleInterface):
                 host = r["host"]
                 if words[r["words"]] > FFUF_MAX_SAME_WORDS:
                     logger.warn("Ignoring vhost %s because seems false positive based on similar word result %s", host, words[r["words"]])
+                    continue
                 if domain not in host:
                     host = f"{host}.{domain}"
                 hostobj.add_hostname(host) 

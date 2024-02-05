@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 import json
 
-autoreco.config.LOGLEVEL = logging.DEBUG
+autoreco.config.STDOUT_LOGLEVEL = logging.DEBUG
 autoreco.config.WATCHDOG_INTERVAL = 30
 autoreco.config.NMAP_DEFAULT_TCP_PORT_OPTION = "--top-ports 10"
 
@@ -14,15 +14,20 @@ from autoreco.logger import logger
 from autoreco.utils import print_summary
 
 from autoreco.WorkThreader import WorkThreader
-
+from autoreco.HostTestEvaluator import HostTestEvaluator
+from autoreco.TestHost import TestHost
 
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
-
-runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
+autoreco.State.State().set_working_dir("/tmp/autoreco/autoreco_2024_02_05__12_11_17", resume=True)
+autoreco.State.State().load_state()
+h = TestHost("192.168.246.254")
+eval = HostTestEvaluator(h)
+eval.get_searchsploit_test()
+#runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
 
 #runner = TestRunner("192.168.199.0/24")
-runner.run(resume=True)
+#runner.run(resume=True)
 # w = "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
 # job = {         
 #         "module_name": "hostscan.FFUF",

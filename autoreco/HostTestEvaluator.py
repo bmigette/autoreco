@@ -73,7 +73,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                              e, exc_info=True)
         if "all" in RUN_SCANS or "exploits" in RUN_SCANS:
             try:
-                tests = self._safe_merge(tests, self.searchsploit_test())
+                tests = self._safe_merge(tests, self.get_searchsploit_test())
             except Exception as e:
                 logger.error(
                     "Error when getting searchsploit tests: ", e, exc_info=True)
@@ -92,13 +92,22 @@ class HostTestEvaluator(TestEvaluatorBase):
         else:
             if len(self.hostobject.tests_state.keys()) < 1:
                 return False  # not started
+        nmap_tests = 0
         for testid, testdata in self.hostobject.tests_state.items():
-            if "nmap" in testdata["module_name"].lower() and testdata["state"] in ["notstarted", "started", "queued"]:
-                logger.debug(
+            if "nmap" in testdata["module_name"].lower():
+                if testdata["state"] in ["notstarted", "started", "queued"]:
+                    logger.debug(
                     "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
-                return False
-        logger.debug("NMAP Tests complete on host %s", self.hostobject.ip)
-        return True
+                    return False
+                else:
+                    nmap_tests += 1
+        if nmap_tests > 0:
+            logger.debug("NMAP Tests complete on host %s", self.hostobject.ip)
+            return True
+        else:
+            logger.debug("No NMAPs Tests foud on host %s", self.hostobject.ip)
+            return False
+
 
     def get_known_credentials(self):
         global CREDENTIALS_FILE
@@ -189,7 +198,7 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
-    def searchsploit_test(self):
+    def get_searchsploit_test(self):
         tests = {}
         if not self.nmap_scans_complete():
             return tests

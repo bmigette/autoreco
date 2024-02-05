@@ -1,13 +1,14 @@
 import logging
 
 FILE_LOGGING = True  # Log all output to file by default
+FILE_LOGGING_DEBUG = True # Log debug to file
 STDOUT_LOGGING = True  # Log all output to stdout by default
 NUM_THREADS = 8  # Number of threads
 QUEUE_SIZE = 666  # Job queue size
 QUEUE_WAIT_TIME = (
     10  # Time to wait for a queue item. This is time for graceful shutdown essentially
 )
-LOGLEVEL = logging.INFO
+STDOUT_LOGLEVEL = logging.INFO
 DEFAULT_PROCESS_TIMEOUT = 900  # Default timeout for a process
 DEFAULT_IDLE_TIMEOUT = 180  # Default timeout for a idle process
 DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2  # Default timeout for a long process
