@@ -42,6 +42,6 @@ if FILE_LOGGING:
             os.path.join(State().TEST_WORKING_DIR,  "autoreco.debug.log"), maxBytes=(1024*1024*10), backupCount=7
         )
         handlerfiledebug.setFormatter(formatter)
-        handlerfiledebug.setLevel(logging.ERROR)
+        handlerfiledebug.setLevel(logging.DEBUG)
         logger.addHandler(handlerfiledebug)
 
