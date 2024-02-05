@@ -98,7 +98,7 @@ def get_state_subnets():
     state = State().TEST_STATE.copy()
     for k, v in state.items():
         if k == "discovery":
-            for testname, testdata in v:
+            for testname, testdata in v.items():
                 subnets.append(testdata["target"].split("/")[0])
         ip_parts = k.split(".")
         ip_parts[-1] = "0"

@@ -32,7 +32,7 @@ NMAP_MAX_HOST_TIME = (
     20  # Max time per host for NMAP (in minutes), see https://nmap.org/book/man-performance.html
 )
 NMAP_TCP_HOSTSCAN_OPTIONS = (
-    f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
+    f"-sS -sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
 )
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
