@@ -7,6 +7,7 @@ from ...config import (
     NMAP_TCP_HOSTSCAN_OPTIONS,
     NMAP_UDP_HOSTSCAN_OPTIONS,
     NMAP_MAX_HOST_TIME,
+    USE_SYSTEM_RESOLVER,
 )
 from ...TestHost import TestHost
 from ...utils import resolve_domain, get_state_subnets, is_ip_state_subnets, get_state_dns_servers
@@ -162,6 +163,14 @@ class NmapHostScan(ModuleInterface):
         if hostname:
             sans.append(hostname)
         sans = list(set(sans))
+        if len(sans)>0:
+            sslhostfile = self.get_log_name("sslhosts")
+            try:                
+                with open(sslhostfile, "w") as f:
+                    f.write("\n".join(sans))
+            except Exception as e:
+                logger.error("Could not write file %s", sslhostfile, exc_info=True)
+        # TODO: Make an option if we need to resolve this or not ?
         self._resolve_ssl_sans(sans)
 
     def _resolve_ssl_sans(self, hostnames):
@@ -180,7 +189,10 @@ class NmapHostScan(ModuleInterface):
                     logger.debug("Skipping resolution of %s", hostname)
                     continue
                 logger.debug("Resolving hostname %s ...", hostname)
-                ips = resolve_domain(hostname)
+                if USE_SYSTEM_RESOLVER:
+                    ips = resolve_domain(hostname)
+                else:
+                    ips = []
                 for dns_server in dns_servers:
                     ips.extend(resolve_domain(hostname, dns_server))
                 logger.debug("Resolving hostname %s -> %s", hostname, ips)

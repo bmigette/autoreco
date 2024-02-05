@@ -78,6 +78,7 @@ WEB_WORDLISTS_FILES_HASEXT = {
 GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 
 FFUF_MAX_VHOST = 50 # If more than this vhost found, ignoring, could a site responding to all vhosts
+FFUF_MAX_SAME_WORDS = 2 # Ignore results that have same number of words, if above this
 
 # UserEnum
 USERENUM_LISTS = [
@@ -91,3 +92,5 @@ SNMP_WORDLISTS = [
 ]
 
 CREDENTIALS_FILE = None
+
+USE_SYSTEM_RESOLVER = False

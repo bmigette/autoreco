@@ -1,6 +1,6 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ...config import FFUF_MAX_VHOST
+from ...config import FFUF_MAX_VHOST, FFUF_MAX_SAME_WORDS
 from ..common.parsers import parse_ffuf_progress
 
 from ...TestHost import TestHost
@@ -47,8 +47,18 @@ class FFUF(ModuleInterface):
                 self.status = "error"
                 logger.warn("Too many results in FFUF Vhosts (%s) scan for host %s, assuming false positive", len(data["results"]) , self.args["url"])
                 return 
+            words = {}
+            # Auto Calibration sometime gives duplicate results because size is different. Haven't foudn a way to filter on words automatically
+            for r in data["results"]:
+                if r["words"] in words:
+                    words[r["words"]] += 1 
+                else:
+                    words[r["words"]] = 1
+                    
             for r in data["results"]:
                 host = r["host"]
+                if words[r["words"]] > FFUF_MAX_SAME_WORDS:
+                    logger.warn("Ignoring vhost %s because seems false positive based on similar word result %s", host, words[r["words"]])
                 if domain not in host:
                     host = f"{host}.{domain}"
                 hostobj.add_hostname(host) 

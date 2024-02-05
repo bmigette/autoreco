@@ -1,6 +1,6 @@
 from .logger import logger
 from .State import State
-from .config import DEFAULT_MAX_OUTPUT
+from .config import DEFAULT_MAX_OUTPUT, USE_SYSTEM_RESOLVER
 import re
 import dns.resolver
 
