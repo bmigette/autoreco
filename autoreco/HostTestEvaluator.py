@@ -166,7 +166,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "module_name": "userenum.NetExecRIDBrute",
             "job_id": jobid,
             "target": self.hostobject.ip,
-            "priority": 500,
+            "priority": 250,
             "args": {},
         }
 
@@ -302,7 +302,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 100,
+                "priority": 200,
                 "args": {"script": "smb-enum*", "ports": ports},
             }
             jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
@@ -310,7 +310,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 100,
+                "priority": 200,
                 "args": {"script": "smb-vuln*", "ports": ports},
             }
 
@@ -321,7 +321,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 100,
+                "priority": 200,
                 "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
             }
 
@@ -332,7 +332,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 100,
+                "priority": 200,
                 "args": {"script": "'ldap* and not brute'", "ports": ports},
             }
 
@@ -346,7 +346,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "module_name": "hostscan.NmapHostScan",
                     "job_id": jobid,
                     "target": self.hostobject.ip,
-                    "priority": 100,
+                    "priority": 200,
                     "args": {"script": "nfs-*", "ports": ports},
                 }
             ports = self.get_udp_services_ports(["nfs", "rpcbind"])
@@ -356,7 +356,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "module_name": "hostscan.NmapHostScan",
                     "job_id": jobid,
                     "target": self.hostobject.ip,
-                    "priority": 100,
+                    "priority": 200,
                     "args": {"script": "nfs-*", "ports": ports, "protocol": "udp"},
                 }
         return tests
@@ -529,7 +529,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "module_name": "hostscan.NmapHostScan",
                 "job_id": jobid,
                 "target": self.hostobject.ip,
-                "priority": 200,
+                "priority": 150,
                 "args": {"protocol": proto, "script": "default,vuln"},
             }
 

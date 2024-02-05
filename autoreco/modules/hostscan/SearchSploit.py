@@ -21,17 +21,16 @@ class SearchSploit(ModuleInterface):
                     version = pdata["version"]
                     if name in searchdone and version in searchdone[name]:
                         continue
-                    else:
-                        if name in searchdone:
-                            searchdone[name].append(version)
-                        else:
-                            searchdone[name] = [version]
+
                     # Logoutput appends by default
                     if not name in searchdone:
+                        searchdone[name] = [version]
                         output = self.get_system_cmd_outptut(
                             f"searchsploit -t {name}", logoutput=logfile, logcmdinoutput=True)
                         logger.debug("searchsploit -t %s output: %s", name, output)
+                        
                     if version:
+                        searchdone[name].append(version)
                         output = self.get_system_cmd_outptut(
                             f"searchsploit -t {name} {version}", logoutput=logfile, logcmdinoutput=True)
                         logger.debug(

@@ -31,4 +31,4 @@ class TestEvaluatorBase(ABC):
                 logger.debug("Counting lines in file %s times extensions %s", wordlistfile, extcnt)
                 cnt *= extcnt
             
-        return int(cnt/1000)
+        return int(cnt/1000) + 250 # + 250 to run after NMAPs / NetExec Tests
