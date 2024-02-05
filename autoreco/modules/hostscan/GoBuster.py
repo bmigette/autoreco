@@ -41,6 +41,9 @@ class GoBuster(ModuleInterface):
         cmd = f"gobuster {mode} -w {w} {url} {host} {domain} {ext} {extra} {output}"
         logger.debug("Executing GoBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, realtime=True, progresscb=parse_gobuster_progress) 
+        
+        self.check_file_empty_and_move(outputfile)
+        
         if mode == "dns":
             self.parse_dns_hosts(outputfile)
 

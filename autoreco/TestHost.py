@@ -386,6 +386,7 @@ class TestHost:
         target: str = None,        
         args: list = None,
     ):
+        # TODO Include priority
         """Set test state. Omitted values won't override what's in state
 
         Args:

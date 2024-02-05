@@ -35,10 +35,16 @@ class FFUF(ModuleInterface):
         logger.debug("Executing FFUF command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logoutput=stdout_log, logcmdline=cmdlog, realtime=True, progresscb=parse_ffuf_progress)
         hostobj = TestHost(self.target)
-        self.scan_hosts(output_log, hostobj)
+        self.parse_scan_hosts(output_log, hostobj)
 
         
-    def scan_hosts(self, output_log, hostobj):
+    def parse_scan_hosts(self, output_log, hostobj):
+        """Parse scanned host file
+
+        Args:
+            output_log (str): json file to read
+            hostobj (TestHost): TestHost object
+        """
         try:
             domain = self.args["domain"]
             with open(output_log, "r") as f:
@@ -47,6 +53,11 @@ class FFUF(ModuleInterface):
                 self.status = "error"
                 logger.warn("Too many results in FFUF Vhosts (%s) scan for host %s, assuming false positive", len(data["results"]) , self.args["url"])
                 return 
+            
+            if len(data["results"]) < 1:
+                self.move_to_empty_files()
+                return
+            
             words = {}
             # Auto Calibration sometime gives duplicate results because size is different. Haven't foudn a way to filter on words automatically
             for r in data["results"]:

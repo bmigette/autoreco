@@ -29,6 +29,9 @@ class ModuleInterface(ABC):
             self.ip = target
         else:
             self.ip = None
+            
+            
+            
 
     def kill(self):
         """Attempt to kill running proc
@@ -38,7 +41,42 @@ class ModuleInterface(ABC):
                 self._proc.kill()
             except:
                 pass
-        
+            
+    def check_file_empty_and_move(self, filename):
+        """Check if an output file is empty, and move files matching it
+
+        Args:
+            filename (str): _description_
+        """
+        file_stats = os.stat(filename)
+        if file_stats.st_size == 0:
+            filter = os.path.splitext(filename)[0]+ ".*"
+            self.move_to_empty_files(filter)
+            
+    def move_to_empty_files(self, filter=None, folder=None):
+        """Move empty log files + files associated to empty_logs folder
+        """
+        import glob
+        import shutil
+        try:
+            if not filter:
+                filefilter = self.get_log_name(".*", folder=folder)
+            else:
+                filefilter = filter
+            target = os.path.join(self.get_outdir(), "empty_files")
+            
+            if not os.path.isdir(target):
+                os.makedirs(target, exist_ok=True)
+                
+            for file in glob.glob(filefilter):
+                try:
+                    logger.debug("Moving empty file %s", file)
+                    shutil.move(file, target)
+                except Exception as e:
+                    logger.error("Error when moving file %s: %s", file, e)
+        except Exception as ee:
+            logger.error("Error int move_to_empty_files: %s", ee)
+                        
     def get_host_obj(self, ip: str) -> TestHost:
         return TestHost(ip)
 
@@ -84,19 +122,21 @@ class ModuleInterface(ABC):
         realtime=False,
         idletimeout: int = DEFAULT_IDLE_TIMEOUT,
         progresscb=None,
-        logcmdinoutput=False
+        logcmdinoutput=False,
+        automoveempty=True
     ):
         """Run a system command and get the output
 
         Args:
             command (str): command line
             timeout (int, optional): Process timeout. Defaults to DEFAULT_PROCESS_TIMEOUT.
-            logoutput (_type_, optional): _description_. Defaults to None.
+            logoutput (_type_, optional): Log output to file. Defaults to None.
             logcmdline (str, optional): Filename to write cmd to. Defaults to None.
             realtime (bool, optional): Use stream to read stdout realtime. Defaults to False.
             idletimeout (int, optional): Consider process stuck if no out after this time. Defaults to DEFAULT_IDLE_TIMEOUT.
             progresscb (function, optional): Callback to parse progress if realtime is True. Defaults to None.
             logcmdinoutput (bool, optional): Will write the command line in logoutput file if True. Defaults to False.
+            automoveempty (bool, optional): Will move files with no result to empty folder
         Returns:
             str: command output
         """
@@ -176,6 +216,9 @@ class ModuleInterface(ABC):
                     f.write(ret)
             except Exception as e:
                 logger.error("Could not write to file %s: %s", logoutput, e)
+        
+        if not ret.strip() and automoveempty:
+            self.move_to_empty_files()
         return ret
 
     def start(self):
