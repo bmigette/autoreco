@@ -415,15 +415,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             },
                         }
                         
-                        doms_and_hosts = self.hostobject.hostnames
-                        if self.hostobject.domain and self.hostobject.domain not in doms_and_hosts and "." in self.hostobject.domain:
-                            doms_and_hosts.append(self.hostobject.domain) # Trying domain only
-                        for h in doms_and_hosts:
-                            if "." not in h:
-                                if self.hostobject.domain:
-                                    h = f"{h}.{self.hostobject.domain}"
-                                else:
-                                    continue
+                        for h in self.hostobject.get_hostnames_and_domain():
                             jobid = f"hostscan.GoBuster_dirf_{h}_{s}_{p}_{file}"
                             tests[jobid] = {
                                 "module_name": "hostscan.GoBuster",
@@ -471,15 +463,9 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "wordlist": w,
                             },
                         }
-                        doms_and_hosts = self.hostobject.hostnames
-                        if self.hostobject.domain and self.hostobject.domain not in doms_and_hosts and "." in self.hostobject.domain:
-                            doms_and_hosts.append(self.hostobject.domain) # Trying domain only
-                        for h in doms_and_hosts:
-                            if "." not in h:
-                                if self.hostobject.domain:
-                                    h = f"{h}.{self.hostobject.domain}"
-                                else:
-                                    continue
+
+                        for h in self.hostobject.get_hostnames_and_domain():
+
                             jobid = f"hostscan.GoBuster_dir_{h}_{s}_{p}_{file}"
                             tests[jobid] = {
                                 "module_name": "hostscan.GoBuster",

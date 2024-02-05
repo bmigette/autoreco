@@ -91,6 +91,18 @@ class TestHost:
 
     @domain.setter
     def domain(self, value):
+        if not "." in value:
+            logger.warn("Setting invalid domain %s to existing host %s", value, self.ip)
+        if not value:
+            logger.warn("Setting invalid domain (None) %s to existing host %s... Ignored", value, self.ip)
+            return
+
+        curdom = self._state_field_get("domain")
+        if curdom and curdom != value:
+            logger.warn("Setting domain to %s to existing host %s with domain %s", value, self.ip, curdom)
+            if "." in curdom and not "." in value:
+                logger.warn("Not replacing existing domain, because new domain does not have '.'")
+                return
         return self._state_field_set("domain", value)
 
     @property
@@ -293,6 +305,12 @@ class TestHost:
             else:
                 if hostname not in State().TEST_STATE[self.ip]["hostnames"]:
                     State().TEST_STATE[self.ip]["hostnames"].append(hostname)
+        
+        if "." in hostname and not self.domain:
+            parts = hostname.split(".")
+            dom = ".".join(parts[-2:])
+            logger.debug("Automatically setting domain to %s for host %s", dom, self.ip)
+            self.domain = dom
 
     def add_service(self, service: str):
         """Add a Service
@@ -338,6 +356,27 @@ class TestHost:
             else:
                 if int(port) not in State().TEST_STATE[self.ip]["udp_ports"]:
                     State().TEST_STATE[self.ip]["udp_ports"].append(int(port))
+                    
+                    
+    def get_hostnames_and_domain(self, only_fqdn = True):
+        """Creates a list of FQDN + default domain
+
+        Returns:
+            List: list of FQDN + default domain
+        """
+        doms_and_hosts = self.hostnames
+        domain = self.domain
+        if domain and domain not in doms_and_hosts and "." in domain:
+            doms_and_hosts.append(domain) # Trying domain only
+        for h in doms_and_hosts:
+            if "." not in h:
+                if domain:
+                    h = f"{h}.{domain}"
+                else:
+                    continue
+        if only_fqdn:
+            doms_and_hosts = [x for x in doms_and_hosts if "." in x]
+        return list(set(doms_and_hosts))
 
     def set_test_state(
         self,
@@ -370,7 +409,7 @@ class TestHost:
             State().TEST_STATE[self.ip]["tests_state"][testid]["args"] = args
 
     def __repr__(self):
-        return f"{self.ip} - {self.hostnames} - {self.os_family}"
+        return f"{self.ip} - {self.hostnames} / d:{self.domain} - {self.os_family}"
 
     def dump(self):
         logger.debug(

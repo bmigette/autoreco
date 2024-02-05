@@ -167,6 +167,9 @@ class _WorkThread:
         logger.debug("Stopping thread %s...", self.thread_id)
         self.stopevent.set()
         self.is_stopping = True
+        if self.current_module_obj:
+            self.current_module_obj.kill()
+            
 
     def process_job(self, job: dict) -> None:
         """Process a queued job

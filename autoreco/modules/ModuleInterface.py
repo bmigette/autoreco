@@ -24,11 +24,21 @@ class ModuleInterface(ABC):
         self.target = target
         self.module_name = module_name
         self.progress = ""
+        self._proc = None
         if is_ip(target):
             self.ip = target
         else:
             self.ip = None
 
+    def kill(self):
+        """Attempt to kill running proc
+        """
+        if self._proc:
+            try:                
+                self._proc.kill()
+            except:
+                pass
+        
     def get_host_obj(self, ip: str) -> TestHost:
         return TestHost(ip)
 
