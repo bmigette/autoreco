@@ -25,6 +25,8 @@ class ModuleInterface(ABC):
         self.module_name = module_name
         self.progress = ""
         self._proc = None
+        self._baselogdir = os.path.join(State().TEST_WORKING_DIR, "userenum")
+        self._usehostinlogdir = True
         if is_ip(target):
             self.ip = target
         else:
@@ -289,18 +291,16 @@ class ModuleInterface(ABC):
         Returns:
             str: folder path
         """
-        if self.is_discovery():
+        if self.is_discovery() or not self._usehostinlogdir:
             h = ""
         else:
             h = self.target if self.target else ""  # For global modules
 
-        basedir = State().TEST_WORKING_DIR
-        if self.is_userenum():
-            basedir = os.path.join(basedir, "userenum")
+        
         if folder:
-            outdir = os.path.join(basedir, h, folder)
+            outdir = os.path.join(self._baselogdir, h, folder)
         else:
-            outdir = os.path.join(basedir, h)
+            outdir = os.path.join(self._baselogdir, h)
 
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)

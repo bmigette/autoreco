@@ -1,8 +1,8 @@
-from ..ModuleInterface import ModuleInterface
+from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
 from ...utils import is_ip
 
-class Kerbrute(ModuleInterface):
+class Kerbrute(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
 
     def run(self):

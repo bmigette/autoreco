@@ -1,11 +1,11 @@
-from ..ModuleInterface import ModuleInterface
+from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
 from ..common.parsers import parse_netexec_hostline
 from ...utils import is_ip
 
-class NetExecRIDBrute(ModuleInterface):
+class NetExecRIDBrute(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
-
+    # TODO Export userlist
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)

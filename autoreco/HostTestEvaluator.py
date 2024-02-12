@@ -218,6 +218,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         """
         # TODO: Add Password Policy Dumping (maybe remove TLD from domain for this ?)
         # Add flags variables in state
+        # TODO: Check ASPrep Roasting Users
+        # TODO: Check UsersSPN
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
