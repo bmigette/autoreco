@@ -19,12 +19,11 @@ from autoreco.TestHost import TestHost
 
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
-autoreco.State.State().set_working_dir("/tmp/autoreco/autoreco_2024_02_05__12_11_17", resume=True)
+autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge2_relia/autoreco_2024_02_05__13_30_58", resume=True)
 autoreco.State.State().load_state()
-h = TestHost("192.168.246.254")
-eval = HostTestEvaluator(h)
-eval.get_searchsploit_test()
-#runner = TestRunner(hosts=["192.168.158.11"], domains=["test.com"])
+
+runner = TestRunner()
+runner.move_empty_log_files()
 
 #runner = TestRunner("192.168.199.0/24")
 #runner.run(resume=True)

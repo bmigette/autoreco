@@ -1,12 +1,13 @@
 from .logger import logger
 from .TestHost import TestHost
 from .State import State
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS, CREDENTIALS_FILE, RUN_SCANS
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS, CREDENTIALS_FILE, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
 import re
 import os
+import hashlib
 
 
 class HostTestEvaluator(TestEvaluatorBase):
@@ -19,6 +20,25 @@ class HostTestEvaluator(TestEvaluatorBase):
     def __init__(self, hostobject: TestHost):
         self.hostobject = hostobject
 
+    def _get_creds_job_id(self, creds):
+        """Makes unique user/pass id for job ID
+
+        Args:
+            creds (tuple): user, pass
+
+        Returns:
+            str: job id user part
+        """
+        r = creds[0]
+        if creds[1]:
+            hash = hashlib.md5(creds[1].encode('utf-8')).hexdigest()
+            r += "_" + hash
+            if len(r) > 64:
+                r = r[:64]
+                return r
+        else:
+            return creds[0]
+        
     def get_tests(self):
         """Get all host tests, according to RUN_SCANS 
 
@@ -196,6 +216,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
+        # TODO: Add Password Policy Dumping (maybe remove TLD from domain for this ?)
+        # Add flags variables in state
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
@@ -228,7 +250,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         for action in ["loggedon-users", "groups", "users"]:
             for p in ["smb", "winrm"]:
                 for creds in self.get_known_credentials():
-                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{creds[0]}"
+                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
                         "module_name": "userenum.NetExecUserEnum",
                         "job_id": jobid,
@@ -236,7 +258,17 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "priority": 100,
                         "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
                     }
-
+        # Testing credentials against known services
+        for p in NETEXEC_USERENUM_PROTOCOLS:
+            for creds in self.get_known_credentials():
+                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_credtest_{p}_{action}_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "userenum.NetExecUserEnum",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 100,
+                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest"},
+                    }
         return tests
 
     def get_searchsploit_test(self):
@@ -278,7 +310,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             }
             # Credentialed SMB Share Listing
             for creds in self.get_known_credentials():
-                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smbshares_spider_{creds[0]}"
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smbshares_spider_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
                     "module_name": "hostscan.NetExecHostScan",
                     "job_id": jobid,
@@ -588,7 +620,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             or "netbios-ssn" in self.hostobject.services
             or "rpc" in self.hostobject.services
             or "msrpc" in self.hostobject.services
-        ):
+        ): # TODO Add credentialed enum here
             jobid = f"hostscan.Enum4Linux_{self.hostobject.ip}"
             tests[jobid] = {
                 "module_name": "hostscan.Enum4Linux",

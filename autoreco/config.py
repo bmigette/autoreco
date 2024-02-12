@@ -24,6 +24,7 @@ RUN_SCANS = "all" #dns,webfiles,webdiscovery,userenum
 
 # NETEXEC DISCOVERY MODULE
 NETEXEC_DISCOVERY_PROTOCOLS = ["smb", "rdp", "wmi"]
+NETEXEC_USERENUM_PROTOCOLS = ["smb", "rdp", "wmi", "winrm", "ldap"]
 
 # NMAP HOST SCAN OPTIONS
 NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"

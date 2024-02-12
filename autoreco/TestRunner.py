@@ -33,7 +33,7 @@ class TestRunner(object):
         if len(domains) > 0:
             State().KNOWN_DOMAINS = domains  # Copy is handled by state file
 
-        WorkThreader.start_threads(self.complete_callback)
+        WorkThreader.start_threads(self.complete_callback, self.finish)
         self.set_handler()
 
     def complete_callback(self):

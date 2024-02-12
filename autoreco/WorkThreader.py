@@ -292,7 +292,7 @@ class WorkThreader:
         logger.debug("======== QUEUE SIZE: %s ========",
                      WorkThreader.queue.qsize())
 
-    def start_threads(complete_callback):
+    def start_threads(complete_callback, finish_callback = None):
         """Start the worker threads
 
         Args:
@@ -301,6 +301,7 @@ class WorkThreader:
         if not complete_callback:
             complete_callback = WorkThreader.stop_if_finish()
         WorkThreader._callback = complete_callback
+        WorkThreader._finishcallback = finish_callback
         for i in range(0, NUM_THREADS):
             logger.info("Creating Worker thread %s", i)
             WorkThreader._instances[str(i)] = _WorkThread(
@@ -337,3 +338,5 @@ class WorkThreader:
         for i, inst in WorkThreader._instances.items():
             # inst.thread.join()
             del inst
+        if WorkThreader._finishcallback:
+            WorkThreader._finishcallback()
