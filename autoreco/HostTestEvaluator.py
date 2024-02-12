@@ -216,12 +216,25 @@ class HostTestEvaluator(TestEvaluatorBase):
         tests = {}
         for creds in self.get_known_credentials():
             for dc in self.get_ad_dc_ips():
-                for domain in self.get_known_domains():
-                    pass
-                    #TODO Implement
-        # Add flags variables in state
-        # TODO: Check ASPrep Roasting Users
-        # TODO: Check UsersSPN
+                for d in self.get_known_domains():
+                    jobid = f"userenum.ASPrepRoastable_{self.hostobject.ip}_{dc}_{d}_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "userenum.ASPrepRoastable",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 50,
+                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                    }
+                    jobid = f"userenum.GetSPNs_{self.hostobject.ip}_{dc}_{d}_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "userenum.GetSPNs",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 50,
+                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                    }
+
+
         return tests
     
     def get_ad_users_tests(self):
