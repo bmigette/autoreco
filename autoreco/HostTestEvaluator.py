@@ -93,6 +93,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_ad_users_tests())
+                tests = self._safe_merge(tests, self.get_credentialed_tests())
+                
             except Exception as e:
                 logger.error("Error when getting ad user tests: ",
                              e, exc_info=True)
@@ -210,16 +212,25 @@ class HostTestEvaluator(TestEvaluatorBase):
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
+    def get_credentialed_tests(self):
+        tests = {}
+        for creds in self.get_known_credentials():
+            for dc in self.get_ad_dc_ips():
+                for domain in self.get_known_domains():
+                    pass
+                    #TODO Implement
+        # Add flags variables in state
+        # TODO: Check ASPrep Roasting Users
+        # TODO: Check UsersSPN
+        return tests
+    
     def get_ad_users_tests(self):
         """Create AD Users Discovery jobs
 
         Returns:
             dict: jobs
         """
-        # TODO: Add Password Policy Dumping (maybe remove TLD from domain for this ?)
-        # Add flags variables in state
-        # TODO: Check ASPrep Roasting Users
-        # TODO: Check UsersSPN
+
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
@@ -622,7 +633,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             or "netbios-ssn" in self.hostobject.services
             or "rpc" in self.hostobject.services
             or "msrpc" in self.hostobject.services
-        ): # TODO Add credentialed enum here
+        ): 
             jobid = f"hostscan.Enum4Linux_{self.hostobject.ip}"
             tests[jobid] = {
                 "module_name": "hostscan.Enum4Linux",
@@ -631,4 +642,13 @@ class HostTestEvaluator(TestEvaluatorBase):
                 "priority": 10,
                 "args": {},
             }
+            for creds in self.get_known_credentials():
+                jobid = f"hostscan.Enum4Linux_{self.hostobject.ip}_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.Enum4Linux",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 10,
+                    "args": {"user": creds[0], "password": creds[1]},
+                }
         return tests

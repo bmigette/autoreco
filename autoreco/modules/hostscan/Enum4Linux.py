@@ -11,6 +11,6 @@ class Enum4Linux(ModuleInterface):
         logfile = self.get_log_name("")
         if "user" in self.args and "password" in self.args:
             user, passw = self.args["user"], self.args["password"]
-            self.get_system_cmd_outptut(f"enum4linux-ng -A {self.target} -U {user} -p {passw} -oA {logfile}", logoutput=logfile+".log",  logcmdline=logfile+".cmd")
+            self.get_system_cmd_outptut(f"enum4linux-ng -A {self.target} -u {user} -p {passw} -oA {logfile}", logoutput=logfile+".log",  logcmdline=logfile+".cmd")
         else:
             self.get_system_cmd_outptut(f"enum4linux-ng -A {self.target} -oA {logfile}", logoutput=logfile+".log", logcmdline=logfile+".cmd")
