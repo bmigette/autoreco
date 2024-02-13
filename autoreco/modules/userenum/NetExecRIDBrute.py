@@ -29,7 +29,9 @@ class NetExecRIDBrute(UserEnumModuleBase):
         groups = []
         for line in output.split("\n"):
             try:
-
+                line = line.strip()
+                if not line:
+                    continue
                 if "SidTypeGroup" in line or "SidTypeAlias" in line:
                     g = line.split(":")[1].split("(")[0].strip()
                     if "\\" in g:

@@ -25,7 +25,7 @@ class ModuleInterface(ABC):
         self.module_name = module_name
         self.progress = ""
         self._proc = None
-        self._baselogdir = os.path.join(State().TEST_WORKING_DIR, "userenum")
+        self._baselogdir = State().TEST_WORKING_DIR
         self._usehostinlogdir = True
         if is_ip(target):
             self.ip = target

@@ -34,8 +34,8 @@ NMAP_MAX_HOST_TIME = (
     20  # Max time per host for NMAP (in minutes), see https://nmap.org/book/man-performance.html
 )
 NMAP_TCP_HOSTSCAN_OPTIONS = (
-    f"-sS -sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
-)
+    f"-sT -sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
+) # Setting to -sT because otherwise does not work thru proxy
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
 WORD_LIST_LARGE_THRESHOLD = 100000 # Job using a wordlist with more than this entries should be run only at the end

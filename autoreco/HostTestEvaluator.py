@@ -55,37 +55,37 @@ class HostTestEvaluator(TestEvaluatorBase):
             try:
                 tests = self._safe_merge(tests, self.get_nmap_specific_tests())
             except Exception as e:
-                logger.error("Error when getting nmap tests: ",
+                logger.error("Error when getting nmap tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "dns" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_dns_tests())
             except Exception as e:
-                logger.error("Error when getting dns tests: ",
+                logger.error("Error when getting dns tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "file" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_file_tests())
             except Exception as e:
-                logger.error("Error when getting file tests: ",
+                logger.error("Error when getting file tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_scan_web_tests())
             except Exception as e:
-                logger.error("Error when getting scan web tests: ",
+                logger.error("Error when getting scan web tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "webfiles" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_web_file_tests())
             except Exception as e:
-                logger.error("Error when getting web file tests: ",
+                logger.error("Error when getting web file tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "snmp" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_snmp_tests())
             except Exception as e:
-                logger.error("Error when getting snmp tests: ",
+                logger.error("Error when getting snmp tests: %s",
                              e, exc_info=True)
 
 
@@ -96,14 +96,14 @@ class HostTestEvaluator(TestEvaluatorBase):
                 tests = self._safe_merge(tests, self.get_credentialed_tests())
                 
             except Exception as e:
-                logger.error("Error when getting ad user tests: ",
+                logger.error("Error when getting ad user tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "exploits" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_searchsploit_test())
             except Exception as e:
                 logger.error(
-                    "Error when getting searchsploit tests: ", e, exc_info=True)
+                    "Error when getting searchsploit tests: %s", e, exc_info=True)
                 
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
         return tests
@@ -156,7 +156,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             else:
                 return creds
         with open(CREDENTIALS_FILE, "r") as f:
-            creds = [x.split(":", 1) for x in f.readlines()]
+            creds = [x.strip().split(":", 1) for x in f.readlines() if x]
         return creds
 
     def get_tcp_services_ports(self, services: list):
@@ -250,7 +250,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             return tests
 
         # Domain detected automatically
-        jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{file}_{d}"
+        jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute"
         tests[jobid] = {
             "module_name": "userenum.NetExecRIDBrute",
             "job_id": jobid,
@@ -270,11 +270,11 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": self.get_list_priority(w),
-                    "args": {"domain": "d", "wordlist": w},
+                    "args": {"domain": d, "wordlist": w},
                 }
         # netexec credentialed enum
         for action in ["loggedon-users", "groups", "users"]:
-            for p in ["smb", "winrm"]:
+            for p in ["smb"]: # Seems only SMB works for this
                 for creds in self.get_known_credentials():
                     jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {

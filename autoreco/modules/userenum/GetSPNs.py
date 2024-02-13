@@ -2,7 +2,7 @@ from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
 from ...utils import is_ip, is_ntlm_hash
 
-class ASPrepRoastable(UserEnumModuleBase):
+class GetSPNs(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
 
     def run(self):

@@ -36,11 +36,11 @@ class NetExecUserEnum(UserEnumModuleBase):
             action = "--" + self.args["action"]
         self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
-        #TODO: Parse output and append result into a csv file
-        if self.args["action"] == "users":
-            self.parse_users_output(self.output)
-        elif self.args["action"] == "groups":
-            self.parse_users_output(self.output)
+        if "action" in self.args:
+            if self.args["action"] == "users":
+                self.parse_users_output(self.output)
+            elif self.args["action"] == "groups":
+                self.parse_users_output(self.output)
         #
 
     def parse_users_output(self, output):
@@ -53,8 +53,11 @@ class NetExecUserEnum(UserEnumModuleBase):
             
             try:                
                 line = re.sub("\s\s*", " ", line)
-                parts = line.strip().split(" ")
-                user = parts[4].split("\\")[0]
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split(" ")
+                user = parts[4].split("\\")[1]
                 users.append(user)
             except Exception as e:
                 logger.error("Error processing line %s: %s", line, e, exc_info=True)
@@ -73,7 +76,10 @@ class NetExecUserEnum(UserEnumModuleBase):
                 continue            
             try:
                 line = re.sub("\s\s*", " ", line)
-                parts = line.strip().split(" ")
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split(" ")
                 groups.append(parts[4])
             except Exception as e:
                 logger.error("Error processing line %s: %s", line, e, exc_info=True)

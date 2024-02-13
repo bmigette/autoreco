@@ -5,8 +5,9 @@ import os
 
 class UserEnumModuleBase(ModuleInterface):
     def __init__(self, testid, target, module_name, args={}):        
-        super().__init__(self, testid, target, module_name, args)
+        super().__init__(testid, target, module_name, args)
         self._baselogdir = os.path.join(State().TEST_WORKING_DIR, "userenum")
+        os.makedirs(self._baselogdir, exist_ok=True)
         self._usehostinlogdir = False
         self._users = None
         self._userfile = os.path.join(self._baselogdir, "users.txt")
@@ -15,13 +16,14 @@ class UserEnumModuleBase(ModuleInterface):
         
     def _load_users(self):
         self._users = []
-        with open(self._userfile , "r") as f:
-            self._users = f.readlines()
+        if os.path.exists(self._userfile):
+            with open(self._userfile , "r") as f:
+                self._users = f.readlines()
     
     def _write_users(self):
         logger.info("Writing %s users in file %s", self._userfile , len(self._users))
         with open(self._userfile , "w") as f:
-            f.writelines(self._users)
+            f.write(os.linesep.join(self._users))
             
     def add_users(self, users = []):
         if not self._users:
@@ -34,13 +36,14 @@ class UserEnumModuleBase(ModuleInterface):
         
     def _load_groups(self):
         self._groups = []
-        with open(self._groupsfile , "r") as f:
-            self._groups = f.readlines()
+        if os.path.exists(self._groupsfile):
+            with open(self._groupsfile , "r") as f:
+                self._groups = f.readlines()
     
     def _write_groups(self):
         logger.info("Writing %s groups in file %s", self._groupsfile , len(self._groups))
         with open(self._groupsfile , "w") as f:
-            f.writelines(self._groups)
+            f.write(os.linesep.join(self._groups))
             
     def add_groups(self, groups = []):
         if not self._groups:
