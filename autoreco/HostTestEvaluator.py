@@ -287,7 +287,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         # Testing credentials against known services
         for p in NETEXEC_USERENUM_PROTOCOLS:
             for creds in self.get_known_credentials():
-                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_credtest_{p}_{action}_{self._get_creds_job_id(creds)}"
+                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_credtest_{p}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
                         "module_name": "userenum.NetExecUserEnum",
                         "job_id": jobid,

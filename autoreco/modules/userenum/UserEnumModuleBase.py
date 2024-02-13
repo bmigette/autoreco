@@ -10,6 +10,8 @@ class UserEnumModuleBase(ModuleInterface):
         self._usehostinlogdir = False
         self._users = None
         self._userfile = os.path.join(self._baselogdir, "users.txt")
+        self._groups = None
+        self._groupsfile = os.path.join(self._baselogdir, "groups.txt")
         
     def _load_users(self):
         self._users = []
@@ -29,4 +31,23 @@ class UserEnumModuleBase(ModuleInterface):
                 logger.debug("Adding known user %s", user)
                 self._users.append(user)
         self._write_users()
+        
+    def _load_groups(self):
+        self._groups = []
+        with open(self._groupsfile , "r") as f:
+            self._groups = f.readlines()
+    
+    def _write_groups(self):
+        logger.info("Writing %s groups in file %s", self._groupsfile , len(self._groups))
+        with open(self._groupsfile , "w") as f:
+            f.writelines(self._groups)
+            
+    def add_groups(self, groups = []):
+        if not self._groups:
+            self._load_groups()
+        for group in groups:
+            if group not in self._groups:
+                logger.debug("Adding known group %s", group)
+                self._groups.append(group)
+        self._write_groups()
         
