@@ -25,7 +25,7 @@ class UserEnumModuleBase(ModuleInterface):
         logger.info("Writing %s users in file %s",  len(self._users), self._userfile)
         with State().userenumlock:
             with open(self._userfile , "w") as f:
-                f.write(os.linesep.join(list(set(self._users))))
+                f.write(os.linesep.join(self._users))
             
     def add_users(self, users = []):
         if not self._users:
@@ -37,6 +37,7 @@ class UserEnumModuleBase(ModuleInterface):
             if user not in self._users:
                 logger.debug("Adding known user %s", user)
                 self._users.append(user)
+        self._users = list(set([x.strip() for x in self._users if x]))
         self._write_users()
         
     def _load_groups(self):
@@ -50,7 +51,7 @@ class UserEnumModuleBase(ModuleInterface):
         logger.info("Writing %s groups in file %s", len(self._groups), self._groupsfile )
         with State().userenumlock:
             with open(self._groupsfile , "w") as f:
-                f.write(os.linesep.join(list(set(self._groups))))
+                f.write(os.linesep.join(self._groups))
             
     def add_groups(self, groups = []):
         if not self._groups:
@@ -62,5 +63,6 @@ class UserEnumModuleBase(ModuleInterface):
             if group not in self._groups:
                 logger.debug("Adding known group %s", group)
                 self._groups.append(group)
+        self._groups = list(set([x.strip() for x in self._groups if x]))
         self._write_groups()
         

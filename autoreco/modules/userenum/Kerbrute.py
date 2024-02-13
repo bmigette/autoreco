@@ -17,5 +17,5 @@ class Kerbrute(UserEnumModuleBase):
         
         # `kerbrute userenum -d manager.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt --dc 10.10.11.236`
         self.command = f"kerbrute userenum -d {domain} {w} --dc {self.target} -o {logfile}"
-        # TODO Implement Kerbrute output parsing, and make it a realtime output
-        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
+        # TODO Implement Kerbrute output parsing, and make it a realtime output: Cannot do!! No useful output
+        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile)

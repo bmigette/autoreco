@@ -29,7 +29,6 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             str: job id user part
         """
-        logger.debug("_get_creds_job_id creds: %s", creds)
         r = creds[0]
         if creds[1]:
             hash = hashlib.md5(creds[1].encode('utf-8')).hexdigest()
