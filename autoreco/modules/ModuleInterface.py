@@ -179,7 +179,7 @@ class ModuleInterface(ABC):
             err = err + f"{ce.output}\n"
             err = err + "stderr:\n"
             err = err + f"{ce.stderr}"
-
+            ret = ce.output
             try:
                 errfile = self.get_log_name(".err")
                 if logoutput:
@@ -191,12 +191,12 @@ class ModuleInterface(ABC):
                     fe.write(err)
             except:
                 pass
-            raise  # This is to show the test as failed
+            self.status = "error"
         except TimeoutExpired as te:
             logger.warn("Timeout expired for command %s", te.cmd)
             ret = f"{te.stdout=} \n{te.stderr=}"
             self.status = "error"
-        except TimeoutError as te2:
+        except TimeoutError as te2: #TODO Not sure used
             logger.warn(
                 "Timeout expired for Stream command %s: %s", command, te2)
             ret = ""
@@ -251,7 +251,8 @@ class ModuleInterface(ABC):
                 self.testid, self.status, self.module_name, self.target, self.args
             )
             self.run()
-            self.status = "done"
+            if self.status != "error":
+                self.status = "done"
         except Exception as e:
             logger.error(
                 "Error in test %s against target %s: %s",
