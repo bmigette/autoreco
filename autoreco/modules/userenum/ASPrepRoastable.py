@@ -12,7 +12,6 @@ class ASPrepRoastable(UserEnumModuleBase):
 
         domain = self.args["domain"]
         user = self.args["user"]
-        pflag = "-p"
         self.args["pmode"] = "pw" # For the filename
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")

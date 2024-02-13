@@ -1,4 +1,5 @@
 from .UserEnumModuleBase import UserEnumModuleBase
+from ...config import DEFAULT_PROCESS_TIMEOUT
 from ...logger import logger
 from ...utils import is_ip
 
@@ -8,14 +9,15 @@ class Kerbrute(UserEnumModuleBase):
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
-        
+
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
 
         domain = self.args["domain"]
         w = self.args["wordlist"]
         
+        logger.info("Starting kerbrute against %s", self.target)        
         # `kerbrute userenum -d manager.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt --dc 10.10.11.236`
         self.command = f"kerbrute userenum -d {domain} {w} --dc {self.target} -o {logfile}"
         # TODO Implement Kerbrute output parsing, and make it a realtime output: Cannot do!! No useful output
-        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile)
+        self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile, timeout=DEFAULT_PROCESS_TIMEOUT*2)
