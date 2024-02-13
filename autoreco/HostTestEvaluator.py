@@ -29,13 +29,14 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             str: job id user part
         """
+        logger.debug("_get_creds_job_id creds: %s", creds)
         r = creds[0]
         if creds[1]:
             hash = hashlib.md5(creds[1].encode('utf-8')).hexdigest()
             r += "_" + hash
             if len(r) > 64:
                 r = r[:64]
-                return r
+            return r
         else:
             return creds[0]
         
@@ -93,7 +94,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_ad_users_tests())
-                tests = self._safe_merge(tests, self.get_credentialed_tests())
+                tests = self._safe_merge(tests, self.get_other_credentialed_tests())
                 
             except Exception as e:
                 logger.error("Error when getting ad user tests: %s",
@@ -212,7 +213,7 @@ class HostTestEvaluator(TestEvaluatorBase):
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
-    def get_credentialed_tests(self):
+    def get_other_credentialed_tests(self):
         tests = {}
         for creds in self.get_known_credentials():
             for dc in self.get_ad_dc_ips():
@@ -233,7 +234,14 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "priority": 50,
                         "args": { "domain": d, "user": creds[0], "password": creds[1]},
                     }
-
+                    jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "userenum.NetExecRIDBrute",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 150,
+                        "args": { "user": creds[0], "password": creds[1]},
+                    }
 
         return tests
     
@@ -247,6 +255,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         global USERENUM_LISTS
         tests = {}
         if not self.is_dc():
+            logger.debug("%s is not DC", self.hostobject.ip)
             return tests
 
         # Domain detected automatically
@@ -255,7 +264,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "module_name": "userenum.NetExecRIDBrute",
             "job_id": jobid,
             "target": self.hostobject.ip,
-            "priority": 250,
+            "priority": 150,
             "args": {},
         }
 

@@ -17,13 +17,15 @@ class UserEnumModuleBase(ModuleInterface):
     def _load_users(self):
         self._users = []
         if os.path.exists(self._userfile):
-            with open(self._userfile , "r") as f:
-                self._users = f.readlines()
+            with State().userenumlock:
+                with open(self._userfile , "r") as f:
+                    self._users = f.readlines()
     
     def _write_users(self):
-        logger.info("Writing %s users in file %s", self._userfile , len(self._users))
-        with open(self._userfile , "w") as f:
-            f.write(os.linesep.join(self._users))
+        logger.info("Writing %s users in file %s",  len(self._users), self._userfile)
+        with State().userenumlock:
+            with open(self._userfile , "w") as f:
+                f.write(os.linesep.join(list(set(self._users))))
             
     def add_users(self, users = []):
         if not self._users:
@@ -40,13 +42,15 @@ class UserEnumModuleBase(ModuleInterface):
     def _load_groups(self):
         self._groups = []
         if os.path.exists(self._groupsfile):
-            with open(self._groupsfile , "r") as f:
-                self._groups = f.readlines()
+            with State().userenumlock:
+                with open(self._groupsfile , "r") as f:
+                    self._groups = f.readlines()
     
     def _write_groups(self):
-        logger.info("Writing %s groups in file %s", self._groupsfile , len(self._groups))
-        with open(self._groupsfile , "w") as f:
-            f.write(os.linesep.join(self._groups))
+        logger.info("Writing %s groups in file %s", len(self._groups), self._groupsfile )
+        with State().userenumlock:
+            with open(self._groupsfile , "w") as f:
+                f.write(os.linesep.join(list(set(self._groups))))
             
     def add_groups(self, groups = []):
         if not self._groups:

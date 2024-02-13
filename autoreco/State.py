@@ -43,6 +43,7 @@ class State(metaclass=SingletonMeta):
         # External Locks
         self.statelock = threading.Lock()
         self.domainlock = threading.Lock()
+        self.userenumlock = threading.Lock()
         # Internal Locks
         self._statelock = threading.Lock()
         self._domainlock = threading.Lock()

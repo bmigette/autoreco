@@ -37,11 +37,11 @@ class ASPrepRoastable(UserEnumModuleBase):
                     if "---" in line:
                         start = True
                     continue
-                line = re.sub("\s\s*", " ", line)
+
                 line = line.strip()
                 if not line:
                     continue
-                parts = line.split(" ")
+                parts = line.split("  ") # Double Space
                 users.append(parts[0])
                 groups.append(parts[1])
                 
