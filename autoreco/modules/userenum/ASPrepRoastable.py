@@ -1,6 +1,7 @@
 from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
 from ...utils import is_ip, is_ntlm_hash
+import re
 
 class ASPrepRoastable(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
