@@ -29,6 +29,9 @@ class UserEnumModuleBase(ModuleInterface):
         if not self._users:
             self._load_users()
         for user in users:
+            user = user.strip()
+            if not user:
+                continue
             if user not in self._users:
                 logger.debug("Adding known user %s", user)
                 self._users.append(user)
@@ -49,6 +52,9 @@ class UserEnumModuleBase(ModuleInterface):
         if not self._groups:
             self._load_groups()
         for group in groups:
+            group = group.strip()
+            if not group:
+                continue
             if group not in self._groups:
                 logger.debug("Adding known group %s", group)
                 self._groups.append(group)

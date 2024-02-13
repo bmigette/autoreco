@@ -36,9 +36,13 @@ class ASPrepRoastable(UserEnumModuleBase):
                     if "---" in line:
                         start = True
                     continue
-                parts = line.strip().split(" ")
+                line = re.sub("\s\s*", " ", line)
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split(" ")
                 users.append(parts[0])
-                groups.append(parts[0])
+                groups.append(parts[1])
                 
             except Exception as e:
                 logger.error("Error processing line %s: %s", line, e, exc_info=True)
