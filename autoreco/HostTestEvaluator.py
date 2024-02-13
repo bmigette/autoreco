@@ -156,7 +156,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             else:
                 return creds
         with open(CREDENTIALS_FILE, "r") as f:
-            creds = [x.split(":") for x in f.readlines()]
+            creds = [x.split(":", 1) for x in f.readlines()]
         return creds
 
     def get_tcp_services_ports(self, services: list):

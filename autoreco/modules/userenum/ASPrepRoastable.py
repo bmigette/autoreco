@@ -16,7 +16,7 @@ class ASPrepRoastable(UserEnumModuleBase):
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
         if is_ntlm_hash(self.args["password"]):
-            hashes = "-hashes " + "0"*32 + ":" + self.args["password"] # TODO not sure that works :)
+            hashes = "-hashes :" + self.args["password"] # Thttps://portal.offsec.com/courses/pen-200/books-and-videos/modal/modules/lateral-movement-in-active-directory/active-directory-lateral-movement-techniques/pass-the-hash
             self.command = f"impacket-GetNPUsers -dc-ip {self.target} {domain}/{user} {hashes}"
             self.args["pmode"] = "H" 
         else:
