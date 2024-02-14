@@ -27,8 +27,10 @@ class NetExecHostScan(ModuleInterface):
         pflag = "-p"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"
+            self.args["pmode"] = "pw" # For the filename
             if is_ntlm_hash(self.args["password"]):
                 pflag = "-H"
+                self.args["pmode"] = "H" # For the filename
         action = ""
         if "action" in self.args:
             action = "--" + self.args["action"]

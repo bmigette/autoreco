@@ -26,12 +26,12 @@ class SearchSploit(ModuleInterface):
                     if not name in searchdone:
                         searchdone[name] = [version]
                         output = self.get_system_cmd_outptut(
-                            f"searchsploit -t {name}", logoutput=logfile, logcmdinoutput=True)
+                            f"searchsploit -t {name} --disable-colour", logoutput=logfile, logcmdinoutput=True)
                         logger.debug("searchsploit -t %s output: %s", name, output)
                         
                     if version:
                         searchdone[name].append(version)
                         output = self.get_system_cmd_outptut(
-                            f"searchsploit -t {name} {version}", logoutput=logfile, logcmdinoutput=True)
+                            f"searchsploit -t {name} {version} --disable-colour", logoutput=logfile, logcmdinoutput=True)
                         logger.debug(
                             "searchsploit -t %s %s output: %s", name, version, output)

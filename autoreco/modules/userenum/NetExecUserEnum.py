@@ -23,7 +23,7 @@ class NetExecUserEnum(UserEnumModuleBase):
         
         pflag = "-p"
         if "password" in self.args:
-            self.args["pmode"] = "pw" # For the filename∂
+            self.args["pmode"] = "pw" # For the filename
             passw = "'" + self.args["password"] + "'"
             if is_ntlm_hash(self.args["password"]):
                 pflag = "-H"

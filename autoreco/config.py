@@ -11,13 +11,13 @@ QUEUE_WAIT_TIME = (
 STDOUT_LOGLEVEL = logging.INFO
 DEFAULT_PROCESS_TIMEOUT = 900  # Default timeout for a process
 DEFAULT_IDLE_TIMEOUT = 180  # Default timeout for a idle process
-DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2  # Default timeout for a long process
+DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2  # Default timeout for a long process, not used atm
 WATCHDOG_INTERVAL = 120
 WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
 TEST_FILTERS = []  # execute tests matching these filters only
 DNS_SERVER = None # Not used atm
 DEFAULT_MAX_OUTPUT = 10000 # Max len of command output
-RUN_SCANS = "all" #dns,webfiles,webdiscovery,userenum
+RUN_SCANS = "all" #dns,webfiles,webdiscovery,userenum,...
 
 
 ##### Modules Specific Config #####
@@ -38,11 +38,7 @@ NMAP_TCP_HOSTSCAN_OPTIONS = (
 ) # Setting to -sT because otherwise does not work thru proxy
 NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
 
-WORD_LIST_LARGE_THRESHOLD = 100000 # Job using a wordlist with more than this entries should be run only at the end
-#┌──(babadmin㉿kakali) - 19:55:34 - [~]
-#└─$ cat /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt | wc -l
-#87664
-
+# Skip tests using a list that is above this size (example 250000)
 MAX_LIST_SIZE = None
 
 # GOBUSTER / FFUF Options
@@ -85,7 +81,10 @@ FFUF_MAX_SAME_WORDS = 2 # Ignore results that have same number of words, if abov
 # UserEnum
 USERENUM_LISTS = [
     "/usr/share/statistically-likely-usernames/jsmith.txt",
-    "/usr/share/seclists/Usernames/xato-net-10-million-usernames-dup.txt"
+    "/usr/share/statistically-likely-usernames/service-accounts.txt",
+    "/usr/share/statistically-likely-usernames/john.smith.txt",
+    "/usr/share/statistically-likely-usernames/john.txt",
+    #"/usr/share/seclists/Usernames/xato-net-10-million-usernames-dup.txt" # More for web usernames
 ]
 
 # SNMP

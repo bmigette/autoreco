@@ -119,7 +119,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             for testid, testdata in state["discovery"]["tests_state"].items():
                 if "nmap" in testdata["module_name"].lower() and testdata["state"] in ["notstarted", "started", "queued"]:
                     logger.debug(
-                        "nmap_scans_complete discovery not complete because test %s", self.hostobject.ip, testid)
+                        "nmap_scans_complete discovery on host %s not complete because test %s", self.hostobject.ip, testid)
                     return False
         else:
             if len(self.hostobject.tests_state.keys()) < 1:
@@ -418,44 +418,47 @@ class HostTestEvaluator(TestEvaluatorBase):
             "microsoft-ds" in self.hostobject.services
         ):
             ports = self.get_tcp_services_ports(["microsoft-ds"])
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbenum_{ports}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 200,
-                "args": {"script": "smb-enum*", "ports": ports},
-            }
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 200,
-                "args": {"script": "smb-vuln*", "ports": ports},
-            }
+            if len(ports)>0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbenum_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"script": "smb-enum*", "ports": ports},
+                }
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbvuln_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"script": "smb-vuln*", "ports": ports},
+                }
 
         if "http" in self.hostobject.services or "https" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["http", "https"])
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 200,
-                "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
-            }
+            if len(ports)>0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"script": "default,auth,brute,discovery,vuln", "ports": ports},
+                }
 
         if "ldap" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["ldap"])
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 200,
-                "args": {"script": "'ldap* and not brute'", "ports": ports},
-            }
+            if len(ports)>0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"script": "'ldap* and not brute'", "ports": ports},
+                }
 
         if ("nfs" in self.hostobject.services or
             "rpcbind" in self.hostobject.services
