@@ -1,7 +1,8 @@
 from .logger import logger
 from .TestHost import TestHost
 from .State import State
-from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS, CREDENTIALS_FILE, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS
+from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS
+from .config import CREDENTIALS_FILE, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS, HTTP_IGNORE_PORTS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -159,7 +160,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             creds = [x.strip().split(":", 1) for x in f.readlines() if x]
         return creds
 
-    def get_tcp_services_ports(self, services: list):
+    def get_tcp_services_ports(self, services: list, ignore = None):
         """Gets all TCP Ports for given services
 
         Args:
@@ -172,7 +173,12 @@ class HostTestEvaluator(TestEvaluatorBase):
         for s in services:
             if s in self.hostobject.tcp_service_ports:
                 r.extend(self.hostobject.tcp_service_ports[s])
-        return list(set(r))
+        r = list(set(r))
+        if ignore:
+            for p in ignore:
+                if p in r:
+                    r.remove(p)
+        return r
 
     def get_udp_services_ports(self, services: list):
         """Gets all UDP Ports for given services
@@ -438,7 +444,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
 
         if "http" in self.hostobject.services or "https" in self.hostobject.services:
-            ports = self.get_tcp_services_ports(["http", "https"])
+            ports = self.get_tcp_services_ports(["http", "https"], HTTP_IGNORE_PORTS)
             if len(ports)>0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
                 tests[jobid] = {
@@ -524,12 +530,27 @@ class HostTestEvaluator(TestEvaluatorBase):
         global WEB_WORDLISTS, GOBUSTER_FILE_EXT
         tests = {}
         for s in ["http", "https"]:
-            # Running tests against IP
-            if s in self.hostobject.tcp_service_ports:
-                for p in self.hostobject.tcp_service_ports[s]:
-                    for w in WEB_WORDLISTS["files"]:
-                        file = Path(w).stem
-                        jobid = f"hostscan.GoBuster_dirf_{self.hostobject.ip}_{s}_{p}_{file}"
+            # Running tests against IP            
+            for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
+                for w in WEB_WORDLISTS["files"]:
+                    file = Path(w).stem
+                    jobid = f"hostscan.GoBuster_dirf_{self.hostobject.ip}_{s}_{p}_{file}"
+                    tests[jobid] = {
+                        "module_name": "hostscan.GoBuster",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": self.get_list_priority(w, GOBUSTER_FILE_EXT),
+                        "args": {
+                            "url": f"{s}://{self.hostobject.ip}:{p}",
+                            "mode": "dir",
+                            "extensions": GOBUSTER_FILE_EXT,
+                            "wordlist": w,
+                            "fsrc": "fsrc",  # This is only to display in log filename
+                        },
+                    }
+                    
+                    for h in self.hostobject.get_hostnames_and_domain():
+                        jobid = f"hostscan.GoBuster_dirf_{h}_{s}_{p}_{file}"
                         tests[jobid] = {
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
@@ -538,28 +559,12 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
+                                "host": h,
                                 "extensions": GOBUSTER_FILE_EXT,
                                 "wordlist": w,
                                 "fsrc": "fsrc",  # This is only to display in log filename
                             },
                         }
-                        
-                        for h in self.hostobject.get_hostnames_and_domain():
-                            jobid = f"hostscan.GoBuster_dirf_{h}_{s}_{p}_{file}"
-                            tests[jobid] = {
-                                "module_name": "hostscan.GoBuster",
-                                "job_id": jobid,
-                                "target": self.hostobject.ip,
-                                "priority": self.get_list_priority(w, GOBUSTER_FILE_EXT),
-                                "args": {
-                                    "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "mode": "dir",
-                                    "host": h,
-                                    "extensions": GOBUSTER_FILE_EXT,
-                                    "wordlist": w,
-                                    "fsrc": "fsrc",  # This is only to display in log filename
-                                },
-                            }
 
         return tests
 
@@ -573,14 +578,28 @@ class HostTestEvaluator(TestEvaluatorBase):
         tests = {}
         doms = self.get_known_domains()
         for s in ["http", "https"]:
-            # Running tests against IP
-            if s in self.hostobject.tcp_service_ports:
-                for p in self.hostobject.tcp_service_ports[s]:
-                    for w in WEB_WORDLISTS["dir"]:
-                        file = Path(w).stem
-                        jobid = (
-                            f"hostscan.GoBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
-                        )
+            # Running tests against IP            
+            for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
+                for w in WEB_WORDLISTS["dir"]:
+                    file = Path(w).stem
+                    jobid = (
+                        f"hostscan.GoBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
+                    )
+                    tests[jobid] = {
+                        "module_name": "hostscan.GoBuster",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": self.get_list_priority(w),
+                        "args": {
+                            "url": f"{s}://{self.hostobject.ip}:{p}",
+                            "mode": "dir",
+                            "wordlist": w,
+                        },
+                    }
+
+                    for h in self.hostobject.get_hostnames_and_domain():
+
+                        jobid = f"hostscan.GoBuster_dir_{h}_{s}_{p}_{file}"
                         tests[jobid] = {
                             "module_name": "hostscan.GoBuster",
                             "job_id": jobid,
@@ -589,42 +608,27 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
                                 "mode": "dir",
+                                "host": h,
                                 "wordlist": w,
                             },
                         }
-
-                        for h in self.hostobject.get_hostnames_and_domain():
-
-                            jobid = f"hostscan.GoBuster_dir_{h}_{s}_{p}_{file}"
-                            tests[jobid] = {
-                                "module_name": "hostscan.GoBuster",
-                                "job_id": jobid,
-                                "target": self.hostobject.ip,
-                                "priority": self.get_list_priority(w),
-                                "args": {
-                                    "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "mode": "dir",
-                                    "host": h,
-                                    "wordlist": w,
-                                },
-                            }
-                    # Trying to get new VHosts
-                    for w in WEB_WORDLISTS["vhost"]:
-                        for d in doms:
-                            file = Path(w).stem
-                            jobid = f"hostscan.FFUF_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
-                            tests[jobid] = {
-                                "module_name": "hostscan.FFUF",
-                                "job_id": jobid,
-                                "target": self.hostobject.ip,
-                                "priority": self.get_list_priority(w),
-                                "args": {
-                                    "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "mode": "vhost",
-                                    "domain": d,
-                                    "wordlist": w,
-                                },
-                            }
+                # Trying to get new VHosts
+                for w in WEB_WORDLISTS["vhost"]:
+                    for d in doms:
+                        file = Path(w).stem
+                        jobid = f"hostscan.FFUF_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
+                        tests[jobid] = {
+                            "module_name": "hostscan.FFUF",
+                            "job_id": jobid,
+                            "target": self.hostobject.ip,
+                            "priority": self.get_list_priority(w),
+                            "args": {
+                                "url": f"{s}://{self.hostobject.ip}:{p}",
+                                "mode": "vhost",
+                                "domain": d,
+                                "wordlist": w,
+                            },
+                        }
         return tests
 
     def get_generic_tests(self):

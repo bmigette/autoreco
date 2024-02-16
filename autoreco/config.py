@@ -42,6 +42,9 @@ NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --scri
 MAX_LIST_SIZE = None
 
 # GOBUSTER / FFUF Options
+
+HTTP_IGNORE_PORTS = [5985, 5986, 47001] # Ignoring MS WinRM & MS API
+
 WEB_WORDLISTS = {
     "dir": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/quickhits.txt",
