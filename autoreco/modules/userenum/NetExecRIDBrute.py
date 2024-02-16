@@ -5,7 +5,6 @@ from ...utils import is_ip
 
 class NetExecRIDBrute(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
-    # TODO Export userlist
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
@@ -19,7 +18,6 @@ class NetExecRIDBrute(UserEnumModuleBase):
             user = "'" + self.args["user"] + "'"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"
-        # TODO Test RID brute
         self.command = f"netexec smb {self.target} -u {user} -p {passw} --rid-brute 10000 --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output(self.output)

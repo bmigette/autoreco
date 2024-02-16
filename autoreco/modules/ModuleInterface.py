@@ -72,12 +72,16 @@ class ModuleInterface(ABC):
                 
             for file in glob.glob(filefilter):
                 try:
-                    logger.debug("Moving empty file %s", file)
-                    shutil.move(file, target)
+                    if os.path.exists(file):
+                        logger.warn("Deleting duplicate empty file %s", file)
+                        os.remove(file)
+                    else:
+                        logger.debug("Moving empty file %s", file)
+                        shutil.move(file, target)
                 except Exception as e:
                     logger.error("Error when moving file %s: %s", file, e)
         except Exception as ee:
-            logger.error("Error int move_to_empty_files: %s", ee)
+            logger.error("Error move_to_empty_files: %s", ee)
                         
     def get_host_obj(self, ip: str) -> TestHost:
         return TestHost(ip)
@@ -146,7 +150,7 @@ class ModuleInterface(ABC):
         if logcmdline:
             try:
                 with open(logcmdline, "a") as f:
-                    f.write(command)
+                    f.write(command + "\n")
             except Exception as e:
                 logger.error(
                     "Could not write cmd to file %s: %s", logcmdline, e)
@@ -318,6 +322,8 @@ class ModuleInterface(ABC):
             str: flattened args
         """
         args = []
+        if self.is_userenum():
+            self.args["target"] = self.target
         for k, v in self.args.items():
             if k.lower() in [x.lower() for x in ignorekeys]:
                 continue

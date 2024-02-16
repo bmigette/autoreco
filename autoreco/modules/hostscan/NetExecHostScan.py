@@ -17,13 +17,18 @@ class NetExecHostScan(ModuleInterface):
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
         spider = ""
-        if "spider" in self.args:
-            spider = "-M spider_plus -o OUTPUT_FOLDER=" + self.get_outdir("netexec_smb_spider_plus")
-        user = "anonymous"
+        
+        user = "anonymous"        
+        spider_user = "anonymous"
         passw = "''"
         if "user" in self.args:
             user = "'" + self.args["user"] + "'"
+            spider_user = self.args["user"]
         
+        
+        if "spider" in self.args:
+            spider = "-M spider_plus -o OUTPUT_FOLDER=" + self.get_outdir(f"netexec_smb_spider_plus/{spider_user}")
+            
         pflag = "-p"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"

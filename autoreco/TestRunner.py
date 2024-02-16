@@ -180,15 +180,15 @@ class TestRunner(object):
             WorkThreader.stop_threads()
 
     def move_empty_log_files(self):
-        """Move empty log files + files associated to empty_logs folder
+        """Move empty log files + files associated to empty_files folder
         """
         import glob
         import shutil
         for folder in os.walk(State().TEST_WORKING_DIR):
             folder = folder[0]
-            if "empty_logs" in folder:
+            if "empty_files" in folder:
                 continue
-            outdir = os.path.join(folder, "empty_logs")
+            outdir = os.path.join(folder, "empty_files")
             for file in glob.glob(os.path.join(folder, "*.log")):
                 file_stats = os.stat(file)
                 if file_stats.st_size == 0:
@@ -203,7 +203,7 @@ class TestRunner(object):
                             logger.debug("Moving empty file %s", file_to_move)
                             shutil.move(file_to_move, outdir)
                     except Exception as e:
-                        logger.error("Error when moving file %s: %s", file, e)
+                        logger.error("Error when moving file %s: %s", file, e) 
 
     def finish(self):
         if self.finishing:

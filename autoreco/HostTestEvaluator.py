@@ -212,32 +212,33 @@ class HostTestEvaluator(TestEvaluatorBase):
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
+
     def get_other_credentialed_tests(self):
         tests = {}
         for creds in self.get_known_credentials():
             for dc in self.get_ad_dc_ips():
                 for d in self.get_known_domains():
-                    jobid = f"userenum.ASPrepRoastable_{self.hostobject.ip}_{dc}_{d}_{self._get_creds_job_id(creds)}"
+                    jobid = f"userenum.ASPrepRoastable_{dc}_{d}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
                         "module_name": "userenum.ASPrepRoastable",
                         "job_id": jobid,
-                        "target": self.hostobject.ip,
+                        "target": dc,
                         "priority": 50,
                         "args": { "domain": d, "user": creds[0], "password": creds[1]},
                     }
-                    jobid = f"userenum.GetSPNs_{self.hostobject.ip}_{dc}_{d}_{self._get_creds_job_id(creds)}"
+                    jobid = f"userenum.GetSPNs_{dc}_{d}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
                         "module_name": "userenum.GetSPNs",
                         "job_id": jobid,
-                        "target": self.hostobject.ip,
+                        "target": dc,
                         "priority": 50,
                         "args": { "domain": d, "user": creds[0], "password": creds[1]},
                     }
-                    jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{self._get_creds_job_id(creds)}"
+                    jobid = f"userenum.NetExecRIDBrute_{dc}_ridbrute_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
                         "module_name": "userenum.NetExecRIDBrute",
                         "job_id": jobid,
-                        "target": self.hostobject.ip,
+                        "target": dc,
                         "priority": 150,
                         "args": { "user": creds[0], "password": creds[1]},
                     }
