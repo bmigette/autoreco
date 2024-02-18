@@ -65,7 +65,10 @@ class TestHost:
             raise ValueError(f"{hostip} is not an IP or discovery")
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}
-
+    
+    def is_discovery(self):
+        return "discovery" in self.ip
+    
     def _state_field_get(self, fieldname, default_value = None):
         if self.ip not in State().TEST_STATE or fieldname not in State().TEST_STATE[self.ip]:
             return default_value

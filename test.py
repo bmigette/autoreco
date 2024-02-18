@@ -19,14 +19,14 @@ from autoreco.TestHost import TestHost
 
 # Importing here to make sure we have set config / state properly
 from autoreco.TestRunner import TestRunner
-autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge2_relia/autoreco_2024_02_05__13_30_58", resume=True)
-autoreco.State.State().load_state()
+#autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge2_relia/autoreco_2024_02_05__13_30_58", resume=True)
+#autoreco.State.State().load_state()
 
 runner = TestRunner()
 runner.move_empty_log_files()
 
-#runner = TestRunner("192.168.199.0/24")
-#runner.run(resume=True)
+runner = TestRunner("192.168.230.0/24")
+runner.run()
 # w = "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
 # job = {         
 #         "module_name": "hostscan.FFUF",

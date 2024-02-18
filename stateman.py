@@ -18,6 +18,8 @@ autoreco.State.State().set_working_dir(os.getcwd(), True)
 import autoreco.config
 
 # TODO: Implement state cleaner
+# TODO: Move Log Files to archive folder
+# TODO: Remove tests from state
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -52,7 +54,7 @@ def main():
     from autoreco.TestRunner import TestRunner
 
     runner = TestRunner(args.subnet, args.domain, args.host)
-    runner.run(testresume, args.resume_failed)
+    runner.run("testre", args.resume_failed)
 
 
 if __name__ == "__main__":

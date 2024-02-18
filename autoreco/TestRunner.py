@@ -1,5 +1,7 @@
 from .WorkThreader import WorkThreader
 from .HostTestEvaluator import HostTestEvaluator
+from .DiscoveryTestEvaluator import DiscoveryTestEvaluator
+
 
 from .TestHost import TestHost
 from .logger import logger
@@ -35,18 +37,51 @@ class TestRunner(object):
 
         WorkThreader.start_threads(self.complete_callback, self.finish)
         self.set_handler()
-
+    
+    def add_discovery_tests(self):
+        """Check for non host specific tests
+        """
+        evaluator = DiscoveryTestEvaluator(self.subnet)
+        discovery_host = TestHost("discovery")
+        new_tests = evaluator.get_tests()
+        for testid, payload in new_tests.items():
+            if discovery_host.has_test(testid):
+                pass
+            else:
+                if "job_id" not in payload:  # Should not happen unless there's an Error in HostTestEvaluator
+                    logger.warn("No job_id in payload %s", payload)
+                    payload["job_id"] = testid
+                logger.info(
+                    "Adding new discovery job with module %s on target %s",
+                    payload["module_name"],
+                    payload["target"]
+                )
+                logger.debug(
+                    "Job Payload: \n %s",
+                    json.dumps(payload, indent=4)
+                )
+                args = payload["args"] if "args" in payload else {}
+                priority =  payload["priority"] if "priority" in payload else None
+                discovery_host.set_test_state(
+                    testid, "queued", payload["module_name"], payload["target"], args, priority)
+                WorkThreader.add_job(payload)
+    
     def complete_callback(self):
         """Callback function when a job is complete, will check if additional jobs needs to be scheduled
         """
         logger.debug("Entering Complete Callback")
+        try:
+            self.add_discovery_tests()
+        except Exception as e:
+            logger.error("Exception in Complete Callback (Discovery): %s",
+                         e, exc_info=True)
         try:
             state = State().TEST_STATE.copy()
             for k, v in state.items():
                 if k == "discovery":
                     continue
                 host = TestHost(k)
-                evaluator = HostTestEvaluator(host)
+                evaluator = HostTestEvaluator(host) #TODO ADD HERE Discovery Tests
                 tests = evaluator.get_tests()
                 for testid, payload in tests.items():
                     if host.has_test(testid):
@@ -84,30 +119,13 @@ class TestRunner(object):
         import signal
         signal.signal(signal.SIGINT, TestRunner.stop_signal_handler)
 
-    def host_discovery(self, target):
+    def host_discovery(self):
         """Start host discovery process against a subnet
 
         Args:
             target (str): Subnet, exemple: 192.168.1.0/24
         """
-        global NETEXEC_DISCOVERY_PROTOCOLS
-        job = {
-            "module_name": "discovery.NmapSubnetPing",
-            "job_id": f"discovery.NmapSubnetPing_{target}",
-            "target": target,
-            "priority": 10,
-            "args": {},
-        }
-        WorkThreader.add_job(job)
-        for proto in NETEXEC_DISCOVERY_PROTOCOLS:
-            job = {
-                "module_name": "discovery.NetExecDiscovery",
-                "job_id": f"discovery.NetExecDiscovery_{target}_{proto}",
-                "target": target,
-                "priority": 10,
-                "args": {"protocol": proto},
-            }
-            WorkThreader.add_job(job)
+        self.add_discovery_tests()
 
     def host_scan(self, host_ip):
         """Initiate a single host scan
@@ -166,7 +184,7 @@ class TestRunner(object):
             logger.info("=" * 50)
             if not resume:
                 if self.subnet:
-                    self.host_discovery(self.subnet)
+                    self.host_discovery()
             # not used atm, host scan triggered after discovery
             if self.hosts:
                 for host in self.hosts:

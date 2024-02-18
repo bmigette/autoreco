@@ -10,7 +10,7 @@ import time
 from ..logger import logger
 from ..State import State
 from ..config import DEFAULT_PROCESS_TIMEOUT, DEFAULT_IDLE_TIMEOUT
-from ..utils import max_output, is_ip
+from ..utils import max_output, is_ip, remove_ansi_escape_chars
 from ..TestHost import TestHost
 
 
@@ -219,7 +219,7 @@ class ModuleInterface(ABC):
                         f.write("\n" + "="*50 + "\n")
                         f.write(cmd)
                         f.write("\n" + "="*50 + "\n")
-                    f.write(ret)
+                    f.write(remove_ansi_escape_chars(ret))
             except Exception as e:
                 logger.error("Could not write to file %s: %s", logoutput, e)
         

@@ -19,7 +19,6 @@ class Kerbrute(UserEnumModuleBase):
         logger.info("Starting kerbrute against %s", self.target)        
         # `kerbrute userenum -d manager.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt --dc 10.10.11.236`
         self.command = f"kerbrute userenum -d {domain} {w} --dc {self.target} -o {logfile}"
-        # TODO Implement Kerbrute output parsing, and make it a realtime output: Cannot do!! No useful output
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile, timeout=DEFAULT_PROCESS_TIMEOUT*2)
         try:
             self._parse_output(self.output)
@@ -27,8 +26,22 @@ class Kerbrute(UserEnumModuleBase):
             logger.error("Error when parsing output for Kerbrute: %s", e, exc_info=True)
         
     def _parse_output(self, output):
-        #output = remove_ansi_escape_chars(output)
-        pass
+        users = []
+        output = remove_ansi_escape_chars(output)
+        for line in output.split("\n"):
+            try:
+                if "VALID USERNAME" in line:
+                    u = line.split(" ")[-1]
+                    users.append(u)                                
+            except Exception as e:
+                logger.error("Error processing Kerbrute line %s: %s", line, e, exc_info=True)
+        if len(users)>0: 
+            try:
+                logger.info("Learnt RID users: %s", users)
+                self.add_users(users)
+            except Exception as e:
+                logger.error("Error when adding RID users: %s", e, exc_info=True)
+                
 
 """
 2024/02/15 23:22:08 >  Using KDC(s):[0m

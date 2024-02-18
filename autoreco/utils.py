@@ -137,7 +137,7 @@ def is_ip_state_subnets(ip: str, subnets = None):
     subnet = ".".join(ip_parts)
     return subnet in subnets
 
-def remove_ansi_escape_chars(input): # TODO DOESNT WORK
+def remove_ansi_escape_chars(input): 
     #https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
     # 7-bit and 8-bit C1 ANSI sequences
     ansi_escape_8bit = re.compile(r'''

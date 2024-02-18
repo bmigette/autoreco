@@ -132,7 +132,9 @@ def main():
     #autoreco.config.DNS_SERVER = args.dns_server
     # Importing here to make sure we have set config / state properly
     from autoreco.TestRunner import TestRunner
-
+    
+    
+    autoreco.State.State().RUNTIME["args"] = args
     runner = TestRunner(args.subnet, args.domain, args.host)
     runner.run(testresume, args.resume_failed)
 

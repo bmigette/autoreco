@@ -47,8 +47,10 @@ class State(metaclass=SingletonMeta):
         # Internal Locks
         self._statelock = threading.Lock()
         self._domainlock = threading.Lock()
+        self._runtimelock = threading.Lock()
         self._TEST_STATE = {}
         self._KNOWN_DOMAINS = []
+        self._RUNTIME = {}
         self.TEST_DATE = None
         self.TEST_DATE_STR = None
         self.WORKING_DIR = None
@@ -88,6 +90,16 @@ class State(metaclass=SingletonMeta):
     def KNOWN_DOMAINS(self, value):
         with self._domainlock:
             self._KNOWN_DOMAINS = value.copy()
+            
+    @property
+    def RUNTIME(self):
+        with self._runtimelock:
+            return self._RUNTIME
+        
+    @RUNTIME.setter
+    def RUNTIME(self, value):
+        with self._runtimelock:
+            self.RUNTIME = value.copy()
             
     def load_state(self):
         with self._statelock:

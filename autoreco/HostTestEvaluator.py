@@ -94,8 +94,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_ad_users_tests())
-                tests = self._safe_merge(tests, self.get_other_credentialed_tests())
-                
+               
             except Exception as e:
                 logger.error("Error when getting ad user tests: %s",
                              e, exc_info=True)
@@ -142,24 +141,6 @@ class HostTestEvaluator(TestEvaluatorBase):
             return False
 
 
-    def get_known_credentials(self):
-        """Get knowns credentials, for credentialed enum
-
-        Returns:
-            list(tuple): list [(user, password)]
-        """
-        global CREDENTIALS_FILE
-        creds = []
-        if not CREDENTIALS_FILE or not os.path.exists(CREDENTIALS_FILE):
-            if os.path.exists(os.path.join(State().TEST_WORKING_DIR, "creds.txt")):
-                CREDENTIALS_FILE = os.path.join(
-                    State().TEST_WORKING_DIR, "creds.txt")
-            else:
-                return creds
-        with open(CREDENTIALS_FILE, "r") as f:
-            creds = [x.strip().split(":", 1) for x in f.readlines() if x]
-        return creds
-
     def get_tcp_services_ports(self, services: list, ignore = None):
         """Gets all TCP Ports for given services
 
@@ -195,61 +176,13 @@ class HostTestEvaluator(TestEvaluatorBase):
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
-    def get_ad_dc_ips(self):
-        """Returns all DCs known in state. Host is considered a DC if kerberos and ldap ports opened
 
-        Returns:
-            list: list of DCs
-        """
-        dcs = []
-
-        state = State().TEST_STATE.copy()
-        for k, v in state.items():
-            if k == "discovery":
-                continue
-            hostobj = TestHost(k)
-            if hostobj.os_family and "windows" not in hostobj.os_family.lower():
-                continue
-            if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services:  # TODO maybe needs improvement
-                dcs.append(k)
-        logger.debug("Known DCs: %s", dcs)
-        return dcs
 
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
 
-    def get_other_credentialed_tests(self):
-        tests = {}
-        for creds in self.get_known_credentials():
-            for dc in self.get_ad_dc_ips():
-                for d in self.get_known_domains():
-                    jobid = f"userenum.ASPrepRoastable_{dc}_{d}_{self._get_creds_job_id(creds)}"
-                    tests[jobid] = {
-                        "module_name": "userenum.ASPrepRoastable",
-                        "job_id": jobid,
-                        "target": dc,
-                        "priority": 50,
-                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
-                    }
-                    jobid = f"userenum.GetSPNs_{dc}_{d}_{self._get_creds_job_id(creds)}"
-                    tests[jobid] = {
-                        "module_name": "userenum.GetSPNs",
-                        "job_id": jobid,
-                        "target": dc,
-                        "priority": 50,
-                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
-                    }
-                    jobid = f"userenum.NetExecRIDBrute_{dc}_ridbrute_{self._get_creds_job_id(creds)}"
-                    tests[jobid] = {
-                        "module_name": "userenum.NetExecRIDBrute",
-                        "job_id": jobid,
-                        "target": dc,
-                        "priority": 150,
-                        "args": { "user": creds[0], "password": creds[1]},
-                    }
-
-        return tests
+  
     
     def get_ad_users_tests(self):
         """Create AD Users Discovery jobs
@@ -299,18 +232,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "priority": 100,
                         "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
                     }
-        # Testing credentials against known services
-        for p in NETEXEC_USERENUM_PROTOCOLS:
-            for creds in self.get_known_credentials():
-                    jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_credtest_{p}_{self._get_creds_job_id(creds)}"
-                    tests[jobid] = {
-                        "module_name": "userenum.NetExecUserEnum",
-                        "job_id": jobid,
-                        "target": self.hostobject.ip,
-                        "priority": 100,
-                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest"},
-                    }
-        return tests
+
 
     def get_searchsploit_test(self):
         """Create Searchsploit jobs
@@ -492,34 +414,6 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         return tests
 
-    def get_known_domains(self):
-        """Gets the list of all domains known in state
-
-        Returns:
-            list: Domain list
-        """
-        doms = State().KNOWN_DOMAINS.copy()
-        state = State().TEST_STATE.copy()
-        for k, v in state.items():
-            if k == "discovery":
-                continue
-            hostobj = TestHost(k)
-            if hostobj.domain:
-                doms.append(hostobj.domain)
-            for hostname in hostobj.hostnames:
-                parts = hostname.split(".")
-                if len(parts) > 1:
-                    doms.append(".".join(parts[-2:]))
-        doms2 = []
-        for d in doms:
-            d = d.lower()
-            d = re.sub(r"[^a-zA-Z0-9\.\-]+", "", d)
-            if d:
-                doms2.append(d)
-        doms = list(set(doms2))
-        State().KNOWN_DOMAINS = doms  # .copy() # Statewrapper always copy
-        logger.debug("Known Domains: %s", doms)
-        return doms
 
     def get_web_file_tests(self):
         """Create GoBuster file jobs
