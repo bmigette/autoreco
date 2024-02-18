@@ -63,6 +63,8 @@ class TestHost:
         """
         if not "discovery" in hostip and not is_ip(hostip):
             raise ValueError(f"{hostip} is not an IP or discovery")
+        if "/" in hostip:
+            raise ValueError("Should not be a subnet")
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}
     

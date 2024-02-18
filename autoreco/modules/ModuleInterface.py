@@ -282,7 +282,7 @@ class ModuleInterface(ABC):
         )
 
     def is_discovery(self):
-        return "discovery." in self.module_name
+        return "discovery." in self.module_name or "/" in self.ip # TODO find a better solution, add a flag in the job payload ?
 
     def is_userenum(self):
         return "userenum." in self.module_name

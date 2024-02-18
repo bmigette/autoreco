@@ -232,7 +232,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "priority": 100,
                         "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
                     }
-
+        return tests
 
     def get_searchsploit_test(self):
         """Create Searchsploit jobs

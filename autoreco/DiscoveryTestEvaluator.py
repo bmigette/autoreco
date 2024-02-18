@@ -88,7 +88,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         target = self.subnet
         targetstr = self.subnet_str
         if not target:
-            target = " ".join(self.get_known_hosts())
+            target = " ".join(self.get_known_hosts()) #TODO Test
             targetstr = "hosts" + str(len(self.get_known_hosts()))
         for p in NETEXEC_USERENUM_PROTOCOLS:
             for creds in self.get_known_credentials():
