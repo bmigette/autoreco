@@ -80,7 +80,7 @@ class ModuleInterface(ABC):
                         logger.debug("Moving empty file %s", file)
                         shutil.move(file, target)
                 except Exception as e:
-                    logger.error("Error when moving file %s: %s", file, e)
+                    logger.error("Error when moving file %s to target %s:\n%s", file, target_file, e)
         except Exception as ee:
             logger.error("Error move_to_empty_files: %s", ee)
                         

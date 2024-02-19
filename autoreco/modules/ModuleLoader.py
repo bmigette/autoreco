@@ -1,6 +1,7 @@
 from .testModule import testModule
 from .discovery.NmapSubnetPing import NmapSubnetPing
 from .discovery.NetExecDiscovery import NetExecDiscovery
+from .hostscan.Snaffler import Snaffler
 from .hostscan.SearchSploit import SearchSploit
 from .hostscan.NmapHostScan import NmapHostScan
 from .hostscan.Enum4Linux import Enum4Linux
@@ -22,6 +23,7 @@ class ModuleLoader(object):
             "testModule": testModule,
             "discovery.NmapSubnetPing": NmapSubnetPing,
             "discovery.NetExecDiscovery": NetExecDiscovery,
+            "hostscan.Snaffler": Snaffler,
             "hostscan.SearchSploit": SearchSploit,
             "hostscan.NmapHostScan": NmapHostScan,
             "hostscan.Enum4Linux": Enum4Linux,

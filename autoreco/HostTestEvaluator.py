@@ -317,6 +317,15 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": 100,
                     "args": {"action": "shares", "spider": True, "user": creds[0], "password": creds[1]},
                 }
+                for d in self.get_known_domains():
+                    jobid = f"hostscan.Snaffler_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "hostscan.Snaffler",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 300,
+                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                    }
         return tests
 
     def get_snmp_tests(self):

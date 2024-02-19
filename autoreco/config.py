@@ -98,3 +98,6 @@ SNMP_WORDLISTS = [
 CREDENTIALS_FILE = None
 
 USE_SYSTEM_RESOLVER = False
+
+# SNAFFLER
+# PYSNAFFLER_CMD = "python3  /opt/snafflepy/snaffler.py"

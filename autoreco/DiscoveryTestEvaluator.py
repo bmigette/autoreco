@@ -39,7 +39,13 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         # Always running generic tests for service discovery
         tests = self._safe_merge(tests, self.get_nmap_discovery())
 
-       
+        if "all" in RUN_SCANS or "file" in RUN_SCANS:
+            try:
+                pass
+                #tests = self._safe_merge(tests, self.get_file_tests())
+            except Exception as e:
+                logger.error("Error when getting Discovery file tests: %s",
+                             e, exc_info=True)
         # AD / Users tests
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
@@ -83,6 +89,8 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
             }
             tests[jobid] = job
         return tests
+    
+
     
     def get_credtest_tests(self):
         # Testing credentials against known services        
