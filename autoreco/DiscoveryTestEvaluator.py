@@ -48,7 +48,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
             try:
 
                 tests = self._safe_merge(tests, self.get_credtest_tests())
-                
+                tests = self._safe_merge(tests, self.get_user_tests())
             except Exception as e:
                 logger.error("Error when getting ad user tests: %s",
                              e, exc_info=True)
@@ -95,7 +95,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         target = self.subnet
         targetstr = self.subnet_str
         if not target:
-            target = " ".join(self.get_known_hosts()) #TODO Test
+            target = " ".join(self.get_known_hosts()) 
             targetstr = "hosts" + str(len(self.get_known_hosts()))
         for p in NETEXEC_USERENUM_PROTOCOLS: # TODO: Support secure ldap ?
             if p == "ldap" and len(get_state_dns_servers())<1:
@@ -115,4 +115,22 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
 
 
   
-
+    def get_user_tests(self):
+        tests = {}
+        target = self.subnet
+        targetstr = self.subnet_str
+        if not target:
+            target = " ".join(self.get_known_hosts()) #TODO Test
+            targetstr = "hosts" + str(len(self.get_known_hosts()))
+        for action in ["loggedon-users"]:
+            for p in ["smb"]: # Seems only SMB works for this
+                for creds in self.get_known_credentials():
+                    jobid = f"userenum.NetExecUserEnum_{targetstr}_netexec_{p}_{action}_{self._get_creds_job_id(creds)}"
+                    tests[jobid] = {
+                        "module_name": "userenum.NetExecUserEnum",
+                        "job_id": jobid,
+                        "target": target,
+                        "priority": 200,
+                        "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
+                    }
+        return tests

@@ -37,7 +37,7 @@ class NetExecUserEnum(UserEnumModuleBase):
         if protocol == "ldap": # TODO Doesn't work (does nothing)
             # See https://github.com/Pennyw0rth/NetExec/issues/184
             dnssrv = get_state_dns_servers()[0]
-            self.command += f"firejail --dns {dnssrv} {self.command}" 
+            self.command = f"firejail --dns {dnssrv} {self.command}" 
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         if "action" in self.args:
             if self.args["action"] == "users":
