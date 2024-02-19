@@ -1,14 +1,11 @@
 from .logger import logger
-from .TestHost import TestHost
-from .State import State
 
+from .utils import get_state_dns_servers
 from .config import CREDENTIALS_FILE, RUN_SCANS, NETEXEC_DISCOVERY_PROTOCOLS, NETEXEC_USERENUM_PROTOCOLS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
-import re
-import os
-import hashlib
+
 
 
 class DiscoveryTestEvaluator(TestEvaluatorBase):
@@ -100,7 +97,10 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         if not target:
             target = " ".join(self.get_known_hosts()) #TODO Test
             targetstr = "hosts" + str(len(self.get_known_hosts()))
-        for p in NETEXEC_USERENUM_PROTOCOLS:
+        for p in NETEXEC_USERENUM_PROTOCOLS: # TODO: Support secure ldap ?
+            if p == "ldap" and len(get_state_dns_servers())<1:
+                logger.info("Skipping LDAP NetExecUserEnum tests for now because no DNS server found")
+                continue
             for creds in self.get_known_credentials():
                     jobid = f"userenum.NetExecUserEnum_{targetstr}_netexec_credtest_{p}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {

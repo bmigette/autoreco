@@ -1,6 +1,6 @@
 from .UserEnumModuleBase import UserEnumModuleBase
 from ...logger import logger
-from ...utils import is_ip, is_ntlm_hash
+from ...utils import is_ip, is_ntlm_hash, get_state_dns_servers
 import re
 
 
@@ -34,6 +34,10 @@ class NetExecUserEnum(UserEnumModuleBase):
         if "action" in self.args and self.args["action"]:
             action = "--" + self.args["action"]
         self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} --log {logfile}"
+        if protocol == "ldap": # TODO Doesn't work (does nothing)
+            # See https://github.com/Pennyw0rth/NetExec/issues/184
+            dnssrv = get_state_dns_servers()[0]
+            self.command += f"firejail --dns {dnssrv} {self.command}" 
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         if "action" in self.args:
             if self.args["action"] == "users":

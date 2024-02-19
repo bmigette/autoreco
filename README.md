@@ -31,6 +31,9 @@ Tools that needs to be installed (and in system PATH):
 - enum4linux-ng
 - kerbrute
 
+Additional Tools
+- Firejail [[https://github.com/netblue30/firejail]]: (Needed to force DNS Server for some tools, netexec in ldap mode for example)
+
 # Installation
 ```
 pip install -r requirements.txt

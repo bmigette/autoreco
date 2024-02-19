@@ -34,6 +34,8 @@ class UserEnumModuleBase(ModuleInterface):
             user = user.strip()
             if not user:
                 continue
+            if "@" in user:
+                user = user.split["@"][0]
             if user not in self._users:
                 logger.debug("Adding known user %s", user)
                 self._users.append(user)
