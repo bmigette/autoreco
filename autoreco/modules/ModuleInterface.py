@@ -72,7 +72,7 @@ class ModuleInterface(ABC):
                 
             for file in glob.glob(filefilter):
                 try:
-                    target_file = os.path.join(target, Path(file).stem)
+                    target_file = os.path.join(target, os.path.basename(file))
                     if os.path.exists(target_file):
                         logger.warn("Deleting duplicate empty file %s -> %s", file, target_file)
                         os.remove(file)
