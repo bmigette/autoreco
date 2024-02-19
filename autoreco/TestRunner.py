@@ -81,7 +81,7 @@ class TestRunner(object):
                 if k == "discovery":
                     continue
                 host = TestHost(k)
-                evaluator = HostTestEvaluator(host) #TODO ADD HERE Discovery Tests
+                evaluator = HostTestEvaluator(host) 
                 tests = evaluator.get_tests()
                 for testid, payload in tests.items():
                     if host.has_test(testid):

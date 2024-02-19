@@ -94,6 +94,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_ad_users_tests())
+                tests = self._safe_merge(tests, self.get_other_credentialed_tests())
+
                
             except Exception as e:
                 logger.error("Error when getting ad user tests: %s",
@@ -182,7 +184,41 @@ class HostTestEvaluator(TestEvaluatorBase):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
 
-  
+    def get_other_credentialed_tests(self): 
+        tests = {}
+        if not self.is_dc():
+            logger.debug("%s is not DC", self.hostobject.ip)
+            return tests
+        
+        for creds in self.get_known_credentials():
+            for d in self.get_known_domains(): # Not limiting to current host domain in case of forest / trusts / ...
+                jobid = f"userenum.ASPrepRoastable_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "userenum.ASPrepRoastable",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 50,
+                    "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                }
+                jobid = f"userenum.GetSPNs_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "userenum.GetSPNs",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 50,
+                    "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                }
+                jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "userenum.NetExecRIDBrute",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 150,
+                    "args": { "user": creds[0], "password": creds[1]},
+                }
+
+        return tests
+    
     
     def get_ad_users_tests(self):
         """Create AD Users Discovery jobs

@@ -6,7 +6,6 @@ import re
 
 class NetExecUserEnum(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
-    # TODO Export userlist
     def run(self):
         if not is_ip(self.target):
             raise ValueError("Target should be an IP: %s", self.target)
@@ -40,7 +39,7 @@ class NetExecUserEnum(UserEnumModuleBase):
             if self.args["action"] == "users":
                 self.parse_users_output(self.output)
             elif self.args["action"] == "groups":
-                self.parse_users_output(self.output)
+                self.parse_groups_output(self.output)
         #
 
     def parse_users_output(self, output):
@@ -80,7 +79,8 @@ class NetExecUserEnum(UserEnumModuleBase):
                 if not line:
                     continue
                 parts = line.split(" ")
-                groups.append(parts[4])
+                group = " ".join(parts[4:-2]) # ['SMB', '172.16.230.10', '445', 'DC01', 'Enterprise', 'Key', 'Admins', 'membercount:', '0']
+                groups.append(group)
             except Exception as e:
                 logger.error("Error processing line %s: %s", line, e, exc_info=True)
                 
