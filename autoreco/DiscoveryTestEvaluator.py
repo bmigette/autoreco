@@ -150,7 +150,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                         "module_name": "discovery.NetExecDiscovery",
                         "job_id": jobid,
                         "target": self.subnet,
-                        "priority": 10,
+                        "priority": 50,
                         "args": {"protocol": p, "user": creds[0], "password": creds[1], "action": action},
                     }
                     tests[jobid] = job
