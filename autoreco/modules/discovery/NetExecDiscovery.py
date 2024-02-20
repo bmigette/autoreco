@@ -1,6 +1,7 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_netexec_hostline
+from ...utils import is_ntlm_hash
 
 import re
 
@@ -14,7 +15,23 @@ class NetExecDiscovery(ModuleInterface):
             protocol = self.args["protocol"]
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
-        self.command = f"netexec {protocol} {self.target} --log {logfile}"
+        
+        credstr = ""
+        action = ""
+        if "user" in self.args:
+            user = "'" + self.args["user"] + "'"        
+            pflag = "-p"
+            self.args["pmode"] = "pw" # For the filename
+            passw = "'" + self.args["password"] + "'"
+            if is_ntlm_hash(self.args["password"]):
+                pflag = "-H"
+                self.args["pmode"] = "H"
+            credstr = f"-u {user} {pflag} {passw}"
+                
+        if "action" in self.args and self.args["action"]:
+            action = "--" + self.args["action"]
+            
+        self.command = f"netexec {protocol} {self.target} {credstr} {action} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output()
 

@@ -2,7 +2,7 @@ from .logger import logger
 from .TestHost import TestHost
 from .State import State
 from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS
-from .config import CREDENTIALS_FILE, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS, HTTP_IGNORE_PORTS
+from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS, HTTP_IGNORE_PORTS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -583,18 +583,18 @@ class HostTestEvaluator(TestEvaluatorBase):
             "job_id": jobid,
             "target": self.hostobject.ip,
             "priority": 100,
-            "args": {"protocol": "tcp", "ports": "--top-ports 150"},
+            "args": {"protocol": "tcp", "ports": NMAP_DEFAULT_TCP_QUICK_PORT_OPTION},
         }
-
-        for proto in ["tcp", "udp"]:
-            jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
-            tests[jobid] = {
-                "module_name": "hostscan.NmapHostScan",
-                "job_id": jobid,
-                "target": self.hostobject.ip,
-                "priority": 150,
-                "args": {"protocol": proto, "script": "default,vuln"},
-            }
+        if not State.State().RUNTIME["nmap_quick"]:
+            for proto in ["tcp", "udp"]:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 150,
+                    "args": {"protocol": proto, "script": "default,vuln"},
+                }
 
         if (
             "microsoft-ds" in self.hostobject.services

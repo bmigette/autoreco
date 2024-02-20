@@ -94,9 +94,17 @@ def main():
         default=autoreco.config.RUN_SCANS,
     )
         
+    parser.add_argument(
+        "-nq",
+        "--nmap-quick",
+        help="Run Only Quick NMAP Scan for discovery",
+        default=False,
+        action="store_true"
+    )
     args = parser.parse_args()
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")
+    
     
     testresume = False
     
@@ -125,6 +133,8 @@ def main():
     autoreco.config.TEST_FILTERS = args.test_filter
     autoreco.config.MAX_LIST_SIZE = args.max_list_size
     autoreco.config.RUN_SCANS = args.run_scans
+    
+    autoreco.State.State().RUNTIME["nmap_quick"] = args.nmap_quick
 
     if args.credentials and not os.path.exists(args.credentials):
         raise Exception(f"File doesn't exist: {args.credentials}")

@@ -39,7 +39,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "file" in RUN_SCANS:
             try:
                 pass
-                #tests = self._safe_merge(tests, self.get_file_tests())
+                tests = self._safe_merge(tests, self.get_file_tests())
             except Exception as e:
                 logger.error("Error when getting Discovery file tests: %s",
                              e, exc_info=True)
@@ -134,3 +134,25 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                         "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
                     }
         return tests
+    
+    def get_file_tests(self):
+        tests = {}
+        target = self.subnet
+        targetstr = self.subnet_str
+        if not target:
+            target = " ".join(self.get_known_hosts()) #TODO Test
+            targetstr = "hosts" + str(len(self.get_known_hosts()))
+        for action in ["shares"]:
+            for p in ["smb"]: #  only SMB works for this
+                for creds in self.get_known_credentials():
+                    jobid = f"discovery.NetExecDiscovery_{targetstr}_{p}_{action}_{self._get_creds_job_id(creds)}"
+                    job = {
+                        "module_name": "discovery.NetExecDiscovery",
+                        "job_id": jobid,
+                        "target": self.subnet,
+                        "priority": 10,
+                        "args": {"protocol": p, "user": creds[0], "password": creds[1], "action": action},
+                    }
+                    tests[jobid] = job
+        return tests
+    
