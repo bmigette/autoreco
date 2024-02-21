@@ -3,7 +3,7 @@ import threading
 import os
 from datetime import datetime
 import json
-from .utils import is_ip
+
 """
 State module. The variables below are global to the scope of the script
 """
@@ -77,6 +77,7 @@ class State(metaclass=SingletonMeta):
         """Write known IPs to the disk. 
         This will write everytime a test is complete because of callback. Not optimized but should work
         """
+        from .utils import is_ip
         with self._iplock:
             state = self.TEST_STATE.copy()
             ips = [k for k, _ in state.items() if is_ip(k)]
