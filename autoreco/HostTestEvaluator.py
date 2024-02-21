@@ -594,7 +594,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "priority": 100,
             "args": {"protocol": "tcp", "ports": NMAP_DEFAULT_TCP_QUICK_PORT_OPTION},
         }
-        if not State.State().RUNTIME["nmap_quick"]:
+        if not State().RUNTIME["nmap_quick"]:
             for proto in ["tcp", "udp"]:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
                 tests[jobid] = {
