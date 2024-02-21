@@ -216,6 +216,15 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": 150,
                     "args": { "user": creds[0], "password": creds[1]},
                 }
+                
+                jobid = f"hostscan.RPCDump_{self.hostobject.ip}_rpcdump_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.RPCDump",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 50,
+                    "args": { "user": creds[0], "password": creds[1]},
+                }
 
         return tests
     

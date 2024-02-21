@@ -10,7 +10,7 @@ from ...config import (
     USE_SYSTEM_RESOLVER,
 )
 from ...TestHost import TestHost
-from ...utils import resolve_domain, get_state_subnets, is_ip_state_subnets, get_state_dns_servers
+from ...utils import resolve_domain, get_state_subnets, is_ip_state_subnets, parse_nmap_ports, get_state_dns_servers
 
 
 class NmapHostScan(ModuleInterface):
@@ -25,13 +25,13 @@ class NmapHostScan(ModuleInterface):
             args = NMAP_UDP_HOSTSCAN_OPTIONS
             protocol = "-sU"
             if "ports" in self.args:
-                ports = self._parse_ports(self.args["ports"])
+                ports = self.parse_nmap_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_UDP_PORT_OPTION
         else:
             args = NMAP_TCP_HOSTSCAN_OPTIONS
             if "ports" in self.args:
-                ports = self._parse_ports(self.args["ports"])
+                ports = self.parse_nmap_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
         scripts = ""
@@ -58,23 +58,7 @@ class NmapHostScan(ModuleInterface):
             f.write(str(xml))
         self.update_state()
 
-    def _parse_ports(self, ports):
-        """Parse Ports arguments
 
-        Args:
-            ports (any): ports, either an int list, or nmap arg format
-
-        Returns:
-            str: nmap ports args
-        """
-        if isinstance(ports, list):
-            return "-p " + ",".join(map(str, self.args["ports"]))
-        else:
-            ports = str(ports)
-            if "--" in ports or "-p" in ports:
-                return ports
-            else:
-                return "-p " + ports
 
     def update_state(self):
         """Update state after nmap scan

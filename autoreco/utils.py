@@ -12,6 +12,26 @@ def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
     else:
         return thestr
 
+
+def parse_nmap_ports( ports):
+    """Parse Ports arguments
+
+    Args:
+        ports (any): ports, either an int list, or nmap arg format
+
+    Returns:
+        str: nmap ports args
+    """
+    if isinstance(ports, list):
+        return "-p " + ",".join(map(str, ports))
+    else:
+        ports = str(ports)
+        if "--" in ports or "-p" in ports:
+            return ports
+        else:
+            return "-p " + ports
+        
+            
 def print_summary():
     total_tests = 0
     total_hosts = 0

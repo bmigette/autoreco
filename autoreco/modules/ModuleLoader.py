@@ -1,5 +1,5 @@
 from .testModule import testModule
-from .discovery.NmapSubnetPing import NmapSubnetPing
+from .discovery.NmapSubnetDiscovery import NmapSubnetDiscovery
 from .discovery.NetExecDiscovery import NetExecDiscovery
 from .hostscan.Snaffler import Snaffler
 from .hostscan.SearchSploit import SearchSploit
@@ -9,6 +9,7 @@ from .hostscan.GoBuster import GoBuster
 from .hostscan.FFUF import FFUF
 from .hostscan.OneSixtyOneHostScan import OneSixtyOneHostScan
 from .hostscan.NetExecHostScan import NetExecHostScan
+from .hostscan.RPCDump import RPCDump
 from .userenum.Kerbrute import Kerbrute
 from .userenum.NetExecRIDBrute import NetExecRIDBrute
 from .userenum.NetExecUserEnum import NetExecUserEnum
@@ -21,7 +22,7 @@ class ModuleLoader(object):
     def get_modules():
         return {
             "testModule": testModule,
-            "discovery.NmapSubnetPing": NmapSubnetPing,
+            "discovery.NmapSubnetDiscovery": NmapSubnetDiscovery,
             "discovery.NetExecDiscovery": NetExecDiscovery,
             "hostscan.Snaffler": Snaffler,
             "hostscan.SearchSploit": SearchSploit,
@@ -31,6 +32,7 @@ class ModuleLoader(object):
             "hostscan.NetExecHostScan": NetExecHostScan,
             "hostscan.FFUF": FFUF,
             "hostscan.OneSixtyOneHostScan": OneSixtyOneHostScan,
+            "hostscan.RPCDump": RPCDump,            
             "userenum.Kerbrute": Kerbrute,
             "userenum.NetExecRIDBrute": NetExecRIDBrute,
             "userenum.NetExecUserEnum": NetExecUserEnum,

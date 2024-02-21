@@ -76,6 +76,12 @@ class TestRunner(object):
             logger.error("Exception in Complete Callback (Discovery): %s",
                          e, exc_info=True)
         try:
+            State().write_host_ips_to_disk()
+        except Exception as e:
+            logger.error("Exception in write_host_ips_to_disk: %s",
+                         e, exc_info=True)
+            
+        try:
             state = State().TEST_STATE.copy()
             for k, v in state.items():
                 if k == "discovery":

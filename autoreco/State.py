@@ -3,6 +3,7 @@ import threading
 import os
 from datetime import datetime
 import json
+from .utils import is_ip
 """
 State module. The variables below are global to the scope of the script
 """
@@ -48,6 +49,7 @@ class State(metaclass=SingletonMeta):
         self._statelock = threading.Lock()
         self._domainlock = threading.Lock()
         self._runtimelock = threading.Lock()
+        self._iplock = threading.Lock()
         self._TEST_STATE = {}
         self._KNOWN_DOMAINS = []
         self._RUNTIME = {}
@@ -70,7 +72,17 @@ class State(metaclass=SingletonMeta):
             self.TEST_WORKING_DIR = dir
             self.WORKING_DIR = os.path.abspath(os.path.join(self.TEST_WORKING_DIR, os.pardir))
             self.TEST_DATE_STR = self.TEST_WORKING_DIR.split("autoreco_")[1].replace("/", "")      
-              
+    
+    def write_host_ips_to_disk(self):
+        """Write known IPs to the disk. 
+        This will write everytime a test is complete because of callback. Not optimized but should work
+        """
+        with self._iplock:
+            state = self.TEST_STATE.copy()
+            ips = [k for k, _ in state.items() if is_ip(k)]
+            with open(os.path.join(self.TEST_WORKING_DIR, "ips.txt"), "w") as f:
+                f.write(os.linesep.join(ips))
+    
     @property
     def TEST_STATE(self):
         with self._statelock:

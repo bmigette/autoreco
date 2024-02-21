@@ -1,7 +1,7 @@
 from .logger import logger
 
 from .utils import get_state_dns_servers
-from .config import CREDENTIALS_FILE, RUN_SCANS, NETEXEC_DISCOVERY_PROTOCOLS, NETEXEC_USERENUM_PROTOCOLS
+from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, NETEXEC_DISCOVERY_PROTOCOLS, NETEXEC_USERENUM_PROTOCOLS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -64,13 +64,23 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
             return tests
         
         global NETEXEC_DISCOVERY_PROTOCOLS
-        jobid = f"discovery.NmapSubnetPing_{self.subnet_str}"
+        jobid = f"discovery.NmapSubnetDiscovery_{self.subnet_str}"
         job = {
-            "module_name": "discovery.NmapSubnetPing",
+            "module_name": "discovery.NmapSubnetDiscovery",
             "job_id": jobid,
             "target": self.subnet,
             "priority": 10,
             "args": {},
+        }
+        tests[jobid] = job
+        
+        jobid = f"discovery.NmapSubnetDiscoveryQuickScan_{self.subnet_str}"
+        job = {
+            "module_name": "discovery.NmapSubnetDiscovery",
+            "job_id": jobid,
+            "target": self.subnet,
+            "priority": 100,
+            "args": {"ports": NMAP_DEFAULT_TCP_QUICK_PORT_OPTION},
         }
         tests[jobid] = job
 
