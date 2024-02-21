@@ -25,13 +25,13 @@ class NmapHostScan(ModuleInterface):
             args = NMAP_UDP_HOSTSCAN_OPTIONS
             protocol = "-sU"
             if "ports" in self.args:
-                ports = self.parse_nmap_ports(self.args["ports"])
+                ports = parse_nmap_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_UDP_PORT_OPTION
         else:
             args = NMAP_TCP_HOSTSCAN_OPTIONS
             if "ports" in self.args:
-                ports = self.parse_nmap_ports(self.args["ports"])
+                ports = parse_nmap_ports(self.args["ports"])
             else:
                 ports = NMAP_DEFAULT_TCP_PORT_OPTION
         scripts = ""
