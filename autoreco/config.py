@@ -30,6 +30,7 @@ NETEXEC_USERENUM_PROTOCOLS = ["smb", "rdp", "wmi", "winrm", "ldap"]
 NMAP_DEFAULT_TCP_PORT_OPTION = "-p-"
 NMAP_DEFAULT_UDP_PORT_OPTION = "--top-ports 150"
 NMAP_DEFAULT_TCP_QUICK_PORT_OPTION = "--top-ports 200"
+NMAP_DEFAULT_TCP_SUBNET_PORT_OPTION = "--top-ports 50"
 NMAP_SPEED = 4
 NMAP_MAX_HOST_TIME = (
     20  # Max time per host for NMAP (in minutes), see https://nmap.org/book/man-performance.html

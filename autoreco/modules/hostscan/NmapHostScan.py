@@ -44,14 +44,13 @@ class NmapHostScan(ModuleInterface):
             self.target, None, nmargs, sudo=True, timeout=(NMAP_MAX_HOST_TIME+1)*60)
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
-        if type(xml).__name__ == "bytes":
-            xml = xml.decode("utf-8")
+        xml = xml.decode()
         # Bit ugly but ...
-        xml = xml.replace('\n', "\n")
-        if xml[0] == "'":
-            xml = xml[1:]
-        if xml[-1] == "'":
-            xml = xml[:-1]
+        # xml = xml.replace('\n', "\n")
+        # if xml[0] == "'":
+        #     xml = xml[1:]
+        # if xml[-1] == "'":
+        #     xml = xml[:-1]
 
         logger.debug("XML Output: \n %s", xml)
         with open(self.get_log_name("xml"), "w") as f:

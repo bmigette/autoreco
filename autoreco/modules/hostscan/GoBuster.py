@@ -5,6 +5,8 @@ from ..common.parsers import parse_gobuster_progress
 from ...TestHost import TestHost
 from ...utils import is_ip_state_subnets, is_ip, get_state_subnets
 
+import os
+
 class GoBuster(ModuleInterface):
     """Class to run GoBuster against a single host"""
 
@@ -52,6 +54,9 @@ class GoBuster(ModuleInterface):
         """
         #TODO Need Testing
         logger.debug("Parsing GoBuster DNS Result file %s", outputfile)
+        if not os.path.exists(outputfile):
+            logger.debug("Skipping non existing file %s", outputfile)
+            return
         with open(outputfile, "r") as f:
             lines = f.readlines()
         state_subnets = get_state_subnets()

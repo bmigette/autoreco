@@ -30,33 +30,17 @@ runner = TestRunner()
 WorkThreader.start_threads(None)
 # runner = TestRunner("192.168.230.0/24")
 # runner.run()
-job = {"job_id": "userenum.NetExecRIDBrute_172.16.230.10_ridbrute_joe_b43194e1fddd43dcab8b627e298aef89",
-       "state": "done",
-       "module_name": "userenum.NetExecRIDBrute",
-       "target": "172.16.230.10",
-       "args": {
-           "user": "joe",
-           "password": "Flowers1"
-       },
-       "priority": 150
-       }
+job = {
+    "module_name": "discovery.NmapSubnetDiscovery",
+    "job_id": "discovery.NmapSubnetDiscoveryQuickScan_192.168.188.0_24",
+    "target": "192.168.188.189 192.168.188.18",
+    "priority": 100,
+    "args": {
+        "ports": "--top-ports 50"
+    }
+}
 WorkThreader.add_job(job)
 
-job = {"job_id": "userenum.NetExecUserEnum_172.16.230.10_netexec_smb_groups_joe_b43194e1fddd43dcab8b627e298aef89",
-       "state": "done",
-       "module_name": "userenum.NetExecUserEnum",
-       "target": "172.16.230.10",
-       "args": {
-           "action": "groups",
-           "protocol": "smb",
-                       "user": "joe",
-           "password": "Flowers1",
-           "pmode": "pw",
-                    "target": "172.16.230.10"
-       },
-       "priority": 100
-       }
-WorkThreader.add_job(job)
 
 # w = "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
 # job = {

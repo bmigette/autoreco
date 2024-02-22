@@ -23,6 +23,7 @@ class TestRunner(object):
             sig (_type_): _description_
             frame (_type_): _description_
         """
+        logger.info("CTRL+C Catched, Stopping threads...")
         WorkThreader.stop_threads()
 
     def __init__(self, subnet=None, domains=[], hosts=[]):
@@ -116,6 +117,7 @@ class TestRunner(object):
                          e, exc_info=True)
         finally:
             if WorkThreader.finished():
+                logger.info("Test Runner complete, stopping threads")
                 WorkThreader.stop_threads()
                 self.finish()
 
@@ -201,6 +203,7 @@ class TestRunner(object):
 
         except Exception as e:
             logger.error("Error in Test Runner: %s", e, exc_info=True)
+            logger.info("Stopping threads due to error...")
             WorkThreader.stop_threads()
 
     def move_empty_log_files(self):

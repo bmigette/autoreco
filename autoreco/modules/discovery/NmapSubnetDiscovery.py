@@ -19,14 +19,22 @@ class NmapSubnetDiscovery(ModuleInterface):
 
         logger.debug("Finished nmap with command line %s", nm.command_line())
         xml = nm.get_nmap_last_output()
+        xml = xml.decode()
         logger.debug("XML Output: %s", xml)
         with open(self.get_log_name("xml"), "w") as f:
             f.write(str(xml))
         self.update_state()
 
     def update_state(self):
-        for ip, data in self.lastreturn["scan"].items():
-            if "hostnames" in data and len(data["hostnames"]) > 0:
-                h = self.get_host_obj(ip)
-                for hostname in data["hostnames"]:
-                    h.add_hostname(hostname["name"])
+        if "ports" in self.args: # Port scan will show all ips even if no port up (ie host doesn't exists)
+            for ip, data in self.lastreturn["scan"].items():
+                if "tcp" in data and len(data["tcp"]) > 0:
+                    h = self.get_host_obj(ip)
+                    for hostname in data["hostnames"]:
+                        h.add_hostname(hostname["name"])
+        else:
+            for ip, data in self.lastreturn["scan"].items():
+                if "hostnames" in data and len(data["hostnames"]) > 0:
+                    h = self.get_host_obj(ip)
+                    for hostname in data["hostnames"]:
+                        h.add_hostname(hostname["name"])

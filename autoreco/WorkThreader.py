@@ -311,6 +311,7 @@ class WorkThreader:
         
     def stop_if_finish():
         if WorkThreader.finished():
+            logger.info("stop_if_finish: jobs finished, quitting")
             WorkThreader.stop_threads()
 
     def finished() -> bool:
