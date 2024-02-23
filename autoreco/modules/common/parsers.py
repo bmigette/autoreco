@@ -62,3 +62,11 @@ def parse_ffuf_progress(lines):
             return line.split("Progress:")[1].split("::")[0].strip()
     return None
 
+
+def parse_feroxuster_progress(lines): # doesn't work
+    # "[>-------------------] - 1s      4512/573367  3m      found:63      errors:0"
+    for line in lines.split("\n"):        
+        if '>' in line and '#' in line:
+            line = re.sub("\s\s*", " ", line.strip())
+            return line.split(" ")[3].strip()
+    return None

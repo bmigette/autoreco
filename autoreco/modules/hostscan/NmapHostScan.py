@@ -216,13 +216,15 @@ class NmapHostScan(ModuleInterface):
                 except Exception as e:
                     logger.error("Error when parsing SSL Output: %s", e, exc_info=True)
 
-            hostobject.add_service(data["name"])
-            hostobject.add_tcp_port(port)
-            hostobject.add_tcp_service_port(data["name"], port)
-            if data["product"]:
-                hostobject.add_service_versions(
-                    data["name"], port, data["product"], data["version"]
-                )
+            
+            hostobject.add_tcp_port(port)            
+            if data["name"]:
+                hostobject.add_service(data["name"])
+                hostobject.add_tcp_service_port(data["name"], port)
+                if data["product"]:
+                    hostobject.add_service_versions(
+                        data["name"], port, data["product"], data["version"]
+                    )
 
     def _update_udp_state(self, root, hostobject: TestHost):
         """Update State with info from UDP scan
@@ -234,10 +236,11 @@ class NmapHostScan(ModuleInterface):
         for port, data in root["udp"].items():
             if "open" not in data["state"] or not data["name"]:
                 continue
-            hostobject.add_service(data["name"])
             hostobject.add_udp_port(port)
-            hostobject.add_udp_service_port(data["name"], port)
-            if data["product"]:
-                hostobject.add_service_versions(
-                    data["name"], port, data["product"], data["version"]
-                )
+            if data["name"]:
+                hostobject.add_service(data["name"])
+                hostobject.add_udp_service_port(data["name"], port)
+                if data["product"]:
+                    hostobject.add_service_versions(
+                        data["name"], port, data["product"], data["version"]
+                    )

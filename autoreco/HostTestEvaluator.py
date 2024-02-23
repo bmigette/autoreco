@@ -2,7 +2,8 @@ from .logger import logger
 from .TestHost import TestHost
 from .State import State
 from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS
-from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, NETEXEC_USERENUM_PROTOCOLS, HTTP_IGNORE_PORTS
+from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, FEROXBUSTER_WORDLISTS
+from .config import HTTP_IGNORE_PORTS, FEROXBUSTER_EXTLISTS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -73,6 +74,8 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_scan_web_tests())
+                tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
+                
             except Exception as e:
                 logger.error("Error when getting scan web tests: %s",
                              e, exc_info=True)
@@ -516,6 +519,52 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         return tests
 
+    def get_scan_web_tests_ferox(self):
+        """Create FeroxBuster jobs
+
+        Returns:
+            dict: jobs
+        """
+        global FEROXBUSTER_WORDLISTS, FEROXBUSTER_EXTLISTS
+        tests = {}
+        for s in ["http", "https"]:
+            # Running tests against IP            
+            for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
+                for w in FEROXBUSTER_WORDLISTS:
+                    for wext in FEROXBUSTER_EXTLISTS:
+                        file = Path(w).stem
+                        jobid = (
+                            f"hostscan.FeroxBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
+                        )
+                        tests[jobid] = {
+                            "module_name": "hostscan.FeroxBuster",
+                            "job_id": jobid,
+                            "target": self.hostobject.ip,
+                            "priority": self.get_list_priority(w),
+                            "args": {
+                                "url": f"{s}://{self.hostobject.ip}:{p}",
+                                "wordlist": w,
+                                "extwordlist": wext,
+                            },
+                        }
+
+                        for h in self.hostobject.get_hostnames_and_domain():
+
+                            jobid = f"hostscan.FeroxBusterdir_{h}_{s}_{p}_{file}"
+                            tests[jobid] = {
+                                "module_name": "hostscan.FeroxBuster",
+                                "job_id": jobid,
+                                "target": self.hostobject.ip,
+                                "priority": self.get_list_priority(w),
+                                "args": {
+                                    "url": f"{s}://{self.hostobject.ip}:{p}",
+                                    "host": h,
+                                    "wordlist": w,
+                                    "extwordlist": wext,
+                                },
+                            }
+        return tests
+                        
     def get_scan_web_tests(self):
         """Create GoBuster jobs
 
@@ -594,7 +643,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "priority": 100,
             "args": {"protocol": "tcp", "ports": NMAP_DEFAULT_TCP_QUICK_PORT_OPTION},
         }
-        if not State().RUNTIME["nmap_quick"]:
+        if "nmap_quick" in State().RUNTIME and not State().RUNTIME["nmap_quick"]:
             for proto in ["tcp", "udp"]:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_{proto}"
                 tests[jobid] = {

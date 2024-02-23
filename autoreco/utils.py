@@ -117,7 +117,7 @@ def get_state_subnets():
     subnets = []
     state = State().TEST_STATE.copy()
     for k, v in state.items():
-        if k == "discovery":
+        if k == "discovery" and "tests_state" in v:
             for testname, testdata in v["tests_state"].items():
                 if "target" not in testdata:
                     logger.error("No target in %s / %s", testname, testdata)

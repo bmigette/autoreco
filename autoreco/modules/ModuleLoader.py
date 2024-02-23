@@ -6,6 +6,7 @@ from .hostscan.SearchSploit import SearchSploit
 from .hostscan.NmapHostScan import NmapHostScan
 from .hostscan.Enum4Linux import Enum4Linux
 from .hostscan.GoBuster import GoBuster
+from .hostscan.FeroxBuster import FeroxBuster
 from .hostscan.FFUF import FFUF
 from .hostscan.OneSixtyOneHostScan import OneSixtyOneHostScan
 from .hostscan.NetExecHostScan import NetExecHostScan
@@ -29,6 +30,7 @@ class ModuleLoader(object):
             "hostscan.NmapHostScan": NmapHostScan,
             "hostscan.Enum4Linux": Enum4Linux,
             "hostscan.GoBuster": GoBuster,
+            "hostscan.FeroxBuster": FeroxBuster,            
             "hostscan.NetExecHostScan": NetExecHostScan,
             "hostscan.FFUF": FFUF,
             "hostscan.OneSixtyOneHostScan": OneSixtyOneHostScan,

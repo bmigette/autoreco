@@ -30,30 +30,34 @@ runner = TestRunner()
 WorkThreader.start_threads(None)
 # runner = TestRunner("192.168.230.0/24")
 # runner.run()
+# job = {
+#     "module_name": "discovery.NmapSubnetDiscovery",
+#     "job_id": "discovery.NmapSubnetDiscoveryQuickScan_192.168.188.0_24",
+#     "target": "192.168.188.189 192.168.188.18",
+#     "priority": 100,
+#     "args": {
+#         "ports": "--top-ports 50"
+#     }
+# }
+# WorkThreader.add_job(job)
+
+
+w = "/usr/share/seclists/Discovery/Web-Content/big.txt"
+w2 = "/usr/share/wordlists/dirb/extensions_common.txt"
+
 job = {
-    "module_name": "discovery.NmapSubnetDiscovery",
-    "job_id": "discovery.NmapSubnetDiscoveryQuickScan_192.168.188.0_24",
-    "target": "192.168.188.189 192.168.188.18",
-    "priority": 100,
-    "args": {
-        "ports": "--top-ports 50"
-    }
+        "module_name": "hostscan.FeroxBuster",
+        "job_id": "FeroxBuster",
+        "target": "192.168.188.245",
+        "priority": 100,
+        "args": {
+            "url": f"http://192.168.188.245:80",
+            "mode": "dir",
+            "wordlist": w,
+            "extwordlist": w2,
+        }
 }
 WorkThreader.add_job(job)
-
-
-# w = "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt"
-# job = {
-#         "module_name": "hostscan.GoBuster",
-#         "job_id": "testGoBuster",
-#         "target": "192.168.229.213",
-#         "args": {
-#             "url": f"http://192.168.229.213:20000",
-#             "mode": "dir",
-#             "wordlist": w,
-#         }
-# }
-#  WorkThreader.add_job(job)
 
 # WorkThreader.start_threads(None)
 

@@ -103,3 +103,7 @@ USE_SYSTEM_RESOLVER = False
 
 # SNAFFLER
 # PYSNAFFLER_CMD = "python3  /opt/snafflepy/snaffler.py"
+
+# FEROXBUSTER
+FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt"]
+FEROXBUSTER_EXTLISTS = ["/usr/share/wordlists/dirb/extensions_common.txt"]
