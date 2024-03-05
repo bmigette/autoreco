@@ -36,8 +36,9 @@ class NetExecUserEnum(UserEnumModuleBase):
         self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} --log {logfile}"
         if protocol == "ldap": 
             # See https://github.com/Pennyw0rth/NetExec/issues/184
+            # TODO REMOVE FIREJAIL when this is pushed to a release: https://github.com/Pennyw0rth/NetExec/commit/2790236622eea56fb221833894ca765dc7e7a700
             dnssrv = get_state_dns_servers()[0]
-            self.command = f"firejail --dns {dnssrv} {self.command}" 
+            self.command = f"firejail --dns={dnssrv} {self.command}" 
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         if "action" in self.args:
             if self.args["action"] == "users":

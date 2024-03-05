@@ -59,11 +59,13 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
         #"/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
+        "/usr/share/wordlists/seclists/Discovery/DNS/combined_subdomains.txt"
     ],
     "dns": [        
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt", 
         #"/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
+        "/usr/share/wordlists/seclists/Discovery/DNS/combined_subdomains.txt"
     ],
     "files": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-files.txt",
@@ -106,4 +108,5 @@ USE_SYSTEM_RESOLVER = False
 
 # FEROXBUSTER
 FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt"]
-FEROXBUSTER_EXTLISTS = ["/usr/share/wordlists/dirb/extensions_common.txt"]
+FEROXBUSTER_EXTLISTS = ["/usr/share/wordlists/dirb/extensions_common_ferox.txt"]
+FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,500"

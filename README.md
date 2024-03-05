@@ -30,9 +30,13 @@ Tools that needs to be installed (and in system PATH):
 - nmap
 - enum4linux-ng
 - kerbrute
+- feroxbuster
 
 Additional Tools
+ 
 - Firejail [[https://github.com/netblue30/firejail]]: (Needed to force DNS Server for some tools, netexec in ldap mode for example)
+
+TODO: Remove when this is released https://github.com/Pennyw0rth/NetExec/commit/2790236622eea56fb221833894ca765dc7e7a700
 
 # Installation
 ```

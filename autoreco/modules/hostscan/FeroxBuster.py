@@ -2,7 +2,7 @@ from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_feroxuster_progress
 from ...TestHost import TestHost
-from ...config import DEFAULT_PROCESS_TIMEOUT
+from ...config import DEFAULT_PROCESS_TIMEOUT, FEROXBUSTER_STATUS
 
 import os
 
@@ -21,7 +21,7 @@ class FeroxBuster(ModuleInterface):
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"
         
-        cmd = f"feroxbuster --url {url} -w {w} -E -x {wext} --insecure {host} -o {outputfile}"
+        cmd = f"feroxbuster --url {url} -s {FEROXBUSTER_STATUS} -w {w} -E -x {wext} --insecure {host} -o {outputfile}"
         logger.debug("Executing FeroxBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*2) #progresscb=parse_feroxuster_progress) 
         

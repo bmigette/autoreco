@@ -11,6 +11,7 @@ import re
 import os
 import hashlib
 
+# TODO Replace this with profiles in /etc/autoreco
 
 class HostTestEvaluator(TestEvaluatorBase):
     """
