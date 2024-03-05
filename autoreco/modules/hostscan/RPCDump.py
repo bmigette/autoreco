@@ -11,6 +11,6 @@ class RPCDump(ModuleInterface):
         logfile = self.get_log_name("")
         user, passw = self.args["user"], self.args["password"]
         if is_ntlm_hash(passw):
-            self.get_system_cmd_outptut(f"rpcdump.py {user}:'{passw}@{self.target}", logoutput=logfile+".log",  logcmdline=logfile+".cmd")
+            self.get_system_cmd_outptut(f"rpcdump.py {user}:'{passw}'@{self.target}", logoutput=logfile+".log",  logcmdline=logfile+".cmd")
         else:
             self.get_system_cmd_outptut(f"rpcdump.py -hashes 00000000000000000000000000000000:{passw} {user}@{self.target}", logoutput=logfile+".log",  logcmdline=logfile+".cmd")

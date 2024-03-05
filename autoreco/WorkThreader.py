@@ -245,8 +245,9 @@ class _WorkThread:
 
             except Exception as e:
                 logger.error(
-                    "Error happened in Worker Consumer Thread %s: %s",
+                    "Error happened in Worker Consumer Thread %s with data:\n%s\n: %s",
                     self.thread_id,
+                    job.data,
                     e,
                     exc_info=True,
                 )

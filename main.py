@@ -28,9 +28,9 @@ def main():
     )
     parser.add_argument("-sn", "--subnet", help="Subnet to scan", default=None)
     parser.add_argument(
-        "-dn", "--domain", help="DNS Domains to scan", default=[], nargs="*"
+        "-dn", "--domain", help="DNS Domains to scan", default=[], action='append'
     )
-    parser.add_argument("--host", help="Hosts to scan", default=[], nargs="*")
+    parser.add_argument("--host", help="Hosts to scan", default=[], action='append')
     parser.add_argument(
         "-t", "--threads", help="Number of threads", default=autoreco.config.NUM_THREADS
     )
@@ -46,7 +46,7 @@ def main():
         "--test-filter",
         help="Executes only tests that matches filters, example: *nmap*. fnmatch Format",
         default=[],
-        nargs="*",
+        action='append',
     )
     parser.add_argument(
         "-ns",
