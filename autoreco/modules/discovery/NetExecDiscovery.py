@@ -38,7 +38,7 @@ class NetExecDiscovery(ModuleInterface):
     def parse_output(self):
         # RPC 192.168.1.16 135 DESKTOP-78RP52H [*] Windows NT 10.0 Build 22621 (name:DESKTOP-78RP52H) (domain:DESKTOP-78RP52H)
         for line in self.output.split("\n"):
-            if "[*]" in line:
+            if "[*]" in line and "Enumerated" not in line:
                 logger.debug("Processing netexec line %s", line)
                 res = parse_netexec_hostline(line, True)
                 logger.info("netexec processed target %s", str(self.target))

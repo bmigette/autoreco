@@ -304,6 +304,9 @@ class TestHost:
         if not hostname or len(hostname) < 1:
             return
         
+        if "_msdcs" in hostname:
+            return
+        
         logger.debug("Adding hostname %s for host %s", hostname, self.ip)
         with State().statelock:
             if "hostnames" not in State().TEST_STATE[self.ip]:

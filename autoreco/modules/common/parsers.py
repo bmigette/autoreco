@@ -46,7 +46,7 @@ def parse_netexec_hostline(line, update_host = False):
             if data["hostname"] and data["hostname"].lower() != "none":
                 host_to_update.add_hostname(data["hostname"])
     except Exception as e:
-        logger.error("Could not parse netxec line %s: %s", line, e, exc_info=True)
+        logger.warn("Could not parse netxec line %s: %s", line, e, exc_info=True)
     
     return data
 
