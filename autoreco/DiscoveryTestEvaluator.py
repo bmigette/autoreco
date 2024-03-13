@@ -118,7 +118,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                         "job_id": jobid,
                         "target": target,
                         "priority": 100,
-                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest"},
+                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest", "continue-on-success": True},
                     }
         return tests
 

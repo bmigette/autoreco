@@ -86,6 +86,12 @@ class HostTestEvaluator(TestEvaluatorBase):
             except Exception as e:
                 logger.error("Error when getting web file tests: %s",
                              e, exc_info=True)
+        if "all" in RUN_SCANS or "webothers" in RUN_SCANS:
+            try:
+                tests = self._safe_merge(tests, self.get_web_other_tests())
+            except Exception as e:
+                logger.error("Error when getting web other tests: %s",
+                             e, exc_info=True)
         if "all" in RUN_SCANS or "snmp" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_snmp_tests())
@@ -400,6 +406,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
+        # TODO sudo nmap -n -Pn -sU -p69 -sV --script tftp-enum 192.168.247.222
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
@@ -472,7 +479,57 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         return tests
 
-
+    def get_web_other_tests(self):
+        tests = {}
+        for s in ["http", "https"]:
+            for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
+                jobid = f"hostscan.WhatWeb_{self.hostobject.ip}_{s}_{p}"
+                tests[jobid] = {
+                    "module_name": "hostscan.WhatWeb",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {
+                        "url": f"{s}://{self.hostobject.ip}:{p}",      
+                    },
+                }
+                jobid = f"hostscan.WKHtmlToImage_{self.hostobject.ip}_{s}_{p}"
+                tests[jobid] = {
+                    "module_name": "hostscan.WKHtmlToImage",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {
+                        "url": f"{s}://{self.hostobject.ip}:{p}",      
+                    },
+                }
+                
+                for h in self.hostobject.get_hostnames_and_domain():
+                    jobid = f"hostscan.WhatWeb_{h}_{s}_{p}"
+                    tests[jobid] = {
+                        "module_name": "hostscan.WhatWeb",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 100,
+                        "args": {
+                            "url": f"{s}://{self.hostobject.ip}:{p}",      
+                            "host": h,                    
+                        },
+                    }
+                    jobid = f"hostscan.WKHtmlToImage_{h}_{s}_{p}"
+                    tests[jobid] = {
+                        "module_name": "hostscan.WKHtmlToImage",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": 100,
+                        "args": {
+                            "url": f"{s}://{self.hostobject.ip}:{p}",      
+                            "host": h,                    
+                        },
+                    }
+        
+        return tests
+    
     def get_web_file_tests(self):
         """Create GoBuster file jobs
 
@@ -652,7 +709,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 150,
-                    "args": {"protocol": proto, "script": "default,vuln"},
+                    "args": {"protocol": proto, "script": "default,vuln,banner"},
                 }
 
         if (

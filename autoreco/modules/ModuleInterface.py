@@ -88,6 +88,7 @@ class ModuleInterface(ABC):
         return TestHost(ip)
 
     def _run_cmd_stream(self, cmd, timeout_sec, callback):
+        # Check https://github.com/Tib3rius/AutoRecon/blob/main/autorecon/io.py#L98
         # We mix stderr and stdout, because some processes like gobuster shows progress in stderr, and stdout will be silent
         proc = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1,
                      text=True, universal_newlines=True)

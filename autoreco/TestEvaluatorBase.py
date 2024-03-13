@@ -7,6 +7,8 @@ import os
 import hashlib
 from .TestHost import TestHost
 
+# TODO Screenshot tool
+# wkhtmltoimage --format png http://192.168.247.223:60001/ /home/babadmin/offsec/challenges/challenge3_skylark/autorecon/results/192.168.247.223/scans/tcp60001/tcp_60001_http_screenshot.png
 
 
 class TestEvaluatorBase(ABC):

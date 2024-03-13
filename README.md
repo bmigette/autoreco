@@ -18,6 +18,7 @@ The script uses Multiple Threads (configurable) with a PriorityQueue, allowing s
 Note: known domains can be specified manually with --domain, or learnt automatically by netexec
 
 # Requirements
+
 NMAP will be run as sudo. You user should be able to do "sudo nmap" without being prompted (add it in your sudoers file)
 ```
 userid ALL=(ALL) NOPASSWD:nmap_path
@@ -31,6 +32,7 @@ Tools that needs to be installed (and in system PATH):
 - enum4linux-ng
 - kerbrute
 - feroxbuster
+- wkhtmltoimage
 
 Additional Tools
  
@@ -110,3 +112,7 @@ You can also put a NTLM Hash as password, it will be used where supported & appl
 
 # Notes
 This is absolutely not stealth. Before scanning any system, make sure you are authorized to do it.
+
+# Known Issues
+
+Quitting with CTRL+C will throw a bunch of exceptions, but should eventually quit.

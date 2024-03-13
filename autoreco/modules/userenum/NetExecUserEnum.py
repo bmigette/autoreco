@@ -28,12 +28,16 @@ class NetExecUserEnum(UserEnumModuleBase):
                 pflag = "-H"
                 self.args["pmode"] = "H"
         
+        continue_on_success = ""
+        if "continue-on-success" in self.args and self.args["continue-on-success"]:
+            continue_on_success = "--continue-on-success"
+        
         logfile = self.get_log_name("log", folder="NetExecUserEnum")
         cmdfile =  self.get_log_name("cmd", folder="NetExecUserEnum")
         action = ""
         if "action" in self.args and self.args["action"]:
             action = "--" + self.args["action"]
-        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} --log {logfile}"
+        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} {continue_on_success} --log {logfile}"
         if protocol == "ldap": 
             # See https://github.com/Pennyw0rth/NetExec/issues/184
             # TODO REMOVE FIREJAIL when this is pushed to a release: https://github.com/Pennyw0rth/NetExec/commit/2790236622eea56fb221833894ca765dc7e7a700

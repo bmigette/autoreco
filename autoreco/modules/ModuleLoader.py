@@ -11,6 +11,8 @@ from .hostscan.FFUF import FFUF
 from .hostscan.OneSixtyOneHostScan import OneSixtyOneHostScan
 from .hostscan.NetExecHostScan import NetExecHostScan
 from .hostscan.RPCDump import RPCDump
+from .hostscan.WhatWeb import WhatWeb
+from .hostscan.WKHtmlToImage import WKHtmlToImage
 from .userenum.Kerbrute import Kerbrute
 from .userenum.NetExecRIDBrute import NetExecRIDBrute
 from .userenum.NetExecUserEnum import NetExecUserEnum
@@ -34,7 +36,9 @@ class ModuleLoader(object):
             "hostscan.NetExecHostScan": NetExecHostScan,
             "hostscan.FFUF": FFUF,
             "hostscan.OneSixtyOneHostScan": OneSixtyOneHostScan,
-            "hostscan.RPCDump": RPCDump,            
+            "hostscan.RPCDump": RPCDump,     
+            "hostscan.WKHtmlToImage": WKHtmlToImage,  
+            "hostscan.WhatWeb": WhatWeb,         
             "userenum.Kerbrute": Kerbrute,
             "userenum.NetExecRIDBrute": NetExecRIDBrute,
             "userenum.NetExecUserEnum": NetExecUserEnum,
