@@ -97,10 +97,16 @@ class TestEvaluatorBase(ABC):
             if k == "discovery":
                 continue
             hostobj = TestHost(k)
-            if hostobj.os_family and "windows" not in hostobj.os_family.lower():
-                continue
+            # if hostobj.os_family and "windows" not in hostobj.os_family.lower():
+            #     continue
+            # not working well
             if "kerberos-sec" in hostobj.services and "ldap" in hostobj.services:  # TODO maybe needs improvement
                 dcs.append(k)
+            else:
+                for h in hostobj.hostnames:
+                    if "dc" in h.lower():
+                        dcs.append(k)
+                        break
         logger.debug("Known DCs: %s", dcs)
         return dcs
     

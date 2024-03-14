@@ -108,5 +108,6 @@ USE_SYSTEM_RESOLVER = False
 
 # FEROXBUSTER
 FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt"]
-FEROXBUSTER_EXTLISTS = ["/usr/share/wordlists/dirb/extensions_common_ferox.txt"]
-FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,500"
+FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cfm,cgi,com,dll,exe,htm,html,inc,jhtml,jsa,jsp,log,mdb,nsf,php,phtml,pl,reg,sh,shtml,sql,txt,xml"
+FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,407,405,500,501,502,503,505" # NOT USED
+FEROXBUSTER_STATUS_EXCLUDE = "404"

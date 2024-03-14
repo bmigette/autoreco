@@ -3,7 +3,7 @@ from .TestHost import TestHost
 from .State import State
 from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS
 from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, FEROXBUSTER_WORDLISTS
-from .config import HTTP_IGNORE_PORTS, FEROXBUSTER_EXTLISTS
+from .config import HTTP_IGNORE_PORTS
 from .TestEvaluatorBase import TestEvaluatorBase
 
 from pathlib import Path
@@ -453,6 +453,17 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": 200,
                     "args": {"script": "'ldap* and not brute'", "ports": ports},
                 }
+        if "tftp" in self.hostobject.services:
+            ports = self.get_udp_services_ports(["tftp"])
+            if len(ports)>0:
+                jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_tftpscript_{ports}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NmapHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"script": "'tftp*'", "ports": ports, "protocol": "udp"},
+                }
 
         if ("nfs" in self.hostobject.services or
             "rpcbind" in self.hostobject.services
@@ -583,17 +594,30 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
-        global FEROXBUSTER_WORDLISTS, FEROXBUSTER_EXTLISTS
+        global FEROXBUSTER_WORDLISTS
         tests = {}
         for s in ["http", "https"]:
             # Running tests against IP            
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
                 for w in FEROXBUSTER_WORDLISTS:
-                    for wext in FEROXBUSTER_EXTLISTS:
-                        file = Path(w).stem
-                        jobid = (
-                            f"hostscan.FeroxBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
-                        )
+                    file = Path(w).stem
+                    jobid = (
+                        f"hostscan.FeroxBuster_dir_{self.hostobject.ip}_{s}_{p}_{file}"
+                    )
+                    tests[jobid] = {
+                        "module_name": "hostscan.FeroxBuster",
+                        "job_id": jobid,
+                        "target": self.hostobject.ip,
+                        "priority": self.get_list_priority(w),
+                        "args": {
+                            "url": f"{s}://{self.hostobject.ip}:{p}",
+                            "wordlist": w,
+                        },
+                    }
+
+                    for h in self.hostobject.get_hostnames_and_domain():
+
+                        jobid = f"hostscan.FeroxBusterdir_{h}_{s}_{p}_{file}"
                         tests[jobid] = {
                             "module_name": "hostscan.FeroxBuster",
                             "job_id": jobid,
@@ -601,26 +625,10 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "priority": self.get_list_priority(w),
                             "args": {
                                 "url": f"{s}://{self.hostobject.ip}:{p}",
+                                "host": h,
                                 "wordlist": w,
-                                "extwordlist": wext,
                             },
                         }
-
-                        for h in self.hostobject.get_hostnames_and_domain():
-
-                            jobid = f"hostscan.FeroxBusterdir_{h}_{s}_{p}_{file}"
-                            tests[jobid] = {
-                                "module_name": "hostscan.FeroxBuster",
-                                "job_id": jobid,
-                                "target": self.hostobject.ip,
-                                "priority": self.get_list_priority(w),
-                                "args": {
-                                    "url": f"{s}://{self.hostobject.ip}:{p}",
-                                    "host": h,
-                                    "wordlist": w,
-                                    "extwordlist": wext,
-                                },
-                            }
         return tests
                         
     def get_scan_web_tests(self):

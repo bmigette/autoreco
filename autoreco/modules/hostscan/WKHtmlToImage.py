@@ -11,7 +11,7 @@ class WKHtmlToImage(ModuleInterface):
         pngfile =  self.get_log_name("png")
         url = self.args["url"]
         host = ""
-        if self.args["host"]:
+        if "host" in self.args and self.args["host"]:
             host = "--custom-header Host " + self.args["host"]
         self.command = f"wkhtmltoimage --format png {host} {url} {pngfile}"
         logger.debug("Starting wkhtmltoimage with command %s", self.command)

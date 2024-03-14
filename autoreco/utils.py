@@ -1,8 +1,10 @@
+import os
 from .logger import logger
 from .State import State
 from .config import DEFAULT_MAX_OUTPUT, USE_SYSTEM_RESOLVER
 import re
 import dns.resolver
+from pathlib import Path
 
 def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
     if not isinstance(thestr, str):
@@ -179,3 +181,30 @@ def remove_ansi_escape_chars(input):
     ''', re.VERBOSE)
     result = ansi_escape_8bit.sub('', input)
     return result
+
+
+def flatten_args(argsin, argusekey=[], ignorekeys=["password", "pass"]):
+    """strip bad chars and flatten args to make unique log file names
+
+    Args:
+        argusekey (list, optional): Will use the arg key instead of values for all keys in this list. Defaults to [].
+        ignorekeys (list, optional): Ignore all keys in this list. Defaults to [].
+
+    Returns:
+        str: flattened args
+    """
+    args = []
+    for k, v in argsin.items():
+        if k.lower() in [x.lower() for x in ignorekeys]:
+            continue
+        if k in argusekey:
+            v = k+str(len(v))
+        else:
+            if isinstance(v, list):
+                v = "+".join(map(str, v))
+            v = str(v)
+            if os.path.isfile(v):
+                v = Path(v).stem
+            v.replace(",", "+")
+        args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
+    return "-".join(args)

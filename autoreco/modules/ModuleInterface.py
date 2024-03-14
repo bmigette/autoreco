@@ -10,7 +10,7 @@ import time
 from ..logger import logger
 from ..State import State
 from ..config import DEFAULT_PROCESS_TIMEOUT, DEFAULT_IDLE_TIMEOUT
-from ..utils import max_output, is_ip, remove_ansi_escape_chars
+from ..utils import max_output, is_ip, remove_ansi_escape_chars, flatten_args
 from ..TestHost import TestHost
 
 
@@ -50,6 +50,8 @@ class ModuleInterface(ABC):
         Args:
             filename (str): _description_
         """
+        if not os.path.exists(filename):
+            return
         file_stats = os.stat(filename)
         if file_stats.st_size == 0:
             filter = os.path.splitext(filename)[0]+ ".*"
@@ -323,23 +325,9 @@ class ModuleInterface(ABC):
         Returns:
             str: flattened args
         """
-        args = []
         if self.is_userenum():
             self.args["target"] = self.target
-        for k, v in self.args.items():
-            if k.lower() in [x.lower() for x in ignorekeys]:
-                continue
-            if k in argusekey:
-                v = k+str(len(v))
-            else:
-                if isinstance(v, list):
-                    v = "+".join(map(str, v))
-                v = str(v)
-                if os.path.isfile(v):
-                    v = Path(v).stem
-                v.replace(",", "+")
-            args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
-        return "-".join(args)
+        return flatten_args(self.args, argusekey, ignorekeys)
 
     def get_log_name(self, ext="out", argusekey=[], folder=None, ignorekeys=["password", "pass"]):
         """Get log file name to output from a module

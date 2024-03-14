@@ -10,7 +10,7 @@ class WhatWeb(ModuleInterface):
         jsonfile =  self.get_log_name("json")
         url = self.args["url"]
         host = ""
-        if "host" in self.args:
+        if "host" in self.args and self.args["host"]:
             host = "-H 'Host: " + self.args["host"] + "'"
         self.command = f"whatweb --color=never --no-errors -a 4 {host} --log-verbose={logfile} --log-json={jsonfile} -v {url}"
         logger.debug("Starting whatweb with command %s", self.command)

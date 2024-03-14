@@ -22,12 +22,16 @@ from autoreco.TestHost import TestHost
 
 
 # Importing here to make sure we have set config / state properly
-# autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge2_relia/autoreco_2024_02_05__13_30_58", resume=True)
-# autoreco.State.State().load_state()
+autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge3_skylark/10.10_scan/autoreco_2024_03_14__19_10_59", resume=True)
+autoreco.State.State().load_state()
 
-runner = TestRunner()
+h = TestHost("10.10.137.250")
+eval = HostTestEvaluator(h)
+eval.get_ad_dc_ips()
+
+# runner = TestRunner()
 # runner.move_empty_log_files()
-WorkThreader.start_threads(None)
+# WorkThreader.start_threads(None)
 # runner = TestRunner("192.168.230.0/24")
 # runner.run()
 # job = {
@@ -43,7 +47,6 @@ WorkThreader.start_threads(None)
 
 
 w = "/usr/share/seclists/Discovery/Web-Content/big.txt"
-w2 = "/usr/share/wordlists/dirb/extensions_common.txt"
 
 job = {
         "module_name": "hostscan.FeroxBuster",
@@ -54,10 +57,9 @@ job = {
             "url": f"http://192.168.188.245:80",
             "mode": "dir",
             "wordlist": w,
-            "extwordlist": w2,
         }
 }
-WorkThreader.add_job(job)
+# WorkThreader.add_job(job)
 
 # WorkThreader.start_threads(None)
 
