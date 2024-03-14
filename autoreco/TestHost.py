@@ -96,6 +96,7 @@ class TestHost:
 
     @domain.setter
     def domain(self, value):
+        value = value.lower()
         if not "." in value:
             logger.warn("Setting invalid domain %s to existing host %s", value, self.ip)
         if not value:
@@ -301,6 +302,7 @@ class TestHost:
         Args:
             hostname (str): hostname  example win2k12
         """
+        hostname = hostname.lower()
         if not hostname or len(hostname) < 1:
             return
         
