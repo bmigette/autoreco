@@ -31,17 +31,18 @@ class FFUF(ModuleInterface):
                 vhost = "-H 'Host: " + self.args["host"] + "'"
 
         output_log = self.get_log_name(
-            ".json", argusekey=["extensions"], folder="FFUF")
+            "", argusekey=["extensions"], folder="FFUF")
         output_log_cmd = f"-o {output_log} -of all"
 
         cmdlog = self.get_log_name(
-            ".cmd", argusekey=["extensions"], folder="FFUF")
+            ".cmd", argusekey=["extensions", "extra_args"], folder="FFUF")
         stdout_log = self.get_log_name(
-            ".log", argusekey=["extensions"], folder="FFUF")
+            ".log", argusekey=["extensions", "extra_args"], folder="FFUF")
 
         filter_arg = "-ac"
-        if "filter_arg" in self.args:
+        if "filter_arg" in self.args: # https://www.acceis.fr/ffuf-advanced-tricks/
             filter_arg = self.args["filter_arg"]
+            filter_arg = "-fr '/\..*' -mc all " + filter_arg
 
         extra_args = ""
         if "extra_args" in self.args:

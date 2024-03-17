@@ -75,7 +75,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_scan_web_tests())
-                #tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
+                tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
                 # FFUF seems more reliable
                 tests = self._safe_merge(tests, self.get_scan_web_tests_ffuf())
                 
@@ -658,7 +658,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "url": f"{s}://{self.hostobject.ip}:{p}",
                             "wordlist": w,
                             "fuzz_url": True,
-                            "extra_args" : ["-recursion-depth 4", "-recursion"],
+                            "extra_args" : ["-recursion-depth 4", "-recursion", "-r","-v", "-recursion-strategy greedy"],
                             "filter_arg": f"-fc {FFUF_STATUS_EXCLUDE}",
                             "mode": "",
                             "extensions": FFUF_EXTLIST
