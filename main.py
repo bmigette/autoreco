@@ -32,7 +32,7 @@ def main():
     )
     parser.add_argument("--host", help="Hosts to scan", default=[], action='append')
     parser.add_argument(
-        "-t", "--threads", help="Number of threads", default=autoreco.config.NUM_THREADS
+        "-t", "--threads", help="Number of threads", default=autoreco.config.NUM_THREADS, type=int
     )
     # parser.add_argument(
     #     "--dns-server", help="DNS Server", default=autoreco.config.DNS_SERVER

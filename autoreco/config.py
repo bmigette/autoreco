@@ -46,6 +46,7 @@ MAX_LIST_SIZE = None
 # GOBUSTER / FFUF Options
 
 HTTP_IGNORE_PORTS = [5985, 5986, 47001] # Ignoring MS WinRM & MS API
+HTTP_REQ_TIMEOUT_SEC = 20
 
 WEB_WORDLISTS = {
     "dir": [
@@ -70,6 +71,10 @@ WEB_WORDLISTS = {
     "files": [
         "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-files.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt"
+    ],
+    "recursive": [
+        "/usr/share/seclists/Discovery/Web-Content/big.txt",
+        "/usr/share/seclists/Discovery/Web-Content/raft-medium-words-lowercase.txt"
     ]
 }
 
@@ -84,7 +89,8 @@ GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 
 FFUF_MAX_VHOST = 50 # If more than this vhost found, ignoring, could a site responding to all vhosts
 FFUF_MAX_SAME_WORDS = 2 # Ignore results that have same number of words, if above this
-
+FFUF_EXTLIST = ".asp,.aspx,.bat,.c,.cgi,.exe,.htm,.html,.inc,.jhtml,.jsa,.jsp,.log,.php,.phtml,.pl,.reg,.sh,.shtml,.sql,.txt,.xml,.yml"
+FFUF_STATUS_EXCLUDE = "404"
 # UserEnum
 USERENUM_LISTS = [
     "/usr/share/statistically-likely-usernames/jsmith.txt",
@@ -107,7 +113,7 @@ USE_SYSTEM_RESOLVER = False
 # PYSNAFFLER_CMD = "python3  /opt/snafflepy/snaffler.py"
 
 # FEROXBUSTER
-FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt"]
-FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cfm,cgi,com,dll,exe,htm,html,inc,jhtml,jsa,jsp,log,mdb,nsf,php,phtml,pl,reg,sh,shtml,sql,txt,xml"
+FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt", "/usr/share/seclists/Discovery/Web-Content/raft-medium-words-lowercase.txt"]
+FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cgi,exe,htm,html,inc,jhtml,jsa,jsp,log,php,phtml,pl,reg,sh,shtml,sql,txt,xml,yml"
 FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,407,405,500,501,502,503,505" # NOT USED
 FEROXBUSTER_STATUS_EXCLUDE = "404"

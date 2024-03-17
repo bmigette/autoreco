@@ -1,6 +1,6 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ...config import FFUF_MAX_VHOST, FFUF_MAX_SAME_WORDS
+from ...config import FFUF_MAX_VHOST, FFUF_MAX_SAME_WORDS, HTTP_REQ_TIMEOUT_SEC
 from ..common.parsers import parse_ffuf_progress
 
 from ...TestHost import TestHost
@@ -12,30 +12,45 @@ class FFUF(ModuleInterface):
     """Class to run FFUF against a single host"""
 
     def run(self):        
-        domain = self.args["domain"]
-        url = "-u " + self.args["url"]   
+        
+        url = "-u " + self.args["url"] 
+        if "fuzz_url" in self.args:
+            url += "/FUZZ"  
         w = self.args["wordlist"]
         mode = "vhost"
         if "mode" in self.args:
             mode = self.args["mode"]
         vhost = ""
         if mode == "vhost":
+            domain = self.args["domain"]
             vhost = f"-H 'Host: FUZZ.{domain}'"
         else:
-            raise ValueError(f"Invalid FFUF mode: {mode}")
+            if "host" in self.args:
+                vhost = "-H 'Host: " + self.args["host"] + "'"
         
-        output_log = self.get_log_name(".json")
+        output_log = self.get_log_name(".json", argusekey=["extensions"])
         output_log_cmd = f"-o {output_log}" 
 
-        cmdlog = self.get_log_name(".cmd" )
-        stdout_log = self.get_log_name(".log" )
+        cmdlog = self.get_log_name(".cmd", argusekey=["extensions"] )
+        stdout_log = self.get_log_name(".log", argusekey=["extensions"] )
          
-        
-        cmd = f"ffuf -ac -noninteractive -w {w}:FUZZ {url} {vhost} {output_log_cmd}"
+        filter_arg = "-ac"
+        if "filter_arg" in self.args:
+            filter_arg = self.args["filter_arg"]
+            
+        extra_args = ""
+        if "extra_args" in self.args:
+            extra_args = " ".join(self.args["extra_args"])
+            
+        ext = ""
+        if "extensions" in self.args:
+            ext = "-e " + self.args["extensions"]
+        cmd = f"ffuf {filter_arg} -noninteractive -w {w}:FUZZ {url} {ext} -timeout {HTTP_REQ_TIMEOUT_SEC} {vhost} {extra_args} {output_log_cmd}"
         logger.debug("Executing FFUF command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logoutput=stdout_log, logcmdline=cmdlog, realtime=True, progresscb=parse_ffuf_progress)
         hostobj = TestHost(self.target)
-        self.parse_scan_hosts(output_log, hostobj)
+        if mode == "vhost":
+            self.parse_scan_hosts(output_log, hostobj)
 
         
     def parse_scan_hosts(self, output_log, hostobj):

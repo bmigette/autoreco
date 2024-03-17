@@ -306,7 +306,10 @@ class TestHost:
         if not hostname or len(hostname) < 1:
             return
         
+        # Ignoring AD Useless DNS
         if "_msdcs" in hostname:
+            return        
+        if "dnszones" in hostname:
             return
         
         logger.debug("Adding hostname %s for host %s", hostname, self.ip)

@@ -2,7 +2,7 @@ from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_feroxuster_progress
 from ...TestHost import TestHost
-from ...config import DEFAULT_PROCESS_TIMEOUT, FEROXBUSTER_STATUS, FEROXBUSTER_EXTLIST, FEROXBUSTER_STATUS_EXCLUDE
+from ...config import DEFAULT_PROCESS_TIMEOUT, HTTP_REQ_TIMEOUT_SEC, FEROXBUSTER_EXTLIST, FEROXBUSTER_STATUS_EXCLUDE
 
 import os
 
@@ -20,7 +20,7 @@ class FeroxBuster(ModuleInterface):
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"
         # TODO add support for --dont-filter
-        cmd = f"feroxbuster --url {url} -C {FEROXBUSTER_STATUS_EXCLUDE} -w {w} -E -x '{FEROXBUSTER_EXTLIST}' --insecure {host} -o {outputfile}"
+        cmd = f"feroxbuster --timeout {HTTP_REQ_TIMEOUT_SEC} --url {url} -C {FEROXBUSTER_STATUS_EXCLUDE} -w {w} -E -x '{FEROXBUSTER_EXTLIST}' --insecure {host} -o {outputfile}  --collect-words --auto-tune"
         logger.debug("Executing FeroxBuster command %s", cmd)
         ret = self.get_system_cmd_outptut(cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*2) #progresscb=parse_feroxuster_progress) 
         
