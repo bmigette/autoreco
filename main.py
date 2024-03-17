@@ -41,6 +41,10 @@ def main():
     parser.add_argument(
         "-v", "--verbose", help="Verbose Logs (Debug)", action="store_true"
     )
+    
+    parser.add_argument(
+        "-fh", "--force-hosts", help="Process only hosts in args (if resume)", action="store_true"
+    )
     parser.add_argument(
         "-tf",
         "--test-filter",

@@ -276,6 +276,12 @@ class WorkThreader:
             hostobj = TestHost(job["target"])
             hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
             return
+        if State().RUNTIME["args"].force_hosts:
+            if job["target"] not in State().RUNTIME["args"].host:
+                logger.info("Skipping job %s because host %s not in arguments and force-host is true", job["job_id"], job["target"])
+                hostobj = TestHost(job["target"])
+                hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
+                return
 
         job["priority"] = int(job["priority"])
         joboj = TestJob(job["priority"], job)
