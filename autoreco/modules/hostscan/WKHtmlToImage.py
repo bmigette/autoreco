@@ -5,7 +5,7 @@ from ...logger import logger
 class WKHtmlToImage(ModuleInterface):
     """Class to run wkhtmltoimage against a single host"""
     def run(self):
-
+        self.web = True
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
         pngfile =  self.get_log_name("png")

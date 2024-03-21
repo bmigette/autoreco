@@ -5,6 +5,7 @@ from ...logger import logger
 class WhatWeb(ModuleInterface):
     """Class to run whatweb against a single host"""
     def run(self):
+        self.web = True
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
         jsonfile =  self.get_log_name("json")

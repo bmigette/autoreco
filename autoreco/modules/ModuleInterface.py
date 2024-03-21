@@ -17,16 +17,18 @@ from ..TestHost import TestHost
 class ModuleInterface(ABC):
     """Generic modules functions"""
 
-    def __init__(self, testid, target, module_name, args={}):
+    def __init__(self, testid, target, module_name, args={}, target_port=None):
         self.status = "notstarted"
         self.args = args
         self.testid = testid
         self.target = target
+        self.target_port = target_port
         self.module_name = module_name
         self.progress = ""
         self._proc = None
         self._baselogdir = State().TEST_WORKING_DIR
         self._usehostinlogdir = True
+        self.web = False
         if is_ip(target):
             self.ip = target
         else:
@@ -340,6 +342,15 @@ class ModuleInterface(ABC):
         Returns:
             _type_: _description_
         """
+        if self.web:            
+            host = ""
+            if "host" in self.args:
+                host = self.args["host"]
+                extrafolder = flatten_args([self.args["url"], host])
+                if folder:
+                    folder = os.path.join(extrafolder, folder)
+                else:
+                    folder = extrafolder
         outdir = self.get_outdir(folder)
 
         args = self._get_flatten_args(argusekey, ignorekeys)

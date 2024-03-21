@@ -1,6 +1,7 @@
 from threading import Thread
 from threading import Event
 from queue import PriorityQueue, Empty
+from .SmartPriorityQueue import SmartPriorityQueue
 from .TestHost import TestHost
 from .TestJob import TestJob
 from .logger import logger
@@ -80,12 +81,12 @@ class Watchdog:
                     job = (
                         inst.current_job_date.strftime("%H:%M:%S")
                         + ": "
-                        + inst.current_job["module_name"]
+                        + inst.current_job_data["module_name"]
                         + " | "
-                        + inst.current_job["target"]
+                        + inst.current_job_data["target"]
                         + progress
                         + " | "
-                        + str(inst.current_job["args"])
+                        + str(inst.current_job_data["args"])
                     )
                     if len(job) > 255:
                         job = job[:255]
@@ -141,7 +142,7 @@ class Watchdog:
 class _WorkThread:
     """Single thread class. This class is the one picking up jobs from the queue, and executing it with appropriate module"""
 
-    def __init__(self, thread_id: str, queue: PriorityQueue, complete_callback):
+    def __init__(self, thread_id: str, queue: SmartPriorityQueue, complete_callback):
         """Constructor
 
         Args:
@@ -152,8 +153,9 @@ class _WorkThread:
         self.thread_id = thread_id
         self.queue = queue
         self.complete_callback = complete_callback
-        self.current_job = None
-        self.current_job_date = None
+        self.current_job_data = None
+        self.current_job_obj = None
+        self.current_job_data_date = None
         self.current_module_obj = None
         self.is_stopping = False
         self.modules = ModuleLoader.get_modules()
@@ -171,11 +173,11 @@ class _WorkThread:
             self.current_module_obj.kill()
             
 
-    def process_job(self, job: dict) -> None:
+    def process_job(self, job: TestJob) -> None:
         """Process a queued job
 
         Args:
-            job (ModuleInterface): Job Details
+            job (TestJob): Job Details
 
         Raises:
             Exception: Invalid Job Object
@@ -185,28 +187,31 @@ class _WorkThread:
         """
         try:
             # def __init__(self, testid, target, args = {}):
-            self.current_job = job
-            self.current_job_date = datetime.now()
+            self.current_job_data = job.data
+            self.current_job_obj = job
+            self.current_job_data_date = datetime.now()
             self.busy = True
-            module_object = self.modules[job["module_name"]](
-                job["job_id"], job["target"], job["module_name"], job["args"]
+            job_data = job.data
+            module_object = self.modules[job_data["module_name"]](
+                job.id, job.target, job_data["module_name"], job_data["args"], job.target_port
             )
             self.current_module_obj = module_object
             module_object.start()
         finally:
             if self.is_stopping:
-                if self.current_job:
+                if self.current_job_data:
                     try:
-                        hostobj = TestHost(job["target"])
-                        if job["job_id"] in hostobj.tests_state and hostobj.tests_state[job["job_id"]]["state"] != "done":
-                            logger.debug("Setting test to stopped: %s", hostobj.tests_state[job["job_id"]])
-                            hostobj.set_test_state(job["job_id"], "stopped")
+                        hostobj = TestHost(job.target)
+                        if job.id in hostobj.tests_state and hostobj.tests_state[job.id]["state"] != "done":
+                            logger.debug("Setting test to stopped: %s", hostobj.tests_state[job.id])
+                            hostobj.set_test_state(job.id, "stopped")
                     except Exception as ie:
                         logger.error(
                         "Error in thread close: %s", ie)
             self.busy = False
-            self.current_job = None
-            self.current_job_date = None
+            self.current_job_data = None
+            self.current_job_data_date = None
+            self.current_job_obj = None
             self.current_module_obj = None
             if self.complete_callback:
                 try:
@@ -232,11 +237,11 @@ class _WorkThread:
         while not stopevent.is_set():
             jobget = False
             try:
-                priority, job = self.queue.get(timeout=QUEUE_WAIT_TIME)
+                job = self.queue.get(timeout=QUEUE_WAIT_TIME)
                 jobget = True
-                logger.debug("processing job %s (p: %s) ...", job.data, priority)
-                self.process_job(job.data)
-                logger.debug("processing job %s ... Done", job.data)
+                logger.debug("processing job %s (p: %s) ...", job, job.priority)
+                self.process_job(job)
+                logger.debug("processing job %s ... Done", job)
             except Empty:
                 # This will happen if queue is empty.
                 # We use this so that threads are not waiting infinitely on the queue
@@ -247,7 +252,7 @@ class _WorkThread:
                 logger.error(
                     "Error happened in Worker Consumer Thread %s with data:\n%s\n: %s",
                     self.thread_id,
-                    job.data,
+                    job,
                     e,
                     exc_info=True,
                 )
@@ -263,7 +268,8 @@ class WorkThreader:
 
     _instances = {}
     _callback = None
-    queue = PriorityQueue(QUEUE_SIZE)
+    queue = SmartPriorityQueue(QUEUE_SIZE) 
+    
     watchdog = None
     
 
@@ -289,13 +295,14 @@ class WorkThreader:
             for filter in TEST_FILTERS:
                 if fnmatch.fnmatch(filter.lower(), job["module_name"].lower()):
                     logger.debug("Adding job with data %s", job)
-                    WorkThreader.queue.put((job["priority"], joboj))
+                    #WorkThreader.queue.put((job["priority"], joboj))
+                    WorkThreader.queue.put( joboj)
                     break
             logger.info(
                 "Skipping job because does not match filter.Data:\n%s", job)
         else:
             logger.debug("Adding job with data %s", job)
-            WorkThreader.queue.put((job["priority"], joboj))
+            WorkThreader.queue.put(joboj)
         logger.debug("======== QUEUE SIZE: %s ========",
                      WorkThreader.queue.qsize())
 
@@ -315,6 +322,7 @@ class WorkThreader:
                 i, WorkThreader.queue, complete_callback
             )
         WorkThreader.watchdog = Watchdog()
+        WorkThreader.queue.threads = WorkThreader._instances
         
     def stop_if_finish():
         if WorkThreader.finished():

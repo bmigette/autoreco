@@ -14,7 +14,7 @@ class FFUF(ModuleInterface):
     """Class to run FFUF against a single host"""
 
     def run(self):
-
+        self.web = True
         url = "-u " + self.args["url"]
         if "fuzz_url" in self.args:
             url += "/FUZZ"
@@ -31,7 +31,7 @@ class FFUF(ModuleInterface):
                 vhost = "-H 'Host: " + self.args["host"] + "'"
 
         output_log = self.get_log_name(
-            "", argusekey=["extensions"], folder="FFUF")
+            "", argusekey=["extensions", "extra_args"], folder="FFUF")
         output_log_cmd = f"-o {output_log} -of all"
 
         cmdlog = self.get_log_name(

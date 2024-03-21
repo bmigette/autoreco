@@ -20,6 +20,8 @@ DNS_SERVER = None  # Not used atm
 DEFAULT_MAX_OUTPUT = 10000  # Max len of command output
 RUN_SCANS = "all"  # dns,webfiles,webdiscovery,userenum,...
 
+MAX_JOB_PER_HOST = 3
+MAX_JOB_PER_HOST_PORT = 1
 
 ##### Modules Specific Config #####
 
@@ -93,7 +95,7 @@ GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 FFUF_MAX_VHOST = 50
 FFUF_MAX_SAME_WORDS = 2  # Ignore results that have same number of words, if above this
 FFUF_EXTLIST = ".asp,.aspx,.bat,.c,.cgi,.exe,.htm,.html,.inc,.jhtml,.jsa,.jsp,.log,.php,.phps,.phtml,.pl,.reg,.sh,.zsh,.shtml,.sql,.txt,.xml,.yml,.inc,.css,.js,.csv,.pdf"
-FFUF_STATUS_EXCLUDE = "404"
+FFUF_STATUS_EXCLUDE = "400,404"
 # UserEnum
 USERENUM_LISTS = [
     "/usr/share/statistically-likely-usernames/jsmith.txt",
@@ -118,5 +120,5 @@ FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt",
                          "/usr/share/seclists/Discovery/Web-Content/raft-medium-words-lowercase.txt"]
 FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cgi,exe,htm,html,inc,jhtml,jsa,jsp,log,php,phtml,pl,reg,sh,shtml,sql,txt,xml,yml"
 FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,407,405,500,501,502,503,505"  #  NOT USED
-FEROXBUSTER_STATUS_EXCLUDE = "404"
+FEROXBUSTER_STATUS_EXCLUDE = "404,400"
 FEROXBUSTER_THREADS = 30

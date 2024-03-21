@@ -12,7 +12,7 @@ class FeroxBuster(ModuleInterface):
     """Class to run FeroxBuster against a single host"""
 
     def run(self):
-
+        self.web = True
         w = self.args["wordlist"]
         outputfile = self.get_log_name(".log")
         cmdlog = self.get_log_name(".cmd")

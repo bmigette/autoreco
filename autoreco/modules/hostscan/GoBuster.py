@@ -11,6 +11,7 @@ class GoBuster(ModuleInterface):
     """Class to run GoBuster against a single host"""
 
     def run(self):
+        self.web = True
         mode = "dir"
         if "mode" in self.args:
             mode = self.args["mode"]
