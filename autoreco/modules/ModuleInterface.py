@@ -347,10 +347,10 @@ class ModuleInterface(ABC):
             if "host" in self.args:
                 host = self.args["host"]
                 extrafolder = flatten_args([self.args["url"], host])
-                if folder:
-                    folder = os.path.join(extrafolder, folder)
-                else:
-                    folder = extrafolder
+            if folder:
+                folder = os.path.join(extrafolder, folder)
+            else:
+                folder = extrafolder
         outdir = self.get_outdir(folder)
 
         args = self._get_flatten_args(argusekey, ignorekeys)
