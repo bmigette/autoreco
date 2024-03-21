@@ -72,7 +72,7 @@ class Watchdog:
                 if inst.busy:
                     onebusy = True
                 job = ""
-                if inst.current_job:
+                if inst.current_job_data:
                     progress = inst.get_progress()
                     if progress:
                         progress = " | " + progress

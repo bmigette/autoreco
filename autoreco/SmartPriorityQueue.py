@@ -22,6 +22,9 @@ class SmartPriorityQueue(Queue):
     def _job_eligible(self, hdata, job):
         if job.target not in hdata:
             return True
+        
+        if "/" in job.target:
+            return True # We don't limit subnet discovery jobs
         service_ok = False
         if job.target_port: 
             if job.target_port in hdata[job.target]["services"]:                
