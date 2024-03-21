@@ -1,6 +1,6 @@
 from .State import State
 from .logger import logger
-from .utils import is_ip
+from .utils import is_ip, is_valid_host
 import re
 import json
 
@@ -67,6 +67,8 @@ class TestHost:
             raise ValueError("Should not be a subnet")
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}
+        if not is_valid_host(hostip):
+            raise ValueError("Host is in exclude list")
     
     def is_discovery(self):
         return "discovery" in self.ip

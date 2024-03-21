@@ -1,7 +1,7 @@
 import os
 from .logger import logger
 from .State import State
-from .config import DEFAULT_MAX_OUTPUT, USE_SYSTEM_RESOLVER
+from .config import DEFAULT_MAX_OUTPUT, EXCLUDE_HOSTS
 import re
 import dns.resolver
 from pathlib import Path
@@ -13,6 +13,7 @@ def max_output(thestr:str , max = DEFAULT_MAX_OUTPUT):
         return thestr[:max] +"\ ---- output omitted ----"
     else:
         return thestr
+
 
 
 def parse_nmap_ports( ports):
@@ -208,3 +209,13 @@ def flatten_args(argsin, argusekey=[], ignorekeys=["password", "pass"]):
             v.replace(",", "+")
         args.append(re.sub(r"[^a-zA-Z0-9\.\+\-_]+", "_", v))
     return "-".join(args)
+
+
+def is_valid_host(ip):
+    if not is_ip(ip):
+        return False
+    parts = ip.split(".")
+    if parts[-1] in EXCLUDE_HOSTS:
+        return False
+    
+    return True

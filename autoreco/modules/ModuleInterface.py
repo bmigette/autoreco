@@ -252,12 +252,15 @@ class ModuleInterface(ABC):
         if self.is_discovery():
             hostip = "discovery"
         elif self.is_sleep():
+            self.status = "started"
             self.run()
+            self.status = "done"
             return
         else:
             if self.ip is None:
                 raise Exception("Module should set IP Address")
             hostip = self.ip
+            
         try:
             self.status = "started"
             self.get_host_obj(hostip).set_test_state(

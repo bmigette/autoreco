@@ -1,5 +1,6 @@
 
 from queue import Queue
+import time
 
 from .logger import logger
 from .config import MAX_JOB_PER_HOST, MAX_JOB_PER_HOST_PORT
@@ -22,7 +23,7 @@ class SmartPriorityQueue(Queue):
     def sleep_job(self):
         data = {
             "module_name": "SleepModule",
-            "job_id": "sleepjob",
+            "job_id": "sleepjob_"+str(time.time()),
             "target": "self",
             "args": {
                 "sleep": 60
@@ -82,11 +83,11 @@ class SmartPriorityQueue(Queue):
             if not best_prio:
                 best_prio = qitem.priority
                 best_index = idx
-                logger.debug("setting best prio1 / index to %s / %s", best_prio,  best_index)
+                logger.debug("setting best prio1 / index to %s / %s (%s)", best_prio,  best_index, qitem.id)
             if qitem.priority < best_prio:
                 best_prio = qitem.priority
                 best_index = idx
-                logger.debug("setting best prio2 / index to %s / %s", best_prio,  best_index)
+                logger.debug("setting best prio2 / index to %s / %s (%s)", best_prio,  best_index, qitem.id)
         if best_prio:
             r = self.queue.pop(best_index)
             logger.debug("Best Q Job: %s", r)

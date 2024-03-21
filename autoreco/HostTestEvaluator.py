@@ -73,11 +73,12 @@ class HostTestEvaluator(TestEvaluatorBase):
                 logger.error("Error when getting file tests: %s",
                              e, exc_info=True)
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
-            try:
-                tests = self._safe_merge(tests, self.get_scan_web_tests())
-                tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
-                # FFUF seems more reliable
+            try:                
                 tests = self._safe_merge(tests, self.get_scan_web_tests_ffuf())
+                tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
+                tests = self._safe_merge(tests, self.get_scan_web_tests_gobuster())
+                # FFUF seems more reliable
+                
                 
             except Exception as e:
                 logger.error("Error when getting scan web tests: %s",
@@ -651,6 +652,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         """
         global WEB_WORDLISTS
         tests = {}
+        doms = self.get_known_domains()
         for s in ["http", "https"]:
             # Running tests against IP            
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
@@ -696,9 +698,28 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "extensions": FFUF_EXTLIST
                             },
                         }
+                        
+                # Trying to get new VHosts
+                for w in WEB_WORDLISTS["vhost"]:
+                    for d in doms:
+                        file = Path(w).stem
+                        jobid = f"hostscan.FFUF_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
+                        tests[jobid] = {
+                            "module_name": "hostscan.FFUF",
+                            "job_id": jobid,
+                            "target": self.hostobject.ip,
+                            "target_port": p,
+                            "priority": self.get_list_priority(w),
+                            "args": {
+                                "url": f"{s}://{self.hostobject.ip}:{p}",
+                                "mode": "vhost",
+                                "domain": d,
+                                "wordlist": w,
+                            },
+                        }
         return tests
                         
-    def get_scan_web_tests(self):
+    def get_scan_web_tests_gobuster(self):
         """Create GoBuster jobs
 
         Returns:
@@ -706,7 +727,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         """
         global WEB_WORDLISTS
         tests = {}
-        doms = self.get_known_domains()
+        
         for s in ["http", "https"]:
             # Running tests against IP            
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
@@ -744,24 +765,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "wordlist": w,
                             },
                         }
-                # Trying to get new VHosts
-                for w in WEB_WORDLISTS["vhost"]:
-                    for d in doms:
-                        file = Path(w).stem
-                        jobid = f"hostscan.FFUF_vh_{self.hostobject.ip}_{s}_{p}_{file}_{d}"
-                        tests[jobid] = {
-                            "module_name": "hostscan.FFUF",
-                            "job_id": jobid,
-                            "target": self.hostobject.ip,
-                            "target_port": p,
-                            "priority": self.get_list_priority(w),
-                            "args": {
-                                "url": f"{s}://{self.hostobject.ip}:{p}",
-                                "mode": "vhost",
-                                "domain": d,
-                                "wordlist": w,
-                            },
-                        }
+               
         return tests
 
     def get_generic_tests(self):

@@ -1,6 +1,7 @@
 import re
 from ...logger import logger
 from ...TestHost import TestHost
+from ...utils import is_valid_host, is_ip
 
 def parse_netexec_hostline(line, update_host = False):
     data = {
@@ -31,6 +32,9 @@ def parse_netexec_hostline(line, update_host = False):
         if domain.lower() != name.lower() and domain != '\x00':
             data["domain"] = domain
         logger.debug("parse_netexec_hostline \n%s\n   ---->    \n%s", line, data)
+        if not is_valid_host(data["hostip"]) or not is_ip(data["hostip"]):
+            logger.info("Skipping IP %s because not valid", data["hostip"])
+            return
         host_to_update = TestHost(data["hostip"])
         if host_to_update:
             host_to_update.add_service(data["protocol"])
@@ -62,7 +66,13 @@ def parse_ffuf_progress(lines):
     #:: Progress: [958/4989] :: Job [1/1] :: 328 req/sec :: Duration: [0:00:03] :: Errors: 0 :
     for line in lines.split("\n"):
         if 'Progress:' in line:
-            return line.split("Progress:")[1].split("::")[0].strip()
+            progress = line.split("Progress:")[1].split("::")[0].strip()
+            try:
+                p2 = progress.replace("[","").replace("]","").split("/")
+                progress += " " + str(p2[0]/p2[1]*100)
+            except:
+                pass
+            return progress
     return None
 
 

@@ -13,7 +13,7 @@ DEFAULT_PROCESS_TIMEOUT = 900  # Default timeout for a process
 DEFAULT_IDLE_TIMEOUT = 180  # Default timeout for a idle process
 # Default timeout for a long process, not used atm
 DEFAULT_LONGPROCESS_TIMEOUT = 60*60*2
-WATCHDOG_INTERVAL = 120
+WATCHDOG_INTERVAL = 60
 WATCHDOG_SLEEP_INTERVAL = 10  # for stopping
 TEST_FILTERS = []  # execute tests matching these filters only
 DNS_SERVER = None  # Not used atm
@@ -51,6 +51,8 @@ MAX_LIST_SIZE = None
 
 HTTP_IGNORE_PORTS = [5985, 5986, 47001]  #  Ignoring MS WinRM & MS API
 HTTP_REQ_TIMEOUT_SEC = 20
+
+EXCLUDE_HOSTS = ["1", "254"]
 
 WEB_WORDLISTS = {
     "dir": [

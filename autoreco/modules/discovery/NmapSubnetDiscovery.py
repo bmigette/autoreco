@@ -2,7 +2,7 @@ import nmap
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ...config import NMAP_MAX_HOST_TIME
-from ...utils import parse_nmap_ports
+from ...utils import parse_nmap_ports, is_valid_host
 
 class NmapSubnetDiscovery(ModuleInterface):
     """Class to run NMAP subnet ping scan"""
@@ -28,12 +28,16 @@ class NmapSubnetDiscovery(ModuleInterface):
     def update_state(self):
         if "ports" in self.args: # Port scan will show all ips even if no port up (ie host doesn't exists)
             for ip, data in self.lastreturn["scan"].items():
+                if not is_valid_host(ip):
+                    continue
                 if "tcp" in data and len(data["tcp"]) > 0:
                     h = self.get_host_obj(ip)
                     for hostname in data["hostnames"]:
                         h.add_hostname(hostname["name"])
         else:
             for ip, data in self.lastreturn["scan"].items():
+                if not is_valid_host(ip):
+                    continue
                 if "hostnames" in data and len(data["hostnames"]) > 0:
                     h = self.get_host_obj(ip)
                     for hostname in data["hostnames"]:

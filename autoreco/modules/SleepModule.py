@@ -6,4 +6,4 @@ class SleepModule(ModuleInterface):
     """sleep Module"""
 
     def run(self):
-        time.sleep(self.args["sleep"])
+        time.sleep(int(self.args["sleep"]))
