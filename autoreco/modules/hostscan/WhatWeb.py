@@ -13,7 +13,7 @@ class WhatWeb(ModuleInterface):
         host = ""
         if "host" in self.args and self.args["host"]:
             host = "-H 'Host: " + self.args["host"] + "'"
-        self.command = f"whatweb --color=never --no-errors -a 4 {host} --log-verbose={logfile} --log-json={jsonfile} -v {url}"
+        self.command = f"whatweb --color=never --no-errors -a 3 {host} --log-verbose={logfile} --log-json={jsonfile} -v {url}"
         logger.debug("Starting whatweb with command %s", self.command)
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.check_file_empty_and_move(logfile)

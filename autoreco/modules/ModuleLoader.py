@@ -1,4 +1,4 @@
-from .testModule import testModule
+from .SleepModule import SleepModule
 from .discovery.NmapSubnetDiscovery import NmapSubnetDiscovery
 from .discovery.NetExecDiscovery import NetExecDiscovery
 from .hostscan.Snaffler import Snaffler
@@ -24,7 +24,7 @@ class ModuleLoader(object):
 
     def get_modules():
         return {
-            "testModule": testModule,
+            "SleepModule": SleepModule,
             "discovery.NmapSubnetDiscovery": NmapSubnetDiscovery,
             "discovery.NetExecDiscovery": NetExecDiscovery,
             "hostscan.Snaffler": Snaffler,

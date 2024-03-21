@@ -105,6 +105,21 @@ def main():
         default=False,
         action="store_true"
     )
+    
+    parser.add_argument(
+        "-bf",
+        "--brute-force",
+        help="Run Brute Force Modules",
+        default=False,
+        action="store_true"
+    )
+    parser.add_argument(
+        "-bfo",
+        "--brute-force-only",
+        help="Run Brute Force Modules Only",
+        default=False,
+        action="store_true"
+    )
     args = parser.parse_args()
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")

@@ -15,6 +15,8 @@ class GoBuster(ModuleInterface):
         mode = "dir"
         if "mode" in self.args:
             mode = self.args["mode"]
+            if mode != "dir":
+                self.web = False
         w = self.args["wordlist"]
         domain = ""
         if "domain" in self.args:

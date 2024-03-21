@@ -251,6 +251,9 @@ class ModuleInterface(ABC):
         )
         if self.is_discovery():
             hostip = "discovery"
+        elif self.is_sleep():
+            self.run()
+            return
         else:
             if self.ip is None:
                 raise Exception("Module should set IP Address")
@@ -288,7 +291,11 @@ class ModuleInterface(ABC):
         )
 
     def is_discovery(self):
-        return "discovery." in self.module_name or "/" in self.ip # TODO find a better solution, add a flag in the job payload ?
+        return "discovery." in self.module_name or (self.ip and "/" in self.ip) # TODO find a better solution, add a flag in the job payload ?
+
+    def is_sleep(self):
+        return "sleep" in self.module_name.lower()
+
 
     def is_userenum(self):
         return "userenum." in self.module_name
@@ -342,7 +349,7 @@ class ModuleInterface(ABC):
         Returns:
             str: Log file name
         """
-        if self.web:            
+        if self.web and "url" in self.args:            
             host = ""
             if "host" in self.args:
                 host = self.args["host"]

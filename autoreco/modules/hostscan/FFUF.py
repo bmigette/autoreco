@@ -32,6 +32,7 @@ class FFUF(ModuleInterface):
 
         output_log = self.get_log_name(
             "", argusekey=["extensions", "extra_args"], folder="FFUF")
+        output_log_json = f"{output_log}.json"
         output_log_cmd = f"-o {output_log} -of all"
 
         cmdlog = self.get_log_name(
@@ -57,7 +58,7 @@ class FFUF(ModuleInterface):
             cmd, logoutput=stdout_log, logcmdline=cmdlog, realtime=True, progresscb=parse_ffuf_progress)
         hostobj = TestHost(self.target)
         if mode == "vhost":
-            self.parse_scan_hosts(output_log, hostobj)
+            self.parse_scan_hosts(output_log_json, hostobj)
 
     def parse_scan_hosts(self, output_log, hostobj):
         """Parse scanned host file

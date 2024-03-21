@@ -3,6 +3,7 @@ from queue import Queue
 
 from .logger import logger
 from .config import MAX_JOB_PER_HOST, MAX_JOB_PER_HOST_PORT
+from .TestJob import TestJob
 
 class SmartPriorityQueue(Queue):
     '''Smart Priority Queue
@@ -18,6 +19,16 @@ class SmartPriorityQueue(Queue):
     def _put(self, item):
         self.queue.append(item)
          
+    def sleep_job(self):
+        data = {
+            "module_name": "SleepModule",
+            "job_id": "sleepjob",
+            "target": "self",
+            "args": {
+                "sleep": 60
+            }
+        }
+        return TestJob(1, data)
     
     def _job_eligible(self, hdata, job):
         if job.target not in hdata:
@@ -42,9 +53,9 @@ class SmartPriorityQueue(Queue):
     def _get_best_item(self):
         hdata = {}
         best_index = 0
-        best_index2 = 0
+        #best_index2 = 0
         best_prio = None
-        best_prio2 = None
+        #best_prio2 = None
         for k, t in self.threads.items():
             if not t.current_job_obj:
                 continue
@@ -58,26 +69,31 @@ class SmartPriorityQueue(Queue):
                     hdata[t.current_job_obj.target]["services"][t.current_job_obj.target_port] = 1
         logger.debug("thread jobs states: %s", hdata)
         for idx, qitem in enumerate(self.queue):
-            if not best_prio2:
-                best_prio2 = qitem.priority
+            # if not best_prio2:
+            #     best_prio2 = qitem.priority
                 
-            if qitem.priority < best_prio2:
-                best_prio2 = qitem.priority
-                best_index2 = idx
+            # if qitem.priority < best_prio2:
+            #     best_prio2 = qitem.priority
+            #     best_index2 = idx
                 
             if not self._job_eligible(hdata, qitem):
                 continue
             
             if not best_prio:
                 best_prio = qitem.priority
+                best_index = idx
+                logger.debug("setting best prio1 / index to %s / %s", best_prio,  best_index)
             if qitem.priority < best_prio:
                 best_prio = qitem.priority
                 best_index = idx
+                logger.debug("setting best prio2 / index to %s / %s", best_prio,  best_index)
         if best_prio:
             r = self.queue.pop(best_index)
+            logger.debug("Best Q Job: %s", r)
         else:
-            r = self.queue.pop(best_index2)
-        logger.debug("Best Q Job: %s", r)
+            logger.debug("Returning Sleep Job")
+            r = self.sleep_job()
+
         return r
     
     def _get(self):

@@ -199,7 +199,7 @@ class _WorkThread:
             module_object.start()
         finally:
             if self.is_stopping:
-                if self.current_job_data:
+                if self.current_job_data and "sleep" not in job_data["module_name"].lower():
                     try:
                         hostobj = TestHost(job.target)
                         if job.id in hostobj.tests_state and hostobj.tests_state[job.id]["state"] != "done":
@@ -213,7 +213,7 @@ class _WorkThread:
             self.current_job_date = None
             self.current_job_obj = None
             self.current_module_obj = None
-            if self.complete_callback:
+            if self.complete_callback and "sleep" not in job_data["module_name"].lower():
                 try:
                     self.complete_callback()
                 except Exception as e:
@@ -288,6 +288,14 @@ class WorkThreader:
                 hostobj = TestHost(job["target"])
                 hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
                 return
+        
+        if not State().RUNTIME["args"].brute_force and "bruteforce" in  job["module_name"]:
+            logger.info("Skipping job %s brute-force is false", job["job_id"])
+            return        
+        
+        if State().RUNTIME["args"].brute_force_only and "bruteforce" not in  job["module_name"]:
+            logger.info("Skipping job %s brute-force it is not a bruteforce job", job["job_id"])
+            return   
 
         job["priority"] = int(job["priority"])
         joboj = TestJob(job["priority"], job)
