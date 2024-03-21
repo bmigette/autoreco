@@ -155,7 +155,7 @@ class _WorkThread:
         self.complete_callback = complete_callback
         self.current_job_data = None
         self.current_job_obj = None
-        self.current_job_data_date = None
+        self.current_job_date = None
         self.current_module_obj = None
         self.is_stopping = False
         self.modules = ModuleLoader.get_modules()
@@ -189,7 +189,7 @@ class _WorkThread:
             # def __init__(self, testid, target, args = {}):
             self.current_job_data = job.data
             self.current_job_obj = job
-            self.current_job_data_date = datetime.now()
+            self.current_job_date = datetime.now()
             self.busy = True
             job_data = job.data
             module_object = self.modules[job_data["module_name"]](
@@ -210,7 +210,7 @@ class _WorkThread:
                         "Error in thread close: %s", ie)
             self.busy = False
             self.current_job_data = None
-            self.current_job_data_date = None
+            self.current_job_date = None
             self.current_job_obj = None
             self.current_module_obj = None
             if self.complete_callback:
