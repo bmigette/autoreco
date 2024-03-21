@@ -340,13 +340,15 @@ class ModuleInterface(ABC):
             ignorekeys (list, optional): Ignore all keys in this list. Defaults to [].
 
         Returns:
-            _type_: _description_
+            str: Log file name
         """
         if self.web:            
             host = ""
             if "host" in self.args:
                 host = self.args["host"]
-                extrafolder = flatten_args([self.args["url"], host])
+                extrafolder = flatten_args({ "url": self.args["url"], "host": host})
+            else:
+                extrafolder = flatten_args({ "url": self.args["url"]})
             if folder:
                 folder = os.path.join(extrafolder, folder)
             else:

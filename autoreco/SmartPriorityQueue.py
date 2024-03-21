@@ -29,14 +29,14 @@ class SmartPriorityQueue(Queue):
         if job.target_port: 
             if job.target_port in hdata[job.target]["services"]:                
                 if hdata[job.target]["services"][job.target_port] >= MAX_JOB_PER_HOST_PORT:
-                    logger.debug("Skipping host %s because MAX_JOB_PER_HOST_PORT on port %s", job.target, job.target_port)
+                    logger.debug("Skipping host %s for job %s because MAX_JOB_PER_HOST_PORT on port %s", job.target, job.id, job.target_port)
                     return False
             else:
                 service_ok = True
         if hdata[job.target]["jobcount"] < MAX_JOB_PER_HOST:
             return True
         
-        logger.debug("Skipping host %s because MAX_JOB_PER_HOST", job.target)
+        logger.debug("Skipping host %s for job %s because MAX_JOB_PER_HOST", job.target, job.id)
         return False
         
     def _get_best_item(self):
