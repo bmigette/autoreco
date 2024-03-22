@@ -130,7 +130,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         target = self.subnet
         targetstr = self.subnet_str
         if not target:
-            target = " ".join(self.get_known_hosts()) #TODO Test
+            target = " ".join(self.get_known_hosts()) 
             targetstr = "hosts" + str(len(self.get_known_hosts()))
         for action in ["loggedon-users"]:
             for p in ["smb"]: # Seems only SMB works for this
@@ -150,7 +150,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         target = self.subnet
         targetstr = self.subnet_str
         if not target:
-            target = " ".join(self.get_known_hosts()) #TODO Test
+            target = " ".join(self.get_known_hosts()) 
             targetstr = "hosts" + str(len(self.get_known_hosts()))
         for action in ["shares"]:
             for p in ["smb"]: #  only SMB works for this

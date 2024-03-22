@@ -454,7 +454,6 @@ class HostTestEvaluator(TestEvaluatorBase):
         Returns:
             dict: jobs
         """
-        # TODO sudo nmap -n -Pn -sU -p69 -sV --script tftp-enum 192.168.247.222
         tests = {}
         if (
             "microsoft-ds" in self.hostobject.services
@@ -865,12 +864,21 @@ class HostTestEvaluator(TestEvaluatorBase):
 
 
     def get_bruteforce_tests(self):
+        """Get Bruteforces host tests
+
+        Returns:
+            dict: jobs
+        """
         global BRUTEFORCE_PASSWORDLISTS, BRUTEFORCE_USERLISTS
         passlist = BRUTEFORCE_PASSWORDLISTS.copy()
         userlist = BRUTEFORCE_USERLISTS.copy()
         knownlists = self.get_bruteforce_lists_from_creds()
         userlist.append(knownlists[0])
         passlist.append(knownlists[1])
+        
+        discovered_users_file = os.path.join(State().TEST_WORKING_DIR, "userenum", "users.txt")
+        if os.path.exists(discovered_users_file):
+            userlist.append(discovered_users_file)
         
         tests = {}
         for s in ["ssh", "ftp"]:
@@ -879,7 +887,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 for wu in userlist:
                     for wp in passlist:
                         if is_file_empty(wu) or is_file_empty(wp):
-                            logger.info("Skipping test with one empty file %s / %s", wu, wp)
+                            logger.debug("Skipping test with one empty file %s / %s", wu, wp)
                             continue
                         ufile = Path(wu).stem
                         pfile = Path(wp).stem
@@ -891,7 +899,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "job_id": jobid,
                             "target": self.hostobject.ip,
                             "target_port": p,
-                            "priority": self.get_list_priority(wp),
+                            "priority": self.get_list_priority(wp) * self.get_list_priority(wu),
                             "args": {
                                 "user_wordlist": wu,
                                 "passw_wordlist": wp,

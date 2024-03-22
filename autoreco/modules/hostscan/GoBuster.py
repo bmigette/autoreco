@@ -55,7 +55,6 @@ class GoBuster(ModuleInterface):
     def parse_dns_hosts(self, outputfile):
         """Parses DNS Hosts and add them into state
         """
-        #TODO Need Testing
         logger.debug("Parsing GoBuster DNS Result file %s", outputfile)
         if not os.path.exists(outputfile):
             logger.debug("Skipping non existing file %s", outputfile)

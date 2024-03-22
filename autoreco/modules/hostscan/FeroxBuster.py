@@ -21,7 +21,6 @@ class FeroxBuster(ModuleInterface):
         host = ""
         if "host" in self.args:
             host = "-H 'Host: " + self.args["host"] + "'"
-        # TODO add support for --dont-filter
         cmd = f"feroxbuster -t {FEROXBUSTER_THREADS} --timeout {HTTP_REQ_TIMEOUT_SEC} --url {url} -C {FEROXBUSTER_STATUS_EXCLUDE} -w {w} -E -x '{FEROXBUSTER_EXTLIST}' --insecure {host} -o {outputfile} --auto-tune"
         logger.debug("Executing FeroxBuster command %s", cmd)
         # progresscb=parse_feroxuster_progress)

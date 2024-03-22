@@ -18,7 +18,6 @@ autoreco.State.State().set_working_dir(os.getcwd(), True)
 import autoreco.config
 
 # TODO: Implement state cleaner
-# TODO: Move Log Files to archive folder
 # TODO: Remove tests from state
 def main():
     parser = argparse.ArgumentParser()

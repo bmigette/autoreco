@@ -90,3 +90,16 @@ def parse_feroxuster_progress(lines):  # doesn't work
             line = re.sub("\s\s*", " ", line.strip())
             return line.split(" ")[3].strip()
     return None
+
+
+medusareg = re.compile(r"(User.* )(\(\d+ of \d+, \d+ complete\))")
+def parse_medusa_progress(lines):
+    # "ACCOUNT CHECK: [ftp] Host: 192.168.223.147 (1 of 1, 0 complete) User: root (1 of 17, 0 complete) Password: melissa (225 of 501 complete)"
+    for line in lines.split("\n"):
+        res = medusareg.search(line)
+        if res:
+            try:
+                return res.group(2)
+            except Exception as e:
+                logger.warn("Could not parse medusa output %s", line)
+    return None
