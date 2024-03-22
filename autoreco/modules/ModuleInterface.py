@@ -303,6 +303,9 @@ class ModuleInterface(ABC):
 
     def is_userenum(self):
         return "userenum." in self.module_name
+    
+    def is_bruteforce(self):
+        return "bruteforce." in self.module_name
 
     def get_outdir(self, folder=None):
         """Get log out folder

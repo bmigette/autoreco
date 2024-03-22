@@ -1,9 +1,7 @@
 from ..ModuleInterface import ModuleInterface
 from ...logger import logger
-from ..common.parsers import parse_feroxuster_progress
-from ...TestHost import TestHost
-from ...config import DEFAULT_PROCESS_TIMEOUT, HTTP_REQ_TIMEOUT_SEC, FEROXBUSTER_EXTLIST
-from ...config import FEROXBUSTER_STATUS_EXCLUDE, FEROXBUSTER_THREADS
+from ...config import DEFAULT_PROCESS_TIMEOUT
+from ...State import State
 
 import os
 
@@ -12,6 +10,7 @@ class Medusa(ModuleInterface):
     """Class to run Medusa against a single host"""
 
     def run(self):
+        self._baselogdir = os.path.join(State().TEST_WORKING_DIR, "bruteforce")
         uw = self.args["user_wordlist"]
         pw = self.args["passw_wordlist"]
         outputfile = self.get_log_name(".log")
