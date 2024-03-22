@@ -15,6 +15,7 @@ class FeroxBuster(ModuleInterface):
         self.web = True
         w = self.args["wordlist"]
         outputfile = self.get_log_name(".log")
+        stdout = self.get_log_name("")  + "stdout.log"
         cmdlog = self.get_log_name(".cmd")
         url = self.args["url"]
 
@@ -25,6 +26,6 @@ class FeroxBuster(ModuleInterface):
         logger.debug("Executing FeroxBuster command %s", cmd)
         # progresscb=parse_feroxuster_progress)
         ret = self.get_system_cmd_outptut(
-            cmd, logcmdline=cmdlog, timeout=DEFAULT_PROCESS_TIMEOUT*2)
+            cmd, logcmdline=cmdlog, logoutput=stdout, timeout=DEFAULT_PROCESS_TIMEOUT*2)
 
         self.check_file_empty_and_move(outputfile)

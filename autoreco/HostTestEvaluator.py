@@ -901,9 +901,10 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "target_port": p,
                             "priority": self.get_list_priority(wp) * self.get_list_priority(wu),
                             "args": {
+                                "protocol": s,
                                 "user_wordlist": wu,
-                                "passw_wordlist": wp,
-                                "protocol": s
+                                "passw_wordlist": wp
+                                
                             },
                         }
         return tests
