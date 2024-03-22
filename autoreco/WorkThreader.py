@@ -258,8 +258,9 @@ class _WorkThread:
                 )
             finally:
                 if jobget:
-                    logger.debug("Task done %s", self.thread_id)
-                    self.queue.task_done()
+                    if "sleep" not in job.data["module_name"].lower(): # Because sleep is not enqueued, it's special job sent by the queue itself
+                        logger.debug("Task done %s", self.thread_id)
+                        self.queue.task_done()
         logger.debug("Stopping thread %s... Done", self.thread_id)
 
 
