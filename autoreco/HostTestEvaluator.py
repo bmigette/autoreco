@@ -3,15 +3,16 @@ from .TestHost import TestHost
 from .State import State
 from .config import WEB_WORDLISTS, GOBUSTER_FILE_EXT, USERENUM_LISTS, SNMP_WORDLISTS
 from .config import NMAP_DEFAULT_TCP_QUICK_PORT_OPTION, RUN_SCANS, FEROXBUSTER_WORDLISTS
-from .config import HTTP_IGNORE_PORTS, FFUF_EXTLIST, FFUF_STATUS_EXCLUDE
+from .config import HTTP_IGNORE_PORTS, FFUF_EXTLIST, FFUF_STATUS_EXCLUDE, BRUTEFORCE_PASSWORDLISTS, BRUTEFORCE_USERLISTS
 from .TestEvaluatorBase import TestEvaluatorBase
-
+from .utils import is_file_empty
 from pathlib import Path
 import re
 import os
 import hashlib
 
 # TODO Replace this with profiles in /etc/autoreco
+
 
 class HostTestEvaluator(TestEvaluatorBase):
     """
@@ -41,7 +42,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             return r
         else:
             return creds[0]
-        
+
     def get_tests(self):
         """Get all host tests, according to RUN_SCANS 
 
@@ -72,14 +73,18 @@ class HostTestEvaluator(TestEvaluatorBase):
             except Exception as e:
                 logger.error("Error when getting file tests: %s",
                              e, exc_info=True)
+                
         if "all" in RUN_SCANS or "webdiscovery" in RUN_SCANS:
-            try:                
-                tests = self._safe_merge(tests, self.get_scan_web_tests_ffuf())
-                tests = self._safe_merge(tests, self.get_scan_web_tests_ferox())
-                tests = self._safe_merge(tests, self.get_scan_web_tests_gobuster())
+            try:
+                
+                tests = self._safe_merge(
+                    tests, self.get_scan_web_tests_ferox())
                 # FFUF seems more reliable
+                tests = self._safe_merge(tests, self.get_scan_web_tests_ffuf())
+                tests = self._safe_merge(
+                    tests, self.get_scan_web_tests_gobuster())
                 
-                
+
             except Exception as e:
                 logger.error("Error when getting scan web tests: %s",
                              e, exc_info=True)
@@ -102,24 +107,39 @@ class HostTestEvaluator(TestEvaluatorBase):
                 logger.error("Error when getting snmp tests: %s",
                              e, exc_info=True)
 
-
         # AD / Users tests
         if "all" in RUN_SCANS or "userenum" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_ad_users_tests())
-                tests = self._safe_merge(tests, self.get_other_credentialed_tests())
+                tests = self._safe_merge(
+                    tests, self.get_other_credentialed_tests())
 
-               
             except Exception as e:
                 logger.error("Error when getting ad user tests: %s",
                              e, exc_info=True)
+
+        if "all" in RUN_SCANS or "otherad" in RUN_SCANS:
+            try:
+                tests = self._safe_merge(tests, self.get_other_ad_tests())
+
+            except Exception as e:
+                logger.error("Error when getting other ad tests: %s",
+                             e, exc_info=True)
+
         if "all" in RUN_SCANS or "exploits" in RUN_SCANS:
             try:
                 tests = self._safe_merge(tests, self.get_searchsploit_test())
             except Exception as e:
                 logger.error(
                     "Error when getting searchsploit tests: %s", e, exc_info=True)
-                
+
+        
+        if  (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only):
+            try:
+                tests = self._safe_merge(tests, self.get_bruteforce_tests())
+            except Exception as e:
+                logger.error(
+                    "Error when getting bruteforce tests: %s", e, exc_info=True)
         # logger.debug("Tests for host %s: \n %s", self.hostobject, tests)
         return tests
 
@@ -144,7 +164,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             if "nmap" in testdata["module_name"].lower():
                 if testdata["state"] in ["notstarted", "started", "queued"]:
                     logger.debug(
-                    "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
+                        "nmap_scans_complete for host %s not complete because test %s", self.hostobject.ip, testid)
                     return False
                 else:
                     nmap_tests += 1
@@ -155,8 +175,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             logger.debug("No NMAPs Tests foud on host %s", self.hostobject.ip)
             return False
 
-
-    def get_tcp_services_ports(self, services: list, ignore = None):
+    def get_tcp_services_ports(self, services: list, ignore=None):
         """Gets all TCP Ports for given services
 
         Args:
@@ -191,27 +210,25 @@ class HostTestEvaluator(TestEvaluatorBase):
                 r.extend(self.hostobject.udp_service_ports[s])
         return list(set(r))
 
-
-
     def is_dc(self):
         return self.hostobject.ip in self.get_ad_dc_ips()
 
-
-    def get_other_credentialed_tests(self): 
+    def get_other_credentialed_tests(self):
         tests = {}
         if not self.is_dc():
             logger.debug("%s is not DC", self.hostobject.ip)
             return tests
-        
+
         for creds in self.get_known_credentials():
-            for d in self.get_known_domains(): # Not limiting to current host domain in case of forest / trusts / ...
+            # Not limiting to current host domain in case of forest / trusts / ...
+            for d in self.get_known_domains():
                 jobid = f"userenum.ASPrepRoastable_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
                     "module_name": "userenum.ASPrepRoastable",
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 50,
-                    "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                    "args": {"domain": d, "user": creds[0], "password": creds[1]},
                 }
                 jobid = f"userenum.GetSPNs_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
@@ -219,7 +236,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 50,
-                    "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                    "args": {"domain": d, "user": creds[0], "password": creds[1]},
                 }
                 jobid = f"userenum.NetExecRIDBrute_{self.hostobject.ip}_ridbrute_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
@@ -227,21 +244,47 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 150,
-                    "args": { "user": creds[0], "password": creds[1]},
+                    "args": {"user": creds[0], "password": creds[1]},
                 }
-                
+
                 jobid = f"hostscan.RPCDump_{self.hostobject.ip}_rpcdump_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
                     "module_name": "hostscan.RPCDump",
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 50,
-                    "args": { "user": creds[0], "password": creds[1]},
+                    "args": {"user": creds[0], "password": creds[1]},
                 }
 
         return tests
-    
-    
+
+    def get_other_ad_tests(self):
+        """Create Other AD Tests jobs
+
+        Returns:
+            dict: jobs
+        """
+
+        global USERENUM_LISTS
+        tests = {}
+        if not self.is_dc():
+            logger.debug("%s is not DC", self.hostobject.ip)
+            return tests
+
+        doms = self.get_known_domains()
+
+        for creds in self.get_known_credentials():
+            for d in doms:
+                jobid = f"hostscan.Certipy_{self.hostobject.ip}_{d}_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.Certipy",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 300,
+                    "args": {"domain": d, "user": creds[0], "password": creds[1] },
+                }
+        return tests
+
     def get_ad_users_tests(self):
         """Create AD Users Discovery jobs
 
@@ -280,7 +323,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         # netexec credentialed enum
         for action in ["loggedon-users", "groups", "users"]:
-            for p in ["smb"]: # Seems only SMB works for this
+            for p in ["smb"]:  # Seems only SMB works for this
                 for creds in self.get_known_credentials():
                     jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
@@ -346,7 +389,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "job_id": jobid,
                         "target": self.hostobject.ip,
                         "priority": 300,
-                        "args": { "domain": d, "user": creds[0], "password": creds[1]},
+                        "args": {"domain": d, "user": creds[0], "password": creds[1]},
                     }
         return tests
 
@@ -417,7 +460,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             "microsoft-ds" in self.hostobject.services
         ):
             ports = self.get_tcp_services_ports(["microsoft-ds"])
-            if len(ports)>0:
+            if len(ports) > 0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_smbenum_{ports}"
                 tests[jobid] = {
                     "module_name": "hostscan.NmapHostScan",
@@ -436,8 +479,9 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
 
         if "http" in self.hostobject.services or "https" in self.hostobject.services:
-            ports = self.get_tcp_services_ports(["http", "https"], HTTP_IGNORE_PORTS)
-            if len(ports)>0:
+            ports = self.get_tcp_services_ports(
+                ["http", "https"], HTTP_IGNORE_PORTS)
+            if len(ports) > 0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_httpscript_{ports}"
                 tests[jobid] = {
                     "module_name": "hostscan.NmapHostScan",
@@ -449,7 +493,7 @@ class HostTestEvaluator(TestEvaluatorBase):
 
         if "ldap" in self.hostobject.services:
             ports = self.get_tcp_services_ports(["ldap"])
-            if len(ports)>0:
+            if len(ports) > 0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_ldapscript_{ports}"
                 tests[jobid] = {
                     "module_name": "hostscan.NmapHostScan",
@@ -460,7 +504,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
         if "tftp" in self.hostobject.services:
             ports = self.get_udp_services_ports(["tftp"])
-            if len(ports)>0:
+            if len(ports) > 0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_tftpscript_{ports}"
                 tests[jobid] = {
                     "module_name": "hostscan.NmapHostScan",
@@ -471,8 +515,8 @@ class HostTestEvaluator(TestEvaluatorBase):
                 }
 
         if ("nfs" in self.hostobject.services or
-            "rpcbind" in self.hostobject.services
-            ):
+                    "rpcbind" in self.hostobject.services
+                ):
             ports = self.get_tcp_services_ports(["nfs", "rpcbind"])
             if len(ports) > 0:
                 jobid = f"hostscan.NmapHostScan_{self.hostobject.ip}_nfsscript_{ports}"
@@ -507,7 +551,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "target_port": p,
                     "priority": 100,
                     "args": {
-                        "url": f"{s}://{self.hostobject.ip}:{p}",      
+                        "url": f"{s}://{self.hostobject.ip}:{p}",
                     },
                 }
                 jobid = f"hostscan.WKHtmlToImage_{self.hostobject.ip}_{s}_{p}"
@@ -518,10 +562,10 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "target_port": p,
                     "priority": 100,
                     "args": {
-                        "url": f"{s}://{self.hostobject.ip}:{p}",      
+                        "url": f"{s}://{self.hostobject.ip}:{p}",
                     },
                 }
-                
+
                 for h in self.hostobject.get_hostnames_and_domain():
                     jobid = f"hostscan.WhatWeb_{h}_{s}_{p}"
                     tests[jobid] = {
@@ -531,8 +575,8 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "target_port": p,
                         "priority": 100,
                         "args": {
-                            "url": f"{s}://{self.hostobject.ip}:{p}",      
-                            "host": h,                    
+                            "url": f"{s}://{self.hostobject.ip}:{p}",
+                            "host": h,
                         },
                     }
                     jobid = f"hostscan.WKHtmlToImage_{h}_{s}_{p}"
@@ -543,13 +587,13 @@ class HostTestEvaluator(TestEvaluatorBase):
                         "target_port": p,
                         "priority": 100,
                         "args": {
-                            "url": f"{s}://{self.hostobject.ip}:{p}",      
-                            "host": h,                    
+                            "url": f"{s}://{self.hostobject.ip}:{p}",
+                            "host": h,
                         },
                     }
-        
+
         return tests
-    
+
     def get_web_file_tests(self):
         """Create GoBuster file jobs
 
@@ -559,7 +603,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         global WEB_WORDLISTS, GOBUSTER_FILE_EXT
         tests = {}
         for s in ["http", "https"]:
-            # Running tests against IP            
+            # Running tests against IP
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
                 for w in WEB_WORDLISTS["files"]:
                     file = Path(w).stem
@@ -578,7 +622,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "fsrc": "fsrc",  # This is only to display in log filename
                         },
                     }
-                    
+
                     for h in self.hostobject.get_hostnames_and_domain():
                         jobid = f"hostscan.GoBuster_dirf_{h}_{s}_{p}_{file}"
                         tests[jobid] = {
@@ -608,7 +652,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         global FEROXBUSTER_WORDLISTS
         tests = {}
         for s in ["http", "https"]:
-            # Running tests against IP            
+            # Running tests against IP
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
                 for w in FEROXBUSTER_WORDLISTS:
                     file = Path(w).stem
@@ -654,7 +698,7 @@ class HostTestEvaluator(TestEvaluatorBase):
         tests = {}
         doms = self.get_known_domains()
         for s in ["http", "https"]:
-            # Running tests against IP            
+            # Running tests against IP
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
                 for w in WEB_WORDLISTS["recursive"]:
                     file = Path(w).stem
@@ -671,7 +715,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "url": f"{s}://{self.hostobject.ip}:{p}",
                             "wordlist": w,
                             "fuzz_url": True,
-                            "extra_args" : ["-recursion-depth 4", "-recursion", "-r","-v", "-recursion-strategy greedy"],
+                            "extra_args": ["-recursion-depth 4", "-recursion", "-r", "-v"],
                             "filter_arg": f"-fc {FFUF_STATUS_EXCLUDE}",
                             "mode": "",
                             "extensions": FFUF_EXTLIST
@@ -692,13 +736,13 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "host": h,
                                 "wordlist": w,
                                 "fuzz_url": True,
-                                "extra_args" : ["-recursion-depth 4", "-recursion"],
+                                "extra_args": ["-recursion-depth 4", "-recursion"],
                                 "filter_arg": f"-fc {FFUF_STATUS_EXCLUDE}",
                                 "mode": "",
                                 "extensions": FFUF_EXTLIST
                             },
                         }
-                        
+
                 # Trying to get new VHosts
                 for w in WEB_WORDLISTS["vhost"]:
                     for d in doms:
@@ -718,7 +762,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             },
                         }
         return tests
-                        
+
     def get_scan_web_tests_gobuster(self):
         """Create GoBuster jobs
 
@@ -727,9 +771,9 @@ class HostTestEvaluator(TestEvaluatorBase):
         """
         global WEB_WORDLISTS
         tests = {}
-        
+
         for s in ["http", "https"]:
-            # Running tests against IP            
+            # Running tests against IP
             for p in self.get_tcp_services_ports([s], HTTP_IGNORE_PORTS):
                 for w in WEB_WORDLISTS["dir"]:
                     file = Path(w).stem
@@ -765,7 +809,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 "wordlist": w,
                             },
                         }
-               
+
         return tests
 
     def get_generic_tests(self):
@@ -799,7 +843,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             or "netbios-ssn" in self.hostobject.services
             or "rpc" in self.hostobject.services
             or "msrpc" in self.hostobject.services
-        ): 
+        ):
             jobid = f"hostscan.Enum4Linux_{self.hostobject.ip}"
             tests[jobid] = {
                 "module_name": "hostscan.Enum4Linux",
@@ -817,4 +861,41 @@ class HostTestEvaluator(TestEvaluatorBase):
                     "priority": 10,
                     "args": {"user": creds[0], "password": creds[1]},
                 }
+        return tests
+
+
+    def get_bruteforce_tests(self):
+        global BRUTEFORCE_PASSWORDLISTS, BRUTEFORCE_USERLISTS
+        passlist = BRUTEFORCE_PASSWORDLISTS.copy()
+        userlist = BRUTEFORCE_USERLISTS.copy()
+        knownlists = self.get_bruteforce_lists_from_creds()
+        userlist.append(knownlists[0])
+        passlist.append(knownlists[1])
+        
+        tests = {}
+        for s in ["ssh", "ftp"]:
+            # Running tests against IP
+            for p in self.get_tcp_services_ports([s]):
+                for wu in userlist:
+                    for wp in passlist:
+                        if is_file_empty(wu) or is_file_empty(wp):
+                            logger.info("Skipping test with one empty file %s / %s", wu, wp)
+                            continue
+                        ufile = Path(wu).stem
+                        pfile = Path(wp).stem
+                        jobid = (
+                            f"bruteforce.Medusa_{self.hostobject.ip}_{s}_{p}_{ufile}_{pfile}"
+                        )
+                        tests[jobid] = {
+                            "module_name": "bruteforce.Medusa",
+                            "job_id": jobid,
+                            "target": self.hostobject.ip,
+                            "target_port": p,
+                            "priority": self.get_list_priority(wp),
+                            "args": {
+                                "user_wordlist": wu,
+                                "passw_wordlist": wp,
+                                "protocol": s
+                            },
+                        }
         return tests

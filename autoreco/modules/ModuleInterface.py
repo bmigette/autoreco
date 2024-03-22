@@ -239,16 +239,7 @@ class ModuleInterface(ABC):
         Raises:
             Exception: sth went wrong
         """
-        logger.info(
-            "\n"
-            + "-" * 50
-            + "\nStarting test %s against target %s with module %s"
-            + "\n"
-            + "-" * 50,
-            self.testid,
-            self.target,
-            self.module_name,
-        )
+
         if self.is_discovery():
             hostip = "discovery"
         elif self.is_sleep():
@@ -261,6 +252,16 @@ class ModuleInterface(ABC):
                 raise Exception("Module should set IP Address")
             hostip = self.ip
             
+        logger.info(
+            "\n"
+            + "-" * 50
+            + "\nStarting test %s against target %s with module %s"
+            + "\n"
+            + "-" * 50,
+            self.testid,
+            self.target,
+            self.module_name,
+        )
         try:
             self.status = "started"
             self.get_host_obj(hostip).set_test_state(

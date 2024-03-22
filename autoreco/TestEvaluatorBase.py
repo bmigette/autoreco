@@ -66,6 +66,27 @@ class TestEvaluatorBase(ABC):
         state = State().TEST_STATE.copy()
         return [k for k, _ in state.items() if k != "discovery"]
     
+    
+    def get_bruteforce_lists_from_creds(self):
+        """Make known users, passwords files and return the path
+        """
+        users = []
+        passw = []
+        for creds in self.get_known_credentials():
+            users.append(creds[0])
+            passw.append[creds[1]]
+            
+        userfile = os.path.join(State().TEST_WORKING_DIR, "known_users.txt")
+        passfile = os.path.join(State().TEST_WORKING_DIR, "known_passwords.txt")
+        
+        with open(userfile, "w") as f:
+            f.write(os.linesep.join(users))
+            
+        with open(passfile, "w") as f:
+            f.write(os.linesep.join(passw))
+            
+        return (userfile, passfile)
+    
     def get_known_credentials(self):
         """Get knowns credentials, for credentialed enum
 

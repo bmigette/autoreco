@@ -290,11 +290,11 @@ class WorkThreader:
                 hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
                 return
         
-        if not State().RUNTIME["args"].brute_force and "bruteforce" in  job["module_name"]:
+        if not (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only) and "bruteforce" in  job["module_name"]:
             logger.info("Skipping job %s brute-force is false", job["job_id"])
             return        
         
-        if State().RUNTIME["args"].brute_force_only and "bruteforce" not in  job["module_name"]:
+        if State().RUNTIME["args"].bruteforce_only and "bruteforce" not in  job["module_name"]:
             logger.info("Skipping job %s brute-force it is not a bruteforce job", job["job_id"])
             return   
 

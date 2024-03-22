@@ -59,14 +59,14 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/Web-Content/quickhits.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt",
         # "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt",
-        "/usr/share/wordlists/dirb/common.txt",
+        #"/usr/share/wordlists/dirb/common.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/combined_directories.txt",
     ],
     "vhost": [
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt",
         # "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
-        "/usr/share/wordlists/seclists/Discovery/DNS/combined_subdomains.txt"
+        #"/usr/share/wordlists/seclists/Discovery/DNS/combined_subdomains.txt"
     ],
     "dns": [
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt",
@@ -80,7 +80,7 @@ WEB_WORDLISTS = {
     ],
     "recursive": [
         "/usr/share/seclists/Discovery/Web-Content/big.txt",
-        "/usr/share/seclists/Discovery/Web-Content/raft-medium-words-lowercase.txt"
+        "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt"
     ]
 }
 
@@ -96,7 +96,7 @@ GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 # If more than this vhost found, ignoring, could a site responding to all vhosts
 FFUF_MAX_VHOST = 50
 FFUF_MAX_SAME_WORDS = 2  # Ignore results that have same number of words, if above this
-FFUF_EXTLIST = ".asp,.aspx,.bat,.c,.cgi,.exe,.htm,.html,.inc,.jhtml,.jsa,.jsp,.log,.php,.phps,.phtml,.pl,.reg,.sh,.zsh,.shtml,.sql,.txt,.xml,.yml,.inc,.css,.js,.csv,.pdf"
+FFUF_EXTLIST = ".asp,.aspx,.bat,.c,.cgi,.exe,.htm,.html,.inc,.jsp,.log,.php,.phps,.phtml,.pl,.reg,.sh,.zsh,.shtml,.sql,.txt,.xml,.yml,.css,.js,.csv,.pdf"
 FFUF_STATUS_EXCLUDE = "400,404"
 # UserEnum
 USERENUM_LISTS = [
@@ -118,9 +118,22 @@ USE_SYSTEM_RESOLVER = False
 
 
 # FEROXBUSTER
-FEROXBUSTER_WORDLISTS = ["/usr/share/seclists/Discovery/Web-Content/big.txt",
+FEROXBUSTER_WORDLISTS = [ #"/usr/share/seclists/Discovery/Web-Content/big.txt",
+                         "/usr/share/wordlists/dirb/common.txt",
                          "/usr/share/seclists/Discovery/Web-Content/raft-medium-words-lowercase.txt"]
-FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cgi,exe,htm,html,inc,jhtml,jsa,jsp,log,php,phtml,pl,reg,sh,shtml,sql,txt,xml,yml"
+FEROXBUSTER_EXTLIST = "asp,aspx,bat,c,cgi,exe,htm,html,inc,jsp,log,php,phtml,pl,reg,sh,shtml,sql,txt,xml,yml,pdf,csv"
 FEROXBUSTER_STATUS = "200,201,202,203,204,301,302,307,401,403,405,407,405,500,501,502,503,505"  #  NOT USED
 FEROXBUSTER_STATUS_EXCLUDE = "404,400"
 FEROXBUSTER_THREADS = 30
+
+
+# BRUTEFORCE
+BRUTEFORCE_USERLISTS = [
+    "/usr/share/seclists/Usernames/top-usernames-shortlist.txt"
+]
+
+BRUTEFORCE_PASSWORDLISTS = [
+    "/usr/share/seclists/Passwords/500-worst-passwords.txt",
+    "/usr/share/seclists/Passwords/2023-200_most_used_passwords.txt",
+    "/usr/share/seclists/Passwords/cirt-default-passwords.txt",
+]

@@ -108,14 +108,14 @@ def main():
     
     parser.add_argument(
         "-bf",
-        "--brute-force",
+        "--bruteforce",
         help="Run Brute Force Modules",
         default=False,
         action="store_true"
     )
     parser.add_argument(
         "-bfo",
-        "--brute-force-only",
+        "--bruteforce-only",
         help="Run Brute Force Modules Only",
         default=False,
         action="store_true"

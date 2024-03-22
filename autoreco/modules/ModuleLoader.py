@@ -13,11 +13,13 @@ from .hostscan.NetExecHostScan import NetExecHostScan
 from .hostscan.RPCDump import RPCDump
 from .hostscan.WhatWeb import WhatWeb
 from .hostscan.WKHtmlToImage import WKHtmlToImage
+from .hostscan.Certipy import Certipy
 from .userenum.Kerbrute import Kerbrute
 from .userenum.NetExecRIDBrute import NetExecRIDBrute
 from .userenum.NetExecUserEnum import NetExecUserEnum
 from .userenum.ASPrepRoastable import ASPrepRoastable
 from .userenum.GetSPNs import GetSPNs
+from .bruteforce.Medusa import Medusa
 
 class ModuleLoader(object):
     """Load all known modules and maps it to a string"""
@@ -39,10 +41,11 @@ class ModuleLoader(object):
             "hostscan.RPCDump": RPCDump,     
             "hostscan.WKHtmlToImage": WKHtmlToImage,  
             "hostscan.WhatWeb": WhatWeb,         
+            "hostscan.Certipy": Certipy,
             "userenum.Kerbrute": Kerbrute,
             "userenum.NetExecRIDBrute": NetExecRIDBrute,
             "userenum.NetExecUserEnum": NetExecUserEnum,
             "userenum.ASPrepRoastable": ASPrepRoastable,
             "userenum.GetSPNs": GetSPNs,
-            
+            "bruteforce.Medusa": Medusa            
         }

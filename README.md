@@ -33,6 +33,7 @@ Tools that needs to be installed (and in system PATH):
 - kerbrute
 - feroxbuster
 - wkhtmltoimage
+- medusa
 
 Additional Tools
  
@@ -62,25 +63,30 @@ options:
                         Output Directory. (defaults to current dir)
   -sn SUBNET, --subnet SUBNET
                         Subnet to scan
-  -dn [DOMAIN ...], --domain [DOMAIN ...]
+  -dn DOMAIN, --domain DOMAIN
                         DNS Domains to scan
-  --host [HOST ...]     Hosts to scan
+  --host HOST           Hosts to scan
   -t THREADS, --threads THREADS
                         Number of threads
   -v, --verbose         Verbose Logs (Debug)
-  -tf [TEST_FILTER ...], --test-filter [TEST_FILTER ...]
+  -fh, --force-hosts    Process only hosts in args (if resume)
+  -tf TEST_FILTER, --test-filter TEST_FILTER
                         Executes only tests that matches filters, example: *nmap*. fnmatch Format
   -ns NMAP_SPEED, --nmap-speed NMAP_SPEED
                         nmap speed (1-5)
   -r RESUME, --resume RESUME
                         Resume from previous working dir
-  -rf, --resume-failed  Resume failed jobs
+  -rf, --resume-failed  Resume failed jobs. Default True
   -c CREDENTIALS, --credentials CREDENTIALS
                         Valid Credentials File. Format: user:password
   -mls MAX_LIST_SIZE, --max-list-size MAX_LIST_SIZE
-                        Do not run tests with list size above this value. 
+                        Do not run tests with list size above this value.
   -rs RUN_SCANS, --run-scans RUN_SCANS
-                        Scans to run, default all. Example: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp                         
+                        Scans to run, default all. Supported Values: dns,webfiles,webdiscovery,userenum,nmapscan,file,snmp,exploits
+  -nq, --nmap-quick     Run Only Quick NMAP Scan for discovery
+  -bf, --bruteforce     Run Brute Force Modules
+  -bfo, --bruteforce-only
+                        Run Brute Force Modules Only
 ```
 
 ## Domain Discovery
@@ -109,6 +115,18 @@ python main.py --resume /path/to/autoreco_2024_xxxx --credentials /path/to/creds
 Note that by default, the tool will look into creds.txt file in the working dir (/path/to/autoreco_2024_xxxx) and if it exists, use this credentials, meaning you can add credentials to a running scan.
 
 You can also put a NTLM Hash as password, it will be used where supported & applicable
+
+
+## Bruteforce
+Run bruteforces tests for an existing project
+```
+autoreco --resume autoreco_2024_03_21__17_31_35 --bruteforce-only
+```
+
+Run bruteforces tests for an existing project, on a specific host
+```
+autoreco --resume autoreco_2024_03_21__17_31_35 --bruteforce-only --host 1.2.3.4 --force-hosts
+```
 
 # Notes
 This is absolutely not stealth. Before scanning any system, make sure you are authorized to do it.
