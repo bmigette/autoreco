@@ -52,7 +52,7 @@ class FFUF(ModuleInterface):
         ext = ""
         if "extensions" in self.args:
             ext = "-e " + self.args["extensions"]
-        cmd = f"ffuf {filter_arg} -noninteractive -w {w}:FUZZ {url} {ext} -se -timeout {HTTP_REQ_TIMEOUT_SEC} {vhost} {extra_args} {output_log_cmd}"
+        cmd = f"ffuf {filter_arg} -noninteractive -ic -w {w}:FUZZ {url} {ext} -se -timeout {HTTP_REQ_TIMEOUT_SEC} {vhost} {extra_args} {output_log_cmd}"
         logger.debug("Executing FFUF command %s", cmd)
         ret = self.get_system_cmd_outptut(
             cmd, logoutput=stdout_log, logcmdline=cmdlog, realtime=True, progresscb=parse_ffuf_progress)

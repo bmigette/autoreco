@@ -4,8 +4,8 @@ from ...logger import logger
 import os
 
 class UserEnumModuleBase(ModuleInterface):
-    def __init__(self, testid, target, module_name, args={}):        
-        super().__init__(testid, target, module_name, args)
+    def __init__(self, testid, target, module_name, args={}, target_port=None):        
+        super().__init__(testid, target, module_name, args, target_port)
         self._baselogdir = os.path.join(State().TEST_WORKING_DIR, "userenum")
         os.makedirs(self._baselogdir, exist_ok=True)
         self._usehostinlogdir = False
