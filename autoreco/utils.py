@@ -87,6 +87,8 @@ def is_ip(ip: str):
     Returns:
         bool: yes or no
     """
+    if not ip:
+        return False
     match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
     return bool(match)
 

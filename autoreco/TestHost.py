@@ -65,6 +65,8 @@ class TestHost:
             raise ValueError(f"{hostip} is not an IP or discovery")
         if "/" in hostip:
             raise ValueError("Should not be a subnet")
+        if " " in hostip:
+            raise ValueError("Should not have space")
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}
         if not is_valid_host(hostip) and not "discovery" in self.ip: 

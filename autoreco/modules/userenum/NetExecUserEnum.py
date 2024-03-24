@@ -7,14 +7,18 @@ import re
 class NetExecUserEnum(UserEnumModuleBase):
     """Class to run NetExec against a single host"""
     def run(self):
-        if not is_ip(self.target):
-            raise ValueError("Target should be an IP: %s", self.target)
+
         
         protocol = "smb"
         if "protocol" in self.args:
             protocol = self.args["protocol"]
         self.protocol = protocol
-
+        target = self.target
+        if not target:
+            if "target_hosts" in self.args:
+                target = " ".join(self.args["target_hosts"]) 
+            else:
+                raise Exception("No target specified")
         user = "anonymous"
         passw = "''"
         if "user" in self.args:
@@ -37,7 +41,7 @@ class NetExecUserEnum(UserEnumModuleBase):
         action = ""
         if "action" in self.args and self.args["action"]:
             action = "--" + self.args["action"]
-        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {action} {continue_on_success} --log {logfile}"
+        self.command = f"netexec {protocol} {target} -u {user} {pflag} {passw} {action} {continue_on_success} --log {logfile}"
         if protocol == "ldap": 
             # See https://github.com/Pennyw0rth/NetExec/issues/184
             # TODO REMOVE FIREJAIL when this is pushed to a release: https://github.com/Pennyw0rth/NetExec/commit/2790236622eea56fb221833894ca765dc7e7a700

@@ -32,6 +32,8 @@ class SmartPriorityQueue(Queue):
         return TestJob(1, data)
     
     def _job_eligible(self, hdata, job):
+        if not job.target: # Some module like NetExecUserEnum have target none, and list of hosts passed as args
+            return True
         if job.target not in hdata:
             return True
         

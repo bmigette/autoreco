@@ -15,7 +15,12 @@ class NetExecDiscovery(ModuleInterface):
             protocol = self.args["protocol"]
         logfile = self.get_log_name("log")
         cmdfile =  self.get_log_name("cmd")
-        
+        target = self.target
+        if not target:
+            if "target_hosts" in self.args:
+                target = " ".join(self.args["target_hosts"]) 
+            else:
+                raise Exception("No target specified")
         credstr = ""
         action = ""
         if "user" in self.args:
@@ -31,7 +36,7 @@ class NetExecDiscovery(ModuleInterface):
         if "action" in self.args and self.args["action"]:
             action = "--" + self.args["action"]
             
-        self.command = f"netexec {protocol} {self.target} {credstr} {action} --log {logfile}"
+        self.command = f"netexec {protocol} {target} {credstr} {action} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         self.parse_output()
 

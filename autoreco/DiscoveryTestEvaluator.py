@@ -104,9 +104,11 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         tests = {}
         target = self.subnet
         targetstr = self.subnet_str
+        target_hosts = None
         if not target:
-            target = " ".join(self.get_known_hosts()) 
+            target_hosts = self.get_known_hosts()
             targetstr = "hosts" + str(len(self.get_known_hosts()))
+            target = "discovery"
         for p in NETEXEC_USERENUM_PROTOCOLS: # TODO: Support secure ldap ?
             if p == "ldap" and len(get_state_dns_servers())<1:
                 logger.debug("Skipping LDAP NetExecUserEnum tests for now because no DNS server found")
@@ -118,7 +120,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                         "job_id": jobid,
                         "target": target,
                         "priority": 100,
-                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest", "continue-on-success": True},
+                        "args": { "protocol": p, "user": creds[0], "password": creds[1], "credtest": "credtest", "continue-on-success": True, "target_hosts": target_hosts},
                     }
         return tests
 
@@ -129,9 +131,11 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         tests = {}
         target = self.subnet
         targetstr = self.subnet_str
+        target_hosts = None
         if not target:
-            target = " ".join(self.get_known_hosts()) 
+            target_hosts = self.get_known_hosts()
             targetstr = "hosts" + str(len(self.get_known_hosts()))
+            target = "discovery"
         for action in ["loggedon-users"]:
             for p in ["smb"]: # Seems only SMB works for this
                 for creds in self.get_known_credentials():
@@ -141,7 +145,7 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                         "job_id": jobid,
                         "target": target,
                         "priority": 200,
-                        "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1]},
+                        "args": {"action": action, "protocol": p, "user": creds[0], "password": creds[1], "target_hosts": target_hosts},
                     }
         return tests
     
@@ -149,9 +153,11 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
         tests = {}
         target = self.subnet
         targetstr = self.subnet_str
+        target_hosts = None
         if not target:
-            target = " ".join(self.get_known_hosts()) 
+            target_hosts = self.get_known_hosts()
             targetstr = "hosts" + str(len(self.get_known_hosts()))
+            target = "discovery"
         for action in ["shares"]:
             for p in ["smb"]: #  only SMB works for this
                 for creds in self.get_known_credentials():
@@ -159,9 +165,9 @@ class DiscoveryTestEvaluator(TestEvaluatorBase):
                     job = {
                         "module_name": "discovery.NetExecDiscovery",
                         "job_id": jobid,
-                        "target": self.subnet,
+                        "target": target,
                         "priority": 50,
-                        "args": {"protocol": p, "user": creds[0], "password": creds[1], "action": action},
+                        "args": {"protocol": p, "user": creds[0], "password": creds[1], "action": action, "target_hosts": target_hosts},
                     }
                     tests[jobid] = job
         return tests

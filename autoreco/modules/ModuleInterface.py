@@ -249,6 +249,7 @@ class ModuleInterface(ABC):
             return
         else:
             if self.ip is None:
+                logger.error("self.ip: %s, self.target:%s, self.id: %s", self.ip, self.target, self.testid)
                 raise Exception("Module should set IP Address")
             hostip = self.ip
             
@@ -295,7 +296,7 @@ class ModuleInterface(ABC):
         )
 
     def is_discovery(self):
-        return "discovery." in self.module_name or (self.ip and "/" in self.ip) # TODO find a better solution, add a flag in the job payload ?
+        return "discovery." in self.module_name or (self.ip and "/" in self.ip) or self.target =="discovery" # TODO find a better solution, add a flag in the job payload ?
 
     def is_sleep(self):
         return "sleep" in self.module_name.lower()
