@@ -31,6 +31,7 @@ class NetExecHostScan(ModuleInterface):
         extra_modules = ""
         if "extra_modules" in self.args:
             extra_modules = " ".join([f"-M {m}" for m in self.args["extra_modules" ]])
+            
         pflag = "-p"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"
@@ -41,7 +42,7 @@ class NetExecHostScan(ModuleInterface):
         action = ""
         if "action" in self.args:
             action = "--" + self.args["action"]
-        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {action} {extra_modules} --log {logfile}"
+        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {extra_modules} {action}  --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         
         if "extra_modules" not in self.args:

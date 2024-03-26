@@ -372,13 +372,33 @@ class HostTestEvaluator(TestEvaluatorBase):
             "microsoft-ds" in self.hostobject.services
         ):
             for creds in self.get_known_credentials():
-                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_vulns_{self._get_creds_job_id(creds)}"
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smb_vulns_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
                     "module_name": "hostscan.NetExecHostScan",
                     "job_id": jobid,
                     "target": self.hostobject.ip,
                     "priority": 100,
-                    "args": {"extra_modules": ["zerologon", "nopac", "petitpotam"], "user": creds[0], "password": creds[1]},
+                    "args": {"extra_modules": ["zerologon", "nopac", "petitpotam","spooler", "printnightmare", "shadowcoerce"], "user": creds[0], "password": creds[1]},
+                }
+                
+        if "ldap" in self.hostobject.services:
+
+            for creds in self.get_known_credentials():          
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_ldap_vulns_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NetExecHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"protocol":"ldap", "extra_modules": ["adcs", "get-desc-users"], "user": creds[0], "password": creds[1]},
+                }
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_ldap_RBCD_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NetExecHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 200,
+                    "args": {"protocol":"ldap", "action": "trusted-for-delegation", "user": creds[0], "password": creds[1]},
                 }
         return tests
     def get_file_tests(self):
