@@ -133,7 +133,13 @@ class HostTestEvaluator(TestEvaluatorBase):
                 logger.error(
                     "Error when getting searchsploit tests: %s", e, exc_info=True)
 
-        
+        if "all" in RUN_SCANS or "msvulns" in RUN_SCANS:
+            try:
+                tests = self._safe_merge(tests, self.get_msvulns_test())
+            except Exception as e:
+                logger.error(
+                    "Error when getting msvulns tests: %s", e, exc_info=True)
+                
         if  (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only):
             try:
                 tests = self._safe_merge(tests, self.get_bruteforce_tests())
@@ -354,6 +360,27 @@ class HostTestEvaluator(TestEvaluatorBase):
         }
         return tests
 
+
+    def get_msvulns_test(self):
+        """Create SMB Scan jobs
+
+        Returns:
+            dict: jobs
+        """
+        tests = {}
+        if (
+            "microsoft-ds" in self.hostobject.services
+        ):
+            for creds in self.get_known_credentials():
+                jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_vulns_{self._get_creds_job_id(creds)}"
+                tests[jobid] = {
+                    "module_name": "hostscan.NetExecHostScan",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {"extra_modules": ["zerologon", "nopac", "petitpotam"], "user": creds[0], "password": creds[1]},
+                }
+        return tests
     def get_file_tests(self):
         """Create SMB Scan jobs
 

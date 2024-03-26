@@ -25,10 +25,12 @@ class NetExecHostScan(ModuleInterface):
             user = "'" + self.args["user"] + "'"
             spider_user = self.args["user"]
         
-        
         if "spider" in self.args:
             spider = "-M spider_plus -o OUTPUT_FOLDER=" + self.get_outdir(f"netexec_smb_spider_plus/{spider_user}")
-            
+        
+        extra_modules = ""
+        if "extra_modules" in self.args:
+            extra_modules = " ".join([f"-M {m}" for m in self.args["extra_modules" ]])
         pflag = "-p"
         if "password" in self.args:
             passw = "'" + self.args["password"] + "'"
@@ -39,9 +41,11 @@ class NetExecHostScan(ModuleInterface):
         action = ""
         if "action" in self.args:
             action = "--" + self.args["action"]
-        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {action} --log {logfile}"
+        self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {action} {extra_modules} --log {logfile}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
-        self.parse_output()
+        
+        if "extra_modules" not in self.args:
+            self.parse_output()
 
     def parse_output(self):
         # RPC 192.168.1.16 135 DESKTOP-78RP52H [*] Windows NT 10.0 Build 22621 (name:DESKTOP-78RP52H) (domain:DESKTOP-78RP52H)
