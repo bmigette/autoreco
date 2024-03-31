@@ -120,6 +120,14 @@ def main():
         default=False,
         action="store_true"
     )
+    
+    parser.add_argument(
+        "-hp",
+        "--host-priority",
+        help="Make a host more prioritized. Format 1.2.3.4=3",
+        default=False,
+        action='append'
+    )
     args = parser.parse_args()
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")
@@ -154,6 +162,12 @@ def main():
     autoreco.config.RUN_SCANS = args.run_scans
     
     autoreco.State.State().RUNTIME["nmap_quick"] = args.nmap_quick
+    
+    autoreco.State.State().RUNTIME["host_priority"] = {}
+    if args.host_priority:
+        for h in args.host_priority:
+            parts = h.split("=")
+            autoreco.State.State().RUNTIME["host_priority"][parts[0]] = int(parts[1])
 
     if args.credentials and not os.path.exists(args.credentials):
         raise Exception(f"File doesn't exist: {args.credentials}")

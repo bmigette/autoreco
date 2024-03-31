@@ -299,6 +299,10 @@ class WorkThreader:
             return   
 
         job["priority"] = int(job["priority"])
+        
+        if job["target"] in State().RUNTIME["host_priority"]:
+            job["priority"] /= State().RUNTIME["host_priority"][job["target"]] # Making priority smaller
+        
         joboj = TestJob(job["priority"], job)
         if TEST_FILTERS and len(TEST_FILTERS) > 0:
             for filter in TEST_FILTERS:

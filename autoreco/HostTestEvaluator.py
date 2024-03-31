@@ -330,6 +330,14 @@ class HostTestEvaluator(TestEvaluatorBase):
         # netexec credentialed enum
         for action in ["loggedon-users", "groups", "users"]:
             for p in ["smb"]:  # Seems only SMB works for this
+                jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_nullsess"
+                tests[jobid] = {
+                    "module_name": "userenum.NetExecUserEnum",
+                    "job_id": jobid,
+                    "target": self.hostobject.ip,
+                    "priority": 100,
+                    "args": {"action": action, "protocol": p, "user": "", "password": ""},
+                }
                 for creds in self.get_known_credentials():
                     jobid = f"userenum.NetExecUserEnum_{self.hostobject.ip}_netexec_{p}_{action}_{self._get_creds_job_id(creds)}"
                     tests[jobid] = {
@@ -371,6 +379,17 @@ class HostTestEvaluator(TestEvaluatorBase):
         if (
             "microsoft-ds" in self.hostobject.services
         ):
+            
+            
+            jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smb_vulns_anon"
+            tests[jobid] = {
+                "module_name": "hostscan.NetExecHostScan",
+                "job_id": jobid,
+                "target": self.hostobject.ip,
+                "priority": 100,
+                "args": {"extra_modules": ["zerologon", "nopac", "petitpotam","spooler", "printnightmare", "shadowcoerce"]},
+            }
+                
             for creds in self.get_known_credentials():
                 jobid = f"hostscan.NetExecHostScan_{self.hostobject.ip}_netexec_smb_vulns_{self._get_creds_job_id(creds)}"
                 tests[jobid] = {
@@ -946,7 +965,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                             "job_id": jobid,
                             "target": self.hostobject.ip,
                             "target_port": p,
-                            "priority": self.get_list_priority(wp) * self.get_list_priority(wu),
+                            "priority": 250 + self.get_list_priority(wp) * self.get_list_priority(wu),
                             "args": {
                                 "protocol": s,
                                 "user_wordlist": wu,
