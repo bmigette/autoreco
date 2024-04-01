@@ -72,6 +72,7 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt",
         # "/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt",
         "/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt",
+        "/usr/share/wordlists/seclists/Discovery/DNS/dns-Jhaddix.txt",
         #"/usr/share/wordlists/seclists/Discovery/DNS/combined_subdomains.txt"
     ],
     "files": [

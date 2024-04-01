@@ -71,7 +71,7 @@ class TestEvaluatorBase(ABC):
         passw = []
         for creds in self.get_known_credentials():
             users.append(creds[0])
-            passw.append[creds[1]]
+            passw.append(creds[1])
             
         userfile = os.path.join(State().TEST_WORKING_DIR, "known_users.txt")
         passfile = os.path.join(State().TEST_WORKING_DIR, "known_passwords.txt")
