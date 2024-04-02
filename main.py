@@ -125,8 +125,7 @@ def main():
         "-hp",
         "--host-priority",
         help="Make a host more prioritized. Format 1.2.3.4=3",
-        default=False,
-        action='append'
+        action='append',
     )
     args = parser.parse_args()
     if args.resume and args.output_dir:

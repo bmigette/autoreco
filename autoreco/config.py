@@ -42,7 +42,7 @@ NMAP_MAX_HOST_TIME = (
 NMAP_TCP_HOSTSCAN_OPTIONS = (
     f"-sT -sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60"
 )  # Setting to -sT because otherwise does not work thru proxy
-NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3"
+NMAP_UDP_HOSTSCAN_OPTIONS = f"-sC -sV -Pn -T{NMAP_SPEED} --version-all -O --script-timeout 60 --version-intensity 3 --reason"
 
 # Skip tests using a list that is above this size (example 250000)
 MAX_LIST_SIZE = None
@@ -52,7 +52,7 @@ MAX_LIST_SIZE = None
 HTTP_IGNORE_PORTS = [5985, 5986, 47001]  #  Ignoring MS WinRM & MS API
 HTTP_REQ_TIMEOUT_SEC = 20
 
-EXCLUDE_HOSTS = ["1", "254"]
+EXCLUDE_HOSTS = ["1", "254"] # Exclude gateways
 
 WEB_WORDLISTS = {
     "dir": [
@@ -79,7 +79,7 @@ WEB_WORDLISTS = {
         "/usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-files.txt",
         "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-small.txt"
     ],
-    "recursive": [
+    "recursive": [ # For FFUF
         "/usr/share/seclists/Discovery/Web-Content/big.txt",
         "/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt"
     ]
