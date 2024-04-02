@@ -302,9 +302,11 @@ class WorkThreader:
         job["priority"] = int(job["priority"])
         
         if job["target"] in State().RUNTIME["host_priority"]:
+            oldp = job["priority"] 
             job["priority"] /= State().RUNTIME["host_priority"][job["target"]] # Making priority smaller
-            logger.debug("Adjusting Priority for host %s (job %s): %s", job["target"], job["job_id"], State().RUNTIME["host_priority"][job["target"]] )
             job["priority"] = int(job["priority"] )
+            logger.debug("Adjusting Priority for host %s (job %s): Factor: %s %s -> %s", job["target"], job["job_id"], State().RUNTIME["host_priority"][job["target"]], oldp,  job["priority"] )
+
         
         joboj = TestJob(job["priority"], job)
         if TEST_FILTERS and len(TEST_FILTERS) > 0:

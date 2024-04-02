@@ -87,6 +87,8 @@ options:
   -bf, --bruteforce     Run Brute Force Modules
   -bfo, --bruteforce-only
                         Run Brute Force Modules Only
+  -hp HOST_PRIORITY, --host-priority HOST_PRIORITY
+                        Make a host more prioritized. Format 1.2.3.4=3
 ```
 
 ## Domain Discovery
@@ -116,6 +118,20 @@ Note that by default, the tool will look into creds.txt file in the working dir 
 
 You can also put a NTLM Hash as password, it will be used where supported & applicable
 
+## Running a Scan over a Pivot or slow network
+If your network connection to target is slow or unreliable, I'd recommennd lowering number of threads and list size:
+```
+autoreco -t 3 -mls 500000 --subnet 192.168.1.0/24 
+```
+
+## Scan a subnet with a host in priority
+If you want to scan a whole subnet, but you want to want to start in priority with a specific host, you can use args like this
+```
+autoreco -t 3 -mls 500000 --subnet 192.168.1.0/24 --host-priority 192.168.1.10=10
+```
+
+This will make this host priority 10x more than others.
+To keep in mind, each job has a priority, which depends on various factors including the size of the list (if any) used for the job. This make the priority higher by the factor specified in argument, but does not guarantee all jobs for this host will run first.
 
 ## Bruteforce
 Run bruteforces tests for an existing project
