@@ -103,7 +103,7 @@ GOBUSTER_FILE_EXT = "pdf,csv,txt,html,htm,php,sh,sql,xml"
 FFUF_MAX_VHOST = 50
 FFUF_MAX_SAME_WORDS = 2  # Ignore results that have same number of words, if above this
 FFUF_EXTLIST = ".asp,.aspx,.bat,.c,.cgi,.exe,.htm,.html,.inc,.jsp,.log,.php,.phps,.phtml,.pl,.reg,.sh,.zsh,.shtml,.sql,.txt,.xml,.yml,.css,.js,.csv,.pdf"
-FFUF_STATUS_EXCLUDE = "400,404"
+FFUF_STATUS_EXCLUDE = "400,404,502"
 # UserEnum
 USERENUM_LISTS = [
     "/usr/share/statistically-likely-usernames/jsmith.txt",

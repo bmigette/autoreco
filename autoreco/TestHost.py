@@ -391,9 +391,10 @@ class TestHost:
                 if domain:
                     h = f"{h}.{domain}"
                     doms_and_hosts.append(h)
-            else:
-                if not only_fqdn:
+                elif not only_fqdn:
                     doms_and_hosts.append(h)
+            else:
+                doms_and_hosts.append(h)
                     
         if domain and domain not in doms_and_hosts and "." in domain:
             doms_and_hosts.append(domain) # Trying domain only
