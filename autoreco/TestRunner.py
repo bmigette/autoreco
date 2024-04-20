@@ -152,16 +152,17 @@ class TestRunner(object):
     def resume_failed(self):
         """Resume failed test
         """
+        logger.info("Cleaning Failed Tests")
         state = State().TEST_STATE.copy()  #  Use Lock and double state
         from copy import deepcopy
         # Can't modify a dict in a loop it seems ...
         targetstate = deepcopy(state)
         with State().statelock:
             for k in state.keys():
-                if k == "discovery":
-                    continue
+                
                 for testname, testdata in state[k]["tests_state"].items():
                     if testdata["state"] not in  ["done", "ignored"]:
+                        logger.debug("Removing failed test from state: %s", testname)
                         targetstate[k]["tests_state"].pop(testname)
                         # Deleting will force test suggestor to resume
         State().TEST_STATE = targetstate
@@ -183,7 +184,7 @@ class TestRunner(object):
         try:
             logger.info("=" * 50)
             if resume:
-                logger.info("Tests Resumed at %s", datetime.now().isoformat())
+                logger.info("Tests Resumed at %s (resume failed: %s)", datetime.now().isoformat(), resume_failed)
                 if resume_failed:
                     self.resume_failed()
             else:
@@ -240,7 +241,7 @@ class TestRunner(object):
         logger.info("Tests Complete at %s", datetime.now().isoformat())
         logger.info("=" * 50)
 
-        self.print_state()
+        #self.print_state()
 
         print_summary()
         self.move_empty_log_files()

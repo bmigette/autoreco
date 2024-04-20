@@ -127,6 +127,15 @@ def main():
         help="Make a host more prioritized. Format 1.2.3.4=3",
         action='append',
     )
+    
+    parser.add_argument(
+        "-xh",
+        "--exclude-hosts",
+        help="Exclude hosts, only last digit. For example, to exclude 192.168.1.254, input 254",
+        action='append',
+    )
+    
+    
     args = parser.parse_args()
     if args.resume and args.output_dir:
         raise Exception("Please use either resume or output dir")
@@ -153,7 +162,9 @@ def main():
         
     if args.verbose:
         autoreco.config.STDOUT_LOGLEVEL = logging.DEBUG
-
+    if args.exclude_hosts:
+        for h in args.exclude_hosts:
+            autoreco.config.EXCLUDE_HOSTS.append(h)
     autoreco.config.NUM_THREADS = args.threads
     autoreco.config.NMAP_SPEED = args.nmap_speed
     autoreco.config.TEST_FILTERS = args.test_filter
