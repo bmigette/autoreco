@@ -8,6 +8,7 @@ from ...config import (
     NMAP_UDP_HOSTSCAN_OPTIONS,
     NMAP_MAX_HOST_TIME,
     USE_SYSTEM_RESOLVER,
+    NMAP_RESOLVE_SANS
 )
 from ...TestHost import TestHost
 from ...utils import resolve_domain, get_state_subnets, is_ip_state_subnets, parse_nmap_ports, get_state_dns_servers
@@ -153,8 +154,12 @@ class NmapHostScan(ModuleInterface):
                     f.write("\n".join(sans))
             except Exception as e:
                 logger.error("Could not write file %s", sslhostfile, exc_info=True)
-        # TODO: Make an option if we need to resolve this or not ?
-        self._resolve_ssl_sans(sans)
+        if NMAP_RESOLVE_SANS:
+            self._resolve_ssl_sans(sans)
+        else:
+            hostobj = TestHost(self.target)
+            for hostname in sans:
+                hostobj.add_hostname(hostname)
 
     def _resolve_ssl_sans(self, hostnames):
         """Does a DNS lookup against system and known DNS servers, and update hostnames for hosts where IP fall in known range

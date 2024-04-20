@@ -104,7 +104,6 @@ python main.py --host 192.168.1.1 --domain test.com
 The following command will attempt to resume a scan. The resume-failed option allows to retry all jobs that are not successful (Error, Stopped, ...)
 ```
 python main.py --resume /path/to/autoreco_2024_xxxx --resume-failed
-python main.py --resume /path/to/autoreco_2024_xxxx --resume-failed
 ```
 
 ## Run additional jobs once you have valid credentials

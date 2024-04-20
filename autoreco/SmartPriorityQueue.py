@@ -8,6 +8,7 @@ from .TestJob import TestJob
 
 class SmartPriorityQueue(Queue):
     '''Smart Priority Queue
+    This class implements a custom Priority Queue with ability to send a special sleep job to threads when there's too many jobs already running on same host / ports (configurable)
     '''
 
     def _init(self, maxsize):
