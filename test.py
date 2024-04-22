@@ -7,6 +7,7 @@ from autoreco.WorkThreader import WorkThreader
 from autoreco.utils import print_summary
 from autoreco.logger import logger
 import os
+import sys
 
 import autoreco.config
 import logging
@@ -22,16 +23,20 @@ from autoreco.TestHost import TestHost
 
 
 # Importing here to make sure we have set config / state properly
-autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge3_skylark/10.10_scan/autoreco_2024_03_14__19_10_59", resume=True)
-autoreco.State.State().load_state()
+# autoreco.State.State().set_working_dir("/home/babadmin/offsec/challenges/challenge3_skylark/10.10_scan/autoreco_2024_03_14__19_10_59", resume=True)
+# autoreco.State.State().load_state()
 
-h = TestHost("10.10.137.250")
-eval = HostTestEvaluator(h)
-eval.get_ad_dc_ips()
+# h = TestHost("10.10.137.250")
+# eval = HostTestEvaluator(h)
 
-# runner = TestRunner()
+# print(eval.get_known_domains(True))
+
+# 
+# eval.get_ad_dc_ips()
+
+runner = TestRunner()
 # runner.move_empty_log_files()
-# WorkThreader.start_threads(None)
+WorkThreader.start_threads(None)
 # runner = TestRunner("192.168.230.0/24")
 # runner.run()
 # job = {
@@ -48,18 +53,20 @@ eval.get_ad_dc_ips()
 
 w = "/usr/share/seclists/Discovery/Web-Content/big.txt"
 
-job = {
-        "module_name": "hostscan.FeroxBuster",
-        "job_id": "FeroxBuster",
-        "target": "192.168.188.245",
-        "priority": 100,
+job =  {
+        "module_name": "bruteforce.Medusa",
+        "job_id": "TestMedusa",
+        "target": "192.168.1.250",
+        "target_port": 445,
+        "priority": 250,
         "args": {
-            "url": f"http://192.168.188.245:80",
-            "mode": "dir",
-            "wordlist": w,
-        }
-}
-# WorkThreader.add_job(job)
+            "protocol": "smbnt",
+            "user_wordlist": "/usr/share/seclists/Usernames/top-usernames-shortlist.txt",
+            "passw_wordlist": "/usr/share/seclists/Passwords/500-worst-passwords.txt",
+            "domain": "baba"                                    
+        },
+    }
+WorkThreader.add_job(job)
 
 # WorkThreader.start_threads(None)
 

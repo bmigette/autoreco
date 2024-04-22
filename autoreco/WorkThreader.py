@@ -284,18 +284,18 @@ class WorkThreader:
             hostobj = TestHost(job["target"])
             hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
             return
-        if State().RUNTIME["args"].force_hosts:
+        if State().RUNTIME["args"] is not None and State().RUNTIME["args"].force_hosts:
             if job["target"] not in State().RUNTIME["args"].host:
                 logger.info("Skipping job %s because host %s not in arguments and force-host is true", job["job_id"], job["target"])
                 hostobj = TestHost(job["target"])
                 hostobj.set_test_state(job["job_id"], "ignored", priority=job["priority"])
                 return
         
-        if not (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only) and "bruteforce" in  job["module_name"]:
+        if State().RUNTIME["args"]  is not None and not (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only) and "bruteforce" in  job["module_name"]:
             logger.info("Skipping job %s brute-force is false", job["job_id"])
             return        
         
-        if State().RUNTIME["args"].bruteforce_only and "bruteforce" not in  job["module_name"]:
+        if State().RUNTIME["args"] is not None  and State().RUNTIME["args"].bruteforce_only and "bruteforce" not in  job["module_name"]:
             logger.info("Skipping job %s brute-force it is not a bruteforce job", job["job_id"])
             return   
 

@@ -140,7 +140,7 @@ class HostTestEvaluator(TestEvaluatorBase):
                 logger.error(
                     "Error when getting msvulns tests: %s", e, exc_info=True)
                 
-        if  (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only):
+        if  State().RUNTIME["args"] is not None and (State().RUNTIME["args"].bruteforce or State().RUNTIME["args"].bruteforce_only):
             try:
                 tests = self._safe_merge(tests, self.get_bruteforce_tests())
             except Exception as e:
@@ -947,6 +947,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             userlist.append(discovered_users_file)
         
         tests = {}
+
         for s in ["ssh", "ftp"]:
             # Running tests against IP
             for p in self.get_tcp_services_ports([s]):
@@ -973,4 +974,33 @@ class HostTestEvaluator(TestEvaluatorBase):
                                 
                             },
                         }
+        
+        # if self.is_dc():
+        #     s = "smbnt"
+        #     for p in self.get_tcp_services_ports(['smb']):
+        #         for d in self.get_known_domains(True):
+        #             for wu in userlist:
+        #                 for wp in passlist:
+        #                     if is_file_empty(wu) or is_file_empty(wp):
+        #                         logger.debug("Skipping test with one empty file %s / %s", wu, wp)
+        #                         continue
+        #                     ufile = Path(wu).stem
+        #                     pfile = Path(wp).stem
+        #                     jobid = (
+        #                         f"bruteforce.Medusa_{self.hostobject.ip}_{s}_{p}_{d}_{ufile}_{pfile}"
+        #                     )
+        #                     tests[jobid] = {
+        #                         "module_name": "bruteforce.Medusa",
+        #                         "job_id": jobid,
+        #                         "target": self.hostobject.ip,
+        #                         "target_port": p,
+        #                         "priority": 250 + self.get_list_priority(wp) * self.get_list_priority(wu),
+        #                         "args": {
+        #                             "protocol": s,
+        #                             "user_wordlist": wu,
+        #                             "passw_wordlist": wp,
+        #                             "domain": d                                    
+        #                         },
+        #                     }
+                        
         return tests

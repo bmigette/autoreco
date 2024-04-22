@@ -128,9 +128,11 @@ class TestEvaluatorBase(ABC):
         logger.debug("Known DCs: %s", dcs)
         return dcs
     
-    def get_known_domains(self):
+    def get_known_domains(self, nbtonly = False):
         """Gets the list of all domains known in state
-
+        
+        Args:
+            nbtonly (Bool): Only netbios domain
         Returns:
             list: Domain list
         """
@@ -152,7 +154,15 @@ class TestEvaluatorBase(ABC):
             d = re.sub(r"[^a-zA-Z0-9\.\-]+", "", d)
             if d:
                 doms2.append(d)
-        doms = list(set(doms2))
+        if nbtonly:
+            doms = []
+            for d in doms2:
+                if "." in d:
+                    d = d.split(".")[-2]
+                doms.append(d)
+            doms = list(set(doms))
+        else:
+            doms = list(set(doms2))
         State().KNOWN_DOMAINS = doms  # .copy() # Statewrapper always copy
         logger.debug("Known Domains: %s", doms)
         return doms
