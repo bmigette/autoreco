@@ -2,8 +2,7 @@ from ..ModuleInterface import ModuleInterface
 from ...logger import logger
 from ..common.parsers import parse_netexec_hostline
 from ...TestHost import TestHost
-from ...utils import is_ip, is_ntlm_hash
-
+from ...utils import is_ip, is_ntlm_hash, get_state_dns_servers
 class NetExecHostScan(ModuleInterface):
     """Class to run NetExec against a single host"""
 
@@ -43,6 +42,11 @@ class NetExecHostScan(ModuleInterface):
         if "action" in self.args:
             action = "--" + self.args["action"]
         self.command = f"netexec {protocol} {self.target} -u {user} {pflag} {passw} {spider} {extra_modules} {action}  --log {logfile}"
+        if protocol == "ldap": 
+            # See https://github.com/Pennyw0rth/NetExec/issues/184
+            # TODO REMOVE FIREJAIL when this is pushed to a release: https://github.com/Pennyw0rth/NetExec/commit/2790236622eea56fb221833894ca765dc7e7a700
+            dnssrv = get_state_dns_servers()[0]
+            self.command = f"firejail --dns={dnssrv} {self.command}"
         self.output = self.get_system_cmd_outptut(self.command, logcmdline=cmdfile)
         
         if "extra_modules" not in self.args:
