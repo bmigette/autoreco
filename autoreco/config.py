@@ -142,5 +142,6 @@ BRUTEFORCE_PASSWORDLISTS = [
     "/usr/share/seclists/Passwords/500-worst-passwords.txt",
     "/usr/share/seclists/Passwords/2023-200_most_used_passwords.txt",
     "/usr/share/seclists/Passwords/cirt-default-passwords.txt",
+    "/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-10000.txt",
     "/usr/share/wordlists/rockyou.txt"
 ]

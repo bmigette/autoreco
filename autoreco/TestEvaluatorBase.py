@@ -45,7 +45,9 @@ class TestEvaluatorBase(ABC):
 
 
     def get_list_priority(self, wordlistfile, extensions = None):
-        with open(wordlistfile, 'r') as fp:
+        import codecs
+        with codecs.open(wordlistfile, 'r', encoding='utf-8', errors='ignore') as fp:
+        #with open(wordlistfile, 'r') as fp:
             cnt = len(fp.readlines())
         if MAX_LIST_SIZE and cnt >= MAX_LIST_SIZE:
             return -1

@@ -226,7 +226,10 @@ def is_valid_host(ip):
 def is_file_empty(file):
     if not os.path.exists(file):
         return True
-    with open (file , "r") as f:
+    
+    #with open (file , "r") as f:
+    import codecs
+    with codecs.open(file, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
     if len(content.strip()) < 1:
         return True

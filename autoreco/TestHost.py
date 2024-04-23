@@ -70,7 +70,7 @@ class TestHost:
         if hostip not in State().TEST_STATE:
             State().TEST_STATE[hostip] = {}
         if not is_valid_host(hostip) and not "discovery" in self.ip: 
-            if State().RUNTIME["args"] and hostip not in State().RUNTIME["args"].host: # Allow manual override
+            if State().RUNTIME["args"] is not None and hostip not in State().RUNTIME["args"].host: # Allow manual override
                 raise ValueError(f"Host {hostip} is in exclude list")
     
     def is_discovery(self):

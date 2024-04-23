@@ -20,7 +20,7 @@ class Medusa(ModuleInterface):
         cmdlog = self.get_log_name(".cmd")
         protocol = self.args["protocol"]
         dom = ""
-        if self.args["domain"]:
+        if "domain" in self.args and self.args["domain"]:
             d = self.args["domain"]
             dom = f"-m GROUP_OTHER:{d} -m GROUP:BOTH"
         cmd = f"medusa -U '{uw}' -P '{pw}' {dom} -t 4 -e ns -n {self.target_port} -O '{outputfile}' -M {protocol} -h {self.target}"

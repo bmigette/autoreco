@@ -953,6 +953,7 @@ class HostTestEvaluator(TestEvaluatorBase):
             for p in self.get_tcp_services_ports([s]):
                 for wu in userlist:
                     for wp in passlist:
+                        logger.debug("Checking test empty files %s / %s", wu, wp)
                         if is_file_empty(wu) or is_file_empty(wp):
                             logger.debug("Skipping test with one empty file %s / %s", wu, wp)
                             continue
